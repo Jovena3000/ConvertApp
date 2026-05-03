@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Web2APK | Transforme Sites em Apps Android</title>
+    <!-- TailwindCSS + Font Awesome + Google Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* custom cyberpunk / neon overrides */
+        * {
+            font-family: 'Inter', 'Space Mono', monospace, system-ui;
+        }
+        body {
+            background: radial-gradient(circle at 10% 20%, #0a0a0f 0%, #050508 100%);
+        }
+        .neon-text {
+            color: #FF006E;
+            text-shadow: 0 0 5px #FF006E, 0 0 10px #FF006E66, 0 0 15px #FF006E33;
+        }
+        .neon-text-secondary {
+            color: #00d9ff;
+            text-shadow: 0 0 4px #00d9ff, 0 0 8px #00d9ff66;
+        }
+        .neon-text-accent {
+            color: #9D00FF;
+            text-shadow: 0 0 4px #9D00FF, 0 0 8px #9D00FF66;
+        }
+        .cyber-card {
+            background: rgba(12, 12, 20, 0.75);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 0, 110, 0.4);
+            border-radius: 1.25rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4), 0 0 12px rgba(255,0,110,0.2);
+            transition: all 0.2s ease;
+        }
+        .cyber-card:hover {
+            border-color: #FF006E;
+            box-shadow: 0 0 20px rgba(255,0,110,0.3);
+        }
+        .btn-cyberpunk {
+            background: linear-gradient(135deg, rgba(255,0,110,0.12), rgba(255,0,110,0.05));
+            border: 1.5px solid #FF006E;
+            color: #FF006E;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            transition: all 0.25s;
+            box-shadow: 0 0 6px rgba(255,0,110,0.4);
+        }
+        .btn-cyberpunk:hover {
+            background: rgba(255, 0, 110, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 0 18px #FF006E;
+        }
+        .input-cyberpunk {
+            background-color: #0f0f18;
+            border: 1px solid #FF006E80;
+            border-radius: 0.75rem;
+            transition: all 0.2s;
+            color: #f0f0f0;
+        }
+        .input-cyberpunk:focus {
+            outline: none;
+            border-color: #FF006E;
+            box-shadow: 0 0 12px #FF006E;
+        }
+        .grid-bg {
+            background-image: 
+                linear-gradient(0deg, transparent 24%, rgba(255,0,110,0.03) 25%, rgba(255,0,110,0.03) 26%, transparent 27%),
+                linear-gradient(90deg, transparent 24%, rgba(255,0,110,0.03) 25%, rgba(255,0,110,0.03) 26%, transparent 27%);
+            background-size: 42px 42px;
+        }
+        .glow-border {
+            box-shadow: inset 0 0 10px rgba(255,0,110,0.1), 0 0 18px rgba(255,0,110,0.3);
+        }
+        .tech-line {
+            position: relative;
+        }
+        .tech-line::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #FF006E, #00d9ff, transparent);
+        }
+        /* custom progress */
+        .progress-cyber {
+            background: #1e1e2a;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, #FF006E, #FF4D8F);
+            width: 0%;
+            transition: width 0.3s;
+            height: 8px;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a0f;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FF006E;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="text-gray-200 grid-bg antialiased">
+
+<div id="root" class="min-h-screen flex flex-col"></div>
+
+<script>
+    // ---------- SIMPLE REACTIVE STATE (No frameworks, pure JS + Virtual Mini-Router) ----------
+    let currentRoute = window.location.hash.slice(1) || '/';
+    let authUser = null;   // simulate login state
+    let appsList = [];
+    let currentApp = null;
+    let buildsMap = new Map(); // appId -> builds array
+    
+    // Helper: update and re-render
+    function setState(updater) {
+        if (typeof updater === 'function') updater();
+        renderApp();
+    }
+    
+    // ---------- MOCK DATABASE / API SIMULATION (matching functionality) ----------
+    const mockApps = [
+        { id: 1, userId: 1, name: "TechNews Brasil", description: "Últimas notícias tech", websiteUrl: "https://technews.example", packageName: "com.web2apk.technews", version: "1.2.0", themeColor: "#FF006E", orientation: "portrait", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), permissions: ["INTERNET"], iconUrl: null },
+        { id: 2, userId: 1, name: "Fitness Pro", description: "Treinos personalizados", websiteUrl: "https://fitness.app", packageName: "com.web2apk.fitness", version: "1.0.0", themeColor: "#00d9ff", orientation: "auto", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), permissions: ["CAMERA","ACCESS_FINE_LOCATION"], iconUrl: null }
+    ];
+    
+    const mockBuilds = [
+        { id: 101, appId: 1, userId: 1, status: "concluído", apkUrl: "#", fileSize: 45219876, buildStartedAt: new Date().toISOString(), buildCompletedAt: new Date().toISOString(), createdAt: new Date().toISOString(), errorMessage: null },
+        { id: 102, appId: 1, userId: 1, status: "erro", apkUrl: null, fileSize: null, createdAt: new Date().toISOString(), errorMessage: "Falha na compilação: pacote duplicado" },
+        { id: 103, appId: 2, userId: 1, status: "pendente", apkUrl: null, fileSize: null, createdAt: new Date().toISOString() }
+    ];
+    
+    // helper to get builds for app
+    function getBuildsForApp(appId) {
+        return mockBuilds.filter(b => b.appId === appId).sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+    
+    function simulateBuildCreation(appId) {
+        const newBuildId = Date.now();
+        const newBuild = {
+            id: newBuildId, appId, userId: 1, status: "em progresso", apkUrl: null, fileSize: null,
+            createdAt: new Date().toISOString(), buildStartedAt: new Date().toISOString(), errorMessage: null
+        };
+        mockBuilds.unshift(newBuild);
+        
+        // simulate progress stages over time
+        let progress = 0;
+        const stages = ["Validando URL", "Configurando projeto", "Compilando código", "Assinando APK", "Finalizando"];
+        let interval = setInterval(() => {
+            progress += 20;
+            if (progress >= 100) {
+                clearInterval(interval);
+                newBuild.status = "concluído";
+                newBuild.apkUrl = "#download-mock";
+                newBuild.fileSize = 32100000 + Math.floor(Math.random() * 10000000);
+                newBuild.buildCompletedAt = new Date().toISOString();
+                renderApp();
+                showNotificationToast("APK gerado com sucesso! ✅", "success");
+            } else {
+                renderApp(); // re-render to update progress on BuildAPK page
+            }
+        }, 1200);
+        renderApp();
+        return newBuildId;
+    }
+    
+    function showNotificationToast(msg, type = "info") {
+        const toastDiv = document.createElement('div');
+        toastDiv.className = `fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-2xl border-l-8 backdrop-blur-md text-white font-medium transition-all ${type === 'success' ? 'bg-green-900/80 border-green-400' : 'bg-blue-900/80 border-blue-400'}`;
+        toastDiv.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'} mr-2"></i> ${msg}`;
+        document.body.appendChild(toastDiv);
+        setTimeout(() => toastDiv.remove(), 3000);
+    }
+    
+    // user auth simulation (just for flow)
+    function loginMock() {
+        authUser = { id: 1, name: "Cyber Dev", email: "dev@web2apk.com", role: "user" };
+        renderApp();
+        window.location.hash = '/dashboard';
+        currentRoute = '/dashboard';
+        renderApp();
+    }
+    function logoutMock() {
+        authUser = null;
+        renderApp();
+        window.location.hash = '/';
+        currentRoute = '/';
+        renderApp();
+    }
+    
+    // create new app
+    function createApp(data) {
+        const newId = Date.now();
+        const newApp = {
+            id: newId, userId: 1, name: data.name, description: data.description || "", websiteUrl: data.websiteUrl,
+            packageName: data.packageName, version: data.version || "1.0.0", themeColor: data.themeColor || "#FF006E",
+            orientation: data.orientation || "portrait", createdAt: new Date().toISOString(), permissions: data.permissions || []
+        };
+        mockApps.push(newApp);
+        showNotificationToast(`App "${data.name}" criado!`, "success");
+        renderApp();
+        window.location.hash = '/dashboard';
+        currentRoute = '/dashboard';
+        renderApp();
+    }
+    
+    // get app by id
+    function getAppById(id) { return mockApps.find(a => a.id == id); }
+    
+    // ---------- ROUTER & PAGES ----------
+    function HomePage() {
+        return `
+            <div class="relative z-10">
+                <nav class="border-b border-white/10 backdrop-blur-md bg-black/30 sticky top-0 z-20">
+                    <div class="container mx-auto px-5 py-4 flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 bg-gradient-to-r from-[#FF006E] to-[#9D00FF] rounded-lg flex items-center justify-center shadow-lg"><i class="fas fa-mobile-alt text-white text-xl"></i></div>
+                            <span class="text-2xl font-extrabold neon-text">Web2APK</span>
+                        </div>
+                        ${!authUser ? `<button onclick="window.loginMock()" class="btn-cyberpunk px-5 py-2 rounded-full text-sm"><i class="fas fa-sign-in-alt mr-2"></i> Entrar</button>` : `<button onclick="window.logoutMock()" class="btn-cyberpunk px-5 py-2 rounded-full text-sm"><i class="fas fa-sign-out-alt mr-2"></i> Sair</button>`}
+                    </div>
+                </nav>
+                <main class="container mx-auto px-5 py-12">
+                    <div class="grid lg:grid-cols-2 gap-12 items-center">
+                        <div>
+                            <h1 class="text-5xl md:text-6xl font-extrabold neon-text leading-tight">Transforme seu Site em App Android</h1>
+                            <p class="text-gray-300 text-xl mt-4">Crie aplicativos Android profissionais a partir de qualquer URL. Rápido, sem código e com personalização cyberpunk.</p>
+                            <div class="flex flex-wrap gap-4 mt-8">
+                                <button onclick="window.loginMock()" class="btn-cyberpunk px-8 py-3 rounded-full text-lg"><i class="fas fa-rocket mr-2"></i> Começar Grátis</button>
+                                <button class="border border-[#00d9ff] text-[#00d9ff] px-8 py-3 rounded-full hover:bg-[#00d9ff10] transition"><i class="fas fa-play mr-2"></i> Ver Demo</button>
+                            </div>
+                            <div class="flex gap-8 mt-12"><div><span class="text-3xl neon-text">1000+</span><p class="text-gray-400">Apps Criados</p></div><div><span class="text-3xl text-[#00d9ff]">99.9%</span><p class="text-gray-400">Uptime</p></div></div>
+                        </div>
+                        <div class="cyber-card p-8 text-center"><i class="fas fa-android text-8xl text-[#FF006E] mb-4"></i><p class="text-gray-300">Seu próximo APK aqui</p><div class="mt-4 w-32 h-32 mx-auto rounded-2xl bg-gradient-to-br from-[#FF006E] to-[#9D00FF] flex items-center justify-center"><i class="fas fa-download text-4xl text-white"></i></div></div>
+                    </div>
+                    <div class="grid md:grid-cols-4 gap-5 mt-24">
+                        ${["Cole a URL", "Personalize", "Gere APK", "Baixe"].map((t,i)=>`<div class="cyber-card p-5 text-center"><div class="w-12 h-12 rounded-full bg-[#FF006E] flex items-center justify-center mx-auto mb-3 font-bold">${i+1}</div><h3 class="font-bold text-lg">${t}</h3></div>`).join('')}
+                    </div>
+                    <div class="mt-24 cyber-card p-10 text-center border-[#00d9ff]"><h2 class="text-3xl neon-text-secondary">Pronto para transformar seu negócio?</h2><button onclick="window.loginMock()" class="btn-cyberpunk mt-5 px-8 py-3 rounded-full">Criar Meu Primeiro App</button></div>
+                </main>
+            </div>
+        `;
+    }
+    
+    function DashboardPage() {
+        if (!authUser) { window.location.hash = '/'; currentRoute='/'; return '<div></div>'; }
+        const userApps = mockApps.filter(a => a.userId === authUser.id);
+        return `
+            <div class="min-h-screen">
+                <div class="border-b border-white/10 backdrop-blur-sm bg-black/40 px-5 py-4 flex justify-between items-center sticky top-0 z-10">
+                    <div><h1 class="text-3xl font-bold neon-text">Dashboard</h1><p class="text-gray-400">Bem-vindo, ${authUser.name}</p></div>
+                    <button onclick="window.location.hash='/create-app'; currentRoute='/create-app'; renderApp();" class="btn-cyberpunk px-5 py-2 rounded-full"><i class="fas fa-plus mr-2"></i> Novo App</button>
+                </div>
+                <div class="container mx-auto px-5 py-8">
+                    <div class="grid md:grid-cols-3 gap-6 mb-10">
+                        <div class="cyber-card p-5"><div class="text-gray-400">Total Apps</div><div class="text-3xl neon-text">${userApps.length}</div></div>
+                        <div class="cyber-card p-5"><div class="text-gray-400">Builds concluídas</div><div class="text-3xl text-green-400">${mockBuilds.filter(b=>b.status==='concluído' && b.userId===authUser.id).length}</div></div>
+                        <div class="cyber-card p-5"><div class="text-gray-400">Em progresso</div><div class="text-3xl text-yellow-400">${mockBuilds.filter(b=>b.status==='em progresso').length}</div></div>
+                    </div>
+                    <h2 class="text-2xl font-bold neon-text mb-4">Seus Apps</h2>
+                    ${userApps.length===0 ? `<div class="cyber-card p-10 text-center"><p>Nenhum app criado ainda</p><button onclick="window.location.hash='/create-app'; currentRoute='/create-app'; renderApp();" class="btn-cyberpunk mt-3 px-6 py-2 rounded-full">Criar primeiro App</button></div>` : 
+                        `<div class="space-y-4">${userApps.map(app => `
+                            <div class="cyber-card p-5 flex justify-between items-center flex-wrap gap-3 cursor-pointer hover:border-[#FF006E]" onclick="window.location.hash='/app/${app.id}'; currentRoute='/app/${app.id}'; renderApp();">
+                                <div><div class="text-xl font-bold">${app.name}</div><div class="text-sm text-gray-400">${app.websiteUrl}</div><div class="text-xs text-gray-500">${new Date(app.createdAt).toLocaleDateString()}</div></div>
+                                <button onclick="event.stopPropagation(); window.location.hash='/build/${app.id}'; currentRoute='/build/${app.id}'; renderApp();" class="btn-cyberpunk px-4 py-1.5 text-sm rounded-full"><i class="fas fa-cog mr-1"></i> Gerar APK</button>
+                            </div>
+                        `).join('')}</div>`
+                    }
+                </div>
+            </div>
+        `;
+    }
+    
+    function CreateAppPage() {
+        if (!authUser) return '<div></div>';
+        return `
+            <div class="min-h-screen">
+                <div class="border-b border-white/10 px-5 py-4 bg-black/30"><button onclick="window.location.hash='/dashboard'; currentRoute='/dashboard'; renderApp();" class="text-[#FF006E]"><i class="fas fa-arrow-left mr-2"></i> Voltar</button><h1 class="text-3xl font-bold neon-text mt-2">Criar Novo App</h1></div>
+                <div class="container mx-auto px-5 py-8 max-w-3xl">
+                    <form id="createAppForm" class="space-y-6" onsubmit="event.preventDefault(); window.handleCreateApp(this);">
+                        <div class="cyber-card p-6 space-y-4"><h3 class="text-xl font-bold">Informações básicas</h3>
+                            <div><label class="block text-sm">URL do Site *</label><input name="websiteUrl" type="url" required class="input-cyberpunk w-full p-3 mt-1" placeholder="https://meusite.com"></div>
+                            <div><label class="block text-sm">Nome do App *</label><input name="name" required class="input-cyberpunk w-full p-3 mt-1" placeholder="Meu App"></div>
+                            <div><label class="block text-sm">Package Name *</label><input name="packageName" required class="input-cyberpunk w-full p-3 mt-1" placeholder="com.exemplo.app"></div>
+                            <div><label class="block text-sm">Descrição</label><input name="description" class="input-cyberpunk w-full p-3 mt-1"></div>
+                            <div class="grid grid-cols-2 gap-4"><div><label>Versão</label><input name="version" value="1.0.0" class="input-cyberpunk p-3 w-full"></div><div><label>Cor tema</label><div class="flex gap-2"><input name="themeColor" type="color" value="#FF006E" class="w-14 h-10"><input type="text" value="#FF006E" id="themeText" class="input-cyberpunk flex-1 p-2"></div></div></div>
+                            <div><label>Orientação</label><select name="orientation" class="input-cyberpunk w-full p-3"><option value="portrait">Retrato</option><option value="landscape">Paisagem</option><option value="auto">Automático</option></select></div>
+                        </div>
+                        <div class="cyber-card p-6"><h3 class="text-xl font-bold mb-2">Permissões</h3><div class="grid grid-cols-2 gap-2">${["INTERNET","CAMERA","ACCESS_FINE_LOCATION","RECORD_AUDIO","READ_EXTERNAL_STORAGE"].map(p=>`<label class="flex gap-2"><input type="checkbox" name="perm_${p}" value="${p}"> ${p}</label>`).join('')}</div></div>
+                        <div class="flex gap-4"><button type="button" onclick="window.location.hash='/dashboard'; currentRoute='/dashboard'; renderApp();" class="flex-1 border border-gray-600 py-3 rounded-full">Cancelar</button><button type="submit" class="flex-1 btn-cyberpunk py-3 rounded-full">Criar App</button></div>
+                    </form>
+                </div>
+            </div>
+        `;
+    }
+    
+    function AppDetailsPage(appId) {
+        const app = getAppById(parseInt(appId));
+        if (!app) return `<div class="p-8 text-center">App não encontrado</div>`;
+        const buildsForApp = getBuildsForApp(app.id);
+        const statusIcon = (status) => status==='concluído' ? 'fa-check-circle text-green-400' : (status==='em progresso' ? 'fa-spinner fa-pulse text-blue-400' : (status==='erro' ? 'fa-times-circle text-red-400' : 'fa-clock text-yellow-400'));
+        return `
+            <div class="min-h-screen">
+                <div class="border-b border-white/10 px-5 py-4 bg-black/30 flex items-center gap-4"><button onclick="window.location.hash='/dashboard'; currentRoute='/dashboard'; renderApp();" class="text-[#FF006E]"><i class="fas fa-arrow-left text-xl"></i></button><div><h1 class="text-2xl font-bold neon-text">${app.name}</h1><p class="text-gray-400 text-sm">${app.websiteUrl}</p></div></div>
+                <div class="container mx-auto px-5 py-8 max-w-4xl">
+                    <div class="cyber-card p-6 mb-8"><h2 class="text-xl font-bold">Detalhes do App</h2><div class="grid md:grid-cols-2 gap-3 mt-3"><div><span class="text-gray-400">Package:</span><div class="font-mono text-sm">${app.packageName}</div></div><div><span class="text-gray-400">Versão:</span> ${app.version}</div><div><span class="text-gray-400">Cor:</span> <span style="background:${app.themeColor}" class="inline-block w-5 h-5 rounded-sm align-middle"></span> ${app.themeColor}</div></div></div>
+                    <div class="flex justify-between items-center"><h2 class="text-2xl font-bold neon-text">Histórico de Builds</h2><button onclick="window.location.hash='/build/${app.id}'; currentRoute='/build/${app.id}'; renderApp();" class="btn-cyberpunk px-5 py-2 rounded-full text-sm"><i class="fas fa-plus"></i> Novo Build</button></div>
+                    ${buildsForApp.length===0 ? `<div class="cyber-card p-10 text-center mt-4">Nenhum build realizado ainda</div>` : `<div class="space-y-4 mt-6">${buildsForApp.map(b=>`
+                        <div class="cyber-card p-5 flex flex-wrap justify-between items-center"><div class="flex items-center gap-3"><i class="fas ${statusIcon(b.status)} text-2xl"></i><div><div class="font-bold">Build #${b.id}</div><div class="text-xs text-gray-400">${new Date(b.createdAt).toLocaleString()}</div>${b.fileSize ? `<div class="text-xs">${(b.fileSize/1048576).toFixed(2)} MB</div>` : ''}</div></div><div>${b.status === 'concluído' ? `<button class="btn-cyberpunk px-4 py-1 rounded-full text-xs"><i class="fas fa-download"></i> Baixar</button>` : b.status === 'erro' ? `<span class="text-red-400 text-sm"><i class="fas fa-exclamation-triangle"></i> ${b.errorMessage || 'Falha'}</span>` : `<span class="text-blue-400"><i class="fas fa-spinner fa-pulse"></i> Processando</span>`}</div></div>
+                    `).join('')}</div>`}
+                </div>
+            </div>
+        `;
+    }
+    
+    function BuildAPKPage(appId) {
+        const app = getAppById(parseInt(appId));
+        if (!app) return '<div>App inválido</div>';
+        // find building build
+        let activeBuild = mockBuilds.find(b => b.appId == app.id && (b.status === 'em progresso' || b.status === 'pendente'));
+        const isBuilding = activeBuild && activeBuild.status === 'em progresso';
+        const progressPercent = activeBuild && activeBuild.status === 'em progresso' ? (activeBuild.buildCompletedAt ? 100 : (Date.now() - new Date(activeBuild.buildStartedAt)) / 2500 * 100) : 0;
+        const finalProgress = Math.min(100, Math.floor(progressPercent));
+        return `
+            <div class="min-h-screen">
+                <div class="border-b border-white/10 px-5 py-4"><button onclick="window.location.hash='/app/${app.id}'; currentRoute='/app/${app.id}'; renderApp();" class="text-[#FF006E]"><i class="fas fa-arrow-left mr-2"></i> Voltar</button><h1 class="text-2xl font-bold neon-text mt-1">Gerar APK · ${app.name}</h1></div>
+                <div class="container mx-auto px-5 py-8 max-w-2xl">
+                    <div class="cyber-card p-6 space-y-6">
+                        <div><div class="flex justify-between"><span>Progresso da compilação</span><span class="neon-text">${finalProgress}%</span></div><div class="progress-cyber w-full mt-2"><div class="progress-fill" style="width: ${finalProgress}%"></div></div></div>
+                        <div class="space-y-2">${["Validando URL","Configurando projeto","Compilando código","Assinando APK","Finalizando"].map((s,idx)=> {
+                            const active = finalProgress >= (idx+1)*20;
+                            return `<div class="flex items-center gap-3 p-2 rounded ${active ? 'border border-[#FF006E] bg-[#FF006E10]' : 'opacity-60'}"><i class="fas ${active ? 'fa-check-circle text-green-400' : 'fa-circle text-gray-500'}"></i><span>${s}</span></div>`;
+                        }).join('')}</div>
+                        <div class="p-3 bg-black/30 rounded border border-[#FF006E30] text-center text-sm">${!activeBuild ? "Clique em iniciar para gerar o APK" : (finalProgress>=100 ? "APK pronto para download!" : "Compilando... isto leva alguns segundos")}</div>
+                        <div class="flex gap-4">
+                            ${!activeBuild ? `<button onclick="window.startNewBuild(${app.id})" class="flex-1 btn-cyberpunk py-3 rounded-full"><i class="fas fa-play mr-2"></i> Iniciar Build</button>` : (finalProgress>=100 ? `<button class="flex-1 btn-cyberpunk py-3 rounded-full"><i class="fas fa-download mr-2"></i> Baixar APK</button><button onclick="window.location.hash='/dashboard'; renderApp();" class="flex-1 border py-3 rounded-full">Dashboard</button>` : `<button disabled class="flex-1 btn-cyberpunk py-3 rounded-full opacity-50"><i class="fas fa-spinner fa-pulse"></i> Compilando...</button>`)}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // global handlers
+    window.handleCreateApp = function(form) {
+        const formData = new FormData(form);
+        const permissions = [];
+        document.querySelectorAll('input[name^="perm_"]:checked').forEach(cb => permissions.push(cb.value));
+        const appData = {
+            name: formData.get('name'),
+            websiteUrl: formData.get('websiteUrl'),
+            packageName: formData.get('packageName'),
+            description: formData.get('description'),
+            version: formData.get('version') || '1.0.0',
+            themeColor: formData.get('themeColor') || '#FF006E',
+            orientation: formData.get('orientation'),
+            permissions
+        };
+        if(!appData.name || !appData.websiteUrl || !appData.packageName) { showNotificationToast("Preencha os campos obrigatórios", "info"); return; }
+        createApp(appData);
+    };
+    window.startNewBuild = function(appId) {
+        simulateBuildCreation(appId);
+        renderApp();
+    };
+    window.loginMock = loginMock;
+    window.logoutMock = logoutMock;
+    window.renderApp = renderApp;
+    
+    function renderApp() {
+        const hash = window.location.hash.slice(1) || '/';
+        currentRoute = hash;
+        const root = document.getElementById('root');
+        if(!root) return;
+        let content = '';
+        if(!authUser && currentRoute !== '/' && currentRoute !== '/create-app' && !currentRoute.startsWith('/app/') && !currentRoute.startsWith('/build/')) {
+            window.location.hash = '/';
+            currentRoute = '/';
+        }
+        if(currentRoute === '/') content = HomePage();
+        else if(currentRoute === '/dashboard') content = DashboardPage();
+        else if(currentRoute === '/create-app') content = CreateAppPage();
+        else if(currentRoute.startsWith('/app/')) {
+            const id = currentRoute.split('/')[2];
+            content = AppDetailsPage(id);
+        }
+        else if(currentRoute.startsWith('/build/')) {
+            const id = currentRoute.split('/')[2];
+            content = BuildAPKPage(id);
+        }
+        else content = HomePage();
+        root.innerHTML = content;
+        // reattach color picker sync if needed
+        const colorPicker = document.querySelector('input[type="color"]');
+        const colorText = document.getElementById('themeText');
+        if(colorPicker && colorText) {
+            colorPicker.addEventListener('input', (e) => colorText.value = e.target.value);
+            colorText.addEventListener('input', (e) => colorPicker.value = e.target.value);
+        }
+    }
+    
+    window.addEventListener('hashchange', () => { renderApp(); });
+    renderApp();
+</script>
+</body>
+</html>
