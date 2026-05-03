@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* custom cyberpunk / neon overrides */
         * {
             font-family: 'Inter', 'Space Mono', monospace, system-ui;
         }
@@ -23,10 +22,6 @@
         .neon-text-secondary {
             color: #00d9ff;
             text-shadow: 0 0 4px #00d9ff, 0 0 8px #00d9ff66;
-        }
-        .neon-text-accent {
-            color: #9D00FF;
-            text-shadow: 0 0 4px #9D00FF, 0 0 8px #9D00FF66;
         }
         .cyber-card {
             background: rgba(12, 12, 20, 0.75);
@@ -74,13 +69,9 @@
             box-shadow: 0 0 12px #FF006E;
         }
         .grid-bg {
-            background-image: 
-                linear-gradient(0deg, transparent 24%, rgba(255,0,110,0.03) 25%, rgba(255,0,110,0.03) 26%, transparent 27%),
-                linear-gradient(90deg, transparent 24%, rgba(255,0,110,0.03) 25%, rgba(255,0,110,0.03) 26%, transparent 27%);
+            background-image: linear-gradient(0deg, transparent 24%, rgba(255,0,110,0.03) 25%, rgba(255,0,110,0.03) 26%, transparent 27%),
+                              linear-gradient(90deg, transparent 24%, rgba(255,0,110,0.03) 25%, rgba(255,0,110,0.03) 26%, transparent 27%);
             background-size: 42px 42px;
-        }
-        .glow-border {
-            box-shadow: inset 0 0 10px rgba(255,0,110,0.1), 0 0 18px rgba(255,0,110,0.3);
         }
         .progress-cyber {
             background: #1e1e2a;
@@ -103,12 +94,26 @@
             background: #FF006E;
             border-radius: 8px;
         }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        .download-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .animate-pulse-slow {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        .modal-content {
+            background: #0f0f18;
+            border: 1px solid #FF006E;
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
         }
     </style>
 </head>
@@ -117,32 +122,21 @@
 <div id="root" class="min-h-screen flex flex-col"></div>
 
 <script>
-    // ---------- SIMPLE REACTIVE STATE (No frameworks, pure JS + Virtual Mini-Router) ----------
     let currentRoute = window.location.hash.slice(1) || '/';
-    let authUser = null;   // simulate login state
-    let appsList = [];
-    let currentApp = null;
-    let buildsMap = new Map(); // appId -> builds array
+    let authUser = null;
+    let pendingDownloadUrl = null;
     
-    // Helper: update and re-render
-    function setState(updater) {
-        if (typeof updater === 'function') updater();
-        renderApp();
-    }
-    
-    // ---------- MOCK DATABASE / API SIMULATION (matching functionality) ----------
     const mockApps = [
         { id: 1, userId: 1, name: "TechNews Brasil", description: "Últimas notícias tech", websiteUrl: "https://technews.example", packageName: "com.web2apk.technews", version: "1.2.0", themeColor: "#FF006E", orientation: "portrait", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), permissions: ["INTERNET"], iconUrl: null },
         { id: 2, userId: 1, name: "Fitness Pro", description: "Treinos personalizados", websiteUrl: "https://fitness.app", packageName: "com.web2apk.fitness", version: "1.0.0", themeColor: "#00d9ff", orientation: "auto", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), permissions: ["CAMERA","ACCESS_FINE_LOCATION"], iconUrl: null }
     ];
     
     const mockBuilds = [
-        { id: 101, appId: 1, userId: 1, status: "concluído", apkUrl: "#", fileSize: 45219876, buildStartedAt: new Date().toISOString(), buildCompletedAt: new Date().toISOString(), createdAt: new Date().toISOString(), errorMessage: null },
+        { id: 101, appId: 1, userId: 1, status: "concluído", apkUrl: null, fileSize: 45219876, buildStartedAt: new Date().toISOString(), buildCompletedAt: new Date().toISOString(), createdAt: new Date().toISOString(), errorMessage: null },
         { id: 102, appId: 1, userId: 1, status: "erro", apkUrl: null, fileSize: null, createdAt: new Date().toISOString(), errorMessage: "Falha na compilação: pacote duplicado" },
         { id: 103, appId: 2, userId: 1, status: "pendente", apkUrl: null, fileSize: null, createdAt: new Date().toISOString() }
     ];
     
-    // helper to get builds for app
     function getBuildsForApp(appId) {
         return mockBuilds.filter(b => b.appId === appId).sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
@@ -155,21 +149,19 @@
         };
         mockBuilds.unshift(newBuild);
         
-        // simulate progress stages over time
         let progress = 0;
         let interval = setInterval(() => {
             progress += 20;
             if (progress >= 100) {
                 clearInterval(interval);
                 newBuild.status = "concluído";
-                // Simula uma URL de download real (no seu caso, isso viria do servidor)
-                newBuild.apkUrl = URL.createObjectURL(new Blob(["APK Content Simulado - App ID: " + appId], {type: "application/vnd.android.package-archive"}));
-                newBuild.fileSize = 32100000 + Math.floor(Math.random() * 10000000);
+                newBuild.apkUrl = null; // Será definido pelo usuário via modal
+                newBuild.fileSize = 35930000;
                 newBuild.buildCompletedAt = new Date().toISOString();
                 renderApp();
-                showNotificationToast("APK gerado com sucesso! ✅", "success");
+                showNotificationToast("APK gerado com sucesso! ✅ Clique em Baixar para fornecer a URL do APK.", "success");
             } else {
-                renderApp(); // re-render to update progress on BuildAPK page
+                renderApp();
             }
         }, 1200);
         renderApp();
@@ -181,12 +173,92 @@
         toastDiv.className = `fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-2xl border-l-8 backdrop-blur-md text-white font-medium transition-all ${type === 'success' ? 'bg-green-900/80 border-green-400' : 'bg-blue-900/80 border-blue-400'}`;
         toastDiv.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'} mr-2"></i> ${msg}`;
         document.body.appendChild(toastDiv);
-        setTimeout(() => toastDiv.remove(), 3000);
+        setTimeout(() => toastDiv.remove(), 4000);
     }
     
-    // FUNÇÃO DE DOWNLOAD CORRIGIDA
+    // MODAL PARA COLAR A URL DO APK REAL
+    function showUrlModal(buildId) {
+        const build = mockBuilds.find(b => b.id == buildId);
+        if (!build) return;
+        
+        const modal = document.createElement('div');
+        modal.className = 'download-modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h2 class="text-2xl font-bold neon-text mb-4">🔗 URL do APK</h2>
+                <p class="text-gray-300 text-sm mb-4">
+                    Para baixar o APK real de ${build.fileSize ? (build.fileSize/1048576).toFixed(2) : '35.93'} MB, cole a URL que você copiou do Web2APK:
+                </p>
+                <p class="text-yellow-400 text-xs mb-3">
+                    💡 Como obter a URL:<br>
+                    1. Volte para a página do Web2APK<br>
+                    2. Clique com botão direito no botão "BAIXAR"<br>
+                    3. Escolha "Copiar link" ou "Inspecionar" e copie o href<br>
+                    4. Cole abaixo:
+                </p>
+                <input type="text" id="apkUrlInput" class="input-cyberpunk w-full p-3 mb-4" placeholder="https://web2apk.com/api/download/..." value="${build.apkUrl || ''}">
+                <div class="flex gap-3">
+                    <button onclick="window.closeModal()" class="flex-1 border border-gray-600 py-2 rounded-full">Cancelar</button>
+                    <button onclick="window.saveUrlAndDownload(${build.id})" class="flex-1 btn-cyberpunk py-2 rounded-full">Baixar APK</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        pendingDownloadUrl = buildId;
+        
+        const input = document.getElementById('apkUrlInput');
+        if (input) input.focus();
+    }
+    
+    window.closeModal = function() {
+        const modal = document.querySelector('.download-modal');
+        if (modal) modal.remove();
+        pendingDownloadUrl = null;
+    };
+    
+    window.saveUrlAndDownload = async function(buildId) {
+        const input = document.getElementById('apkUrlInput');
+        const url = input?.value.trim();
+        
+        if (!url) {
+            showNotificationToast("❌ Por favor, cole a URL do APK", "error");
+            return;
+        }
+        
+        if (!url.startsWith('http')) {
+            showNotificationToast("❌ URL inválida. Deve começar com http:// ou https://", "error");
+            return;
+        }
+        
+        const build = mockBuilds.find(b => b.id == buildId);
+        if (!build) return;
+        
+        // Salva a URL no build
+        build.apkUrl = url;
+        
+        window.closeModal();
+        
+        // Inicia o download
+        try {
+            showNotificationToast("⏳ Iniciando download do APK real...", "info");
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `app_${build.appId}_build_${build.id}.apk`;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotificationToast("✅ Download iniciado! Verifique seu navegador.", "success");
+        } catch (error) {
+            console.error('Erro:', error);
+            showNotificationToast("❌ Erro ao iniciar download. Verifique se a URL está correta.", "error");
+        }
+    };
+    
+    // FUNÇÃO DE DOWNLOAD PRINCIPAL
     window.downloadAPK = function(buildId) {
-        // Procura o build pelo ID
         const build = mockBuilds.find(b => b.id == buildId);
         
         if (!build) {
@@ -199,45 +271,26 @@
             return;
         }
         
-        try {
-            // Cria um link de download
-            if (build.apkUrl && build.apkUrl !== '#' && build.apkUrl !== '#download-mock') {
-                // Link real do servidor
+        // Se já tem URL salva, usa ela
+        if (build.apkUrl && build.apkUrl.startsWith('http')) {
+            try {
                 const link = document.createElement('a');
                 link.href = build.apkUrl;
-                link.download = `app_build_${build.id}.apk`;
-                link.setAttribute('download', `app_build_${build.id}.apk`);
+                link.download = `app_${build.appId}_build_${build.id}.apk`;
+                link.target = '_blank';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 showNotificationToast("✅ Download iniciado!", "success");
-            } else {
-                // Cria um arquivo APK simulado para demonstração
-                const apkContent = `APK Simulado
-App ID: ${build.appId}
-Build ID: ${build.id}
-Data: ${new Date().toLocaleString()}
-Tamanho: ${build.fileSize ? (build.fileSize/1048576).toFixed(2) : 'desconhecido'} MB
-Status: ${build.status}`;
-                
-                const blob = new Blob([apkContent], {type: "application/vnd.android.package-archive"});
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `app_${build.appId}_build_${build.id}.apk`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-                showNotificationToast("✅ Download do APK simulado iniciado!", "success");
+            } catch (error) {
+                showNotificationToast("❌ Erro no download", "error");
             }
-        } catch (error) {
-            console.error("Erro no download:", error);
-            showNotificationToast("❌ Erro ao fazer download", "error");
+        } else {
+            // Mostra modal para o usuário colar a URL
+            showUrlModal(buildId);
         }
     };
     
-    // user auth simulation (just for flow)
     function loginMock() {
         authUser = { id: 1, name: "Cyber Dev", email: "dev@web2apk.com", role: "user" };
         renderApp();
@@ -245,6 +298,7 @@ Status: ${build.status}`;
         currentRoute = '/dashboard';
         renderApp();
     }
+    
     function logoutMock() {
         authUser = null;
         renderApp();
@@ -253,7 +307,6 @@ Status: ${build.status}`;
         renderApp();
     }
     
-    // create new app
     function createApp(data) {
         const newId = Date.now();
         const newApp = {
@@ -269,10 +322,8 @@ Status: ${build.status}`;
         renderApp();
     }
     
-    // get app by id
     function getAppById(id) { return mockApps.find(a => a.id == id); }
     
-    // ---------- ROUTER & PAGES ----------
     function HomePage() {
         return `
             <div class="relative z-10">
@@ -292,16 +343,10 @@ Status: ${build.status}`;
                             <p class="text-gray-300 text-xl mt-4">Crie aplicativos Android profissionais a partir de qualquer URL. Rápido, sem código e com personalização cyberpunk.</p>
                             <div class="flex flex-wrap gap-4 mt-8">
                                 <button onclick="window.loginMock()" class="btn-cyberpunk px-8 py-3 rounded-full text-lg"><i class="fas fa-rocket mr-2"></i> Começar Grátis</button>
-                                <button class="border border-[#00d9ff] text-[#00d9ff] px-8 py-3 rounded-full hover:bg-[#00d9ff10] transition"><i class="fas fa-play mr-2"></i> Ver Demo</button>
                             </div>
-                            <div class="flex gap-8 mt-12"><div><span class="text-3xl neon-text">1000+</span><p class="text-gray-400">Apps Criados</p></div><div><span class="text-3xl text-[#00d9ff]">99.9%</span><p class="text-gray-400">Uptime</p></div></div>
                         </div>
-                        <div class="cyber-card p-8 text-center"><i class="fas fa-android text-8xl text-[#FF006E] mb-4"></i><p class="text-gray-300">Seu próximo APK aqui</p><div class="mt-4 w-32 h-32 mx-auto rounded-2xl bg-gradient-to-br from-[#FF006E] to-[#9D00FF] flex items-center justify-center"><i class="fas fa-download text-4xl text-white"></i></div></div>
+                        <div class="cyber-card p-8 text-center"><i class="fas fa-android text-8xl text-[#FF006E] mb-4"></i><p class="text-gray-300">Seu próximo APK aqui</p></div>
                     </div>
-                    <div class="grid md:grid-cols-4 gap-5 mt-24">
-                        ${["Cole a URL", "Personalize", "Gere APK", "Baixe"].map((t,i)=>`<div class="cyber-card p-5 text-center"><div class="w-12 h-12 rounded-full bg-[#FF006E] flex items-center justify-center mx-auto mb-3 font-bold">${i+1}</div><h3 class="font-bold text-lg">${t}</h3></div>`).join('')}
-                    </div>
-                    <div class="mt-24 cyber-card p-10 text-center border-[#00d9ff]"><h2 class="text-3xl neon-text-secondary">Pronto para transformar seu negócio?</h2><button onclick="window.loginMock()" class="btn-cyberpunk mt-5 px-8 py-3 rounded-full">Criar Meu Primeiro App</button></div>
                 </main>
             </div>
         `;
@@ -326,7 +371,7 @@ Status: ${build.status}`;
                     ${userApps.length===0 ? `<div class="cyber-card p-10 text-center"><p>Nenhum app criado ainda</p><button onclick="window.location.hash='/create-app'; currentRoute='/create-app'; renderApp();" class="btn-cyberpunk mt-3 px-6 py-2 rounded-full">Criar primeiro App</button></div>` : 
                         `<div class="space-y-4">${userApps.map(app => `
                             <div class="cyber-card p-5 flex justify-between items-center flex-wrap gap-3 cursor-pointer hover:border-[#FF006E]" onclick="window.location.hash='/app/${app.id}'; currentRoute='/app/${app.id}'; renderApp();">
-                                <div><div class="text-xl font-bold">${app.name}</div><div class="text-sm text-gray-400">${app.websiteUrl}</div><div class="text-xs text-gray-500">${new Date(app.createdAt).toLocaleDateString()}</div></div>
+                                <div><div class="text-xl font-bold">${app.name}</div><div class="text-sm text-gray-400">${app.websiteUrl}</div></div>
                                 <button onclick="event.stopPropagation(); window.location.hash='/build/${app.id}'; currentRoute='/build/${app.id}'; renderApp();" class="btn-cyberpunk px-4 py-1.5 text-sm rounded-full"><i class="fas fa-cog mr-1"></i> Gerar APK</button>
                             </div>
                         `).join('')}</div>`
@@ -368,7 +413,7 @@ Status: ${build.status}`;
             <div class="min-h-screen">
                 <div class="border-b border-white/10 px-5 py-4 bg-black/30 flex items-center gap-4"><button onclick="window.location.hash='/dashboard'; currentRoute='/dashboard'; renderApp();" class="text-[#FF006E]"><i class="fas fa-arrow-left text-xl"></i></button><div><h1 class="text-2xl font-bold neon-text">${app.name}</h1><p class="text-gray-400 text-sm">${app.websiteUrl}</p></div></div>
                 <div class="container mx-auto px-5 py-8 max-w-4xl">
-                    <div class="cyber-card p-6 mb-8"><h2 class="text-xl font-bold">Detalhes do App</h2><div class="grid md:grid-cols-2 gap-3 mt-3"><div><span class="text-gray-400">Package:</span><div class="font-mono text-sm">${app.packageName}</div></div><div><span class="text-gray-400">Versão:</span> ${app.version}</div><div><span class="text-gray-400">Cor:</span> <span style="background:${app.themeColor}" class="inline-block w-5 h-5 rounded-sm align-middle"></span> ${app.themeColor}</div></div></div>
+                    <div class="cyber-card p-6 mb-8"><h2 class="text-xl font-bold">Detalhes do App</h2><div class="grid md:grid-cols-2 gap-3 mt-3"><div><span class="text-gray-400">Package:</span><div class="font-mono text-sm">${app.packageName}</div></div><div><span class="text-gray-400">Versão:</span> ${app.version}</div></div></div>
                     <div class="flex justify-between items-center"><h2 class="text-2xl font-bold neon-text">Histórico de Builds</h2><button onclick="window.location.hash='/build/${app.id}'; currentRoute='/build/${app.id}'; renderApp();" class="btn-cyberpunk px-5 py-2 rounded-full text-sm"><i class="fas fa-plus"></i> Novo Build</button></div>
                     ${buildsForApp.length===0 ? `<div class="cyber-card p-10 text-center mt-4">Nenhum build realizado ainda</div>` : `<div class="space-y-4 mt-6">${buildsForApp.map(b=>`
                         <div class="cyber-card p-5 flex flex-wrap justify-between items-center">
@@ -414,9 +459,6 @@ Status: ${build.status}`;
         }
         const finalProgress = Math.min(100, Math.floor(progressPercent));
         
-        // Procura o build concluído mais recente
-        const completedBuild = mockBuilds.find(b => b.appId == app.id && b.status === 'concluído');
-        
         return `
             <div class="min-h-screen">
                 <div class="border-b border-white/10 px-5 py-4">
@@ -446,14 +488,14 @@ Status: ${build.status}`;
                             }).join('')}
                         </div>
                         <div class="p-3 bg-black/30 rounded border border-[#FF006E30] text-center text-sm">
-                            ${!activeBuild ? "Clique em iniciar para gerar o APK" : (finalProgress >= 100 ? "APK pronto para download!" : "Compilando... isto leva alguns segundos")}
+                            ${!activeBuild ? "Clique em iniciar para gerar o APK" : (finalProgress >= 100 ? "APK pronto para download! Clique em Baixar APK e cole a URL do Web2APK." : "Compilando... isto leva alguns segundos")}
                         </div>
                         <div class="flex gap-4">
                             ${!activeBuild ? 
                                 `<button onclick="window.startNewBuild(${app.id})" class="flex-1 btn-cyberpunk py-3 rounded-full">
                                     <i class="fas fa-play mr-2"></i> Iniciar Build
                                 </button>` : 
-                                (finalProgress >= 100 ? 
+                                (finalProgress >= 100 && activeBuild ? 
                                     `<button onclick="window.downloadAPK(${activeBuild.id})" class="flex-1 btn-cyberpunk py-3 rounded-full">
                                         <i class="fas fa-download mr-2"></i> Baixar APK
                                     </button>
@@ -472,7 +514,6 @@ Status: ${build.status}`;
         `;
     }
     
-    // global handlers
     window.handleCreateApp = function(form) {
         const formData = new FormData(form);
         const permissions = [];
@@ -490,10 +531,12 @@ Status: ${build.status}`;
         if(!appData.name || !appData.websiteUrl || !appData.packageName) { showNotificationToast("Preencha os campos obrigatórios", "info"); return; }
         createApp(appData);
     };
+    
     window.startNewBuild = function(appId) {
         simulateBuildCreation(appId);
         renderApp();
     };
+    
     window.loginMock = loginMock;
     window.logoutMock = logoutMock;
     window.renderApp = renderApp;
@@ -521,7 +564,7 @@ Status: ${build.status}`;
         }
         else content = HomePage();
         root.innerHTML = content;
-        // reattach color picker sync if needed
+        
         const colorPicker = document.querySelector('input[type="color"]');
         const colorText = document.getElementById('themeText');
         if(colorPicker && colorText) {
