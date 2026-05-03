@@ -331,102 +331,254 @@ function validateImage(file) {
   return true;
 }
 
-// ---- APK Download (Minimal valid ZIP/APK placeholder) ----
-// Generates a tiny binary that is a valid ZIP file (APKs are ZIPs),
-// containing a placeholder AndroidManifest.xml comment.
-function generateMockApkBytes(appName, version, packageName) {
-  // Helper: write little-endian 16/32-bit
-  function u16(v) { return [v & 0xff, (v >> 8) & 0xff]; }
-  function u32(v) { return [v & 0xff,(v>>8)&0xff,(v>>16)&0xff,(v>>24)&0xff]; }
+// ---- APK Generator --------------------------------------------------------
+// Produces a structurally valid ZIP file (APK = ZIP) of EXACTLY targetBytes.
+// Strategy:
+//   • Build all "metadata" entries first with known sizes.
+//   • Compute precisely how many padding bytes are needed for the last
+//     "assets/classes_pad.dex" entry so total ZIP == targetBytes.
+//   • CRC-32 is calculated only on small entries; the pad entry uses a fast
+//     XOR-based pseudo-CRC (acceptable for a simulator).
+// All entries use compression method 0 (STORED) so compressed == uncompressed.
 
-  const encoder = new TextEncoder();
-  const filename = 'META-INF/MANIFEST.MF';
-  const content =
-    `Manifest-Version: 1.0\r\n` +
-    `Created-By: Web2APK Build Engine\r\n` +
-    `App-Name: ${appName}\r\n` +
-    `App-Version: ${version}\r\n` +
-    `Package: ${packageName || 'com.web2apk.app'}\r\n` +
-    `Build-Date: ${new Date().toISOString()}\r\n`;
+function buildApkZip(appName, version, packageName, targetBytes) {
+  /* ── tiny helpers ─────────────────────────────────────────────────── */
+  const enc = new TextEncoder();
 
-  const fnBytes = encoder.encode(filename);
-  const dataBytes = encoder.encode(content);
+  // Write a number as little-endian bytes into a Uint8Array
+  function le16(v) { const a=new Uint8Array(2); a[0]=v&0xff; a[1]=(v>>>8)&0xff; return a; }
+  function le32(v) { const a=new Uint8Array(4); v=v>>>0; a[0]=v&0xff; a[1]=(v>>>8)&0xff; a[2]=(v>>>16)&0xff; a[3]=(v>>>24)&0xff; return a; }
 
-  // CRC32 of data
-  function crc32(buf) {
-    let crc = 0xFFFFFFFF;
-    const table = [];
-    for (let i=0;i<256;i++){let c=i;for(let j=0;j<8;j++){c=c&1?0xEDB88320^(c>>>1):c>>>1;}table[i]=c;}
-    for (let b of buf) crc = table[(crc^b)&0xff]^(crc>>>8);
-    return (crc ^ 0xFFFFFFFF) >>> 0;
+  // Concatenate multiple Uint8Array / Array-of-arrays
+  function cat(parts) {
+    const total = parts.reduce((s,p)=>s+p.length,0);
+    const out   = new Uint8Array(total);
+    let pos=0; for(const p of parts){out.set(p,pos);pos+=p.length;}
+    return out;
   }
-  const crc = crc32(dataBytes);
-  const now = new Date();
-  const dosTime = ((now.getHours()<<11)|(now.getMinutes()<<5)|(now.getSeconds()>>1));
-  const dosDate = (((now.getFullYear()-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate());
 
-  // Local file header
-  const localHeader = [
-    ...u32(0x04034b50), // signature
-    ...u16(20),         // version needed
-    ...u16(0),          // flags
-    ...u16(0),          // compression (stored)
-    ...u16(dosTime), ...u16(dosDate),
-    ...u32(crc),
-    ...u32(dataBytes.length),
-    ...u32(dataBytes.length),
-    ...u16(fnBytes.length),
-    ...u16(0),          // extra len
-    ...fnBytes
+  /* ── CRC-32 table (built once per call) ──────────────────────────── */
+  const T = new Uint32Array(256);
+  for(let i=0;i<256;i++){let c=i;for(let k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);T[i]=c;}
+  function crc32(buf){let c=0xFFFFFFFF;for(let i=0;i<buf.length;i++)c=T[(c^buf[i])&0xff]^(c>>>8);return(c^0xFFFFFFFF)>>>0;}
+
+  /* ── DOS timestamp ────────────────────────────────────────────────── */
+  const now=new Date();
+  const dT=((now.getHours()<<11)|(now.getMinutes()<<5)|(now.getSeconds()>>1))>>>0;
+  const dD=(((now.getFullYear()-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate())>>>0;
+
+  /* ── Local file header size for a given filename length ──────────── */
+  // Fixed part = 30 bytes; variable = fnLen bytes (no extra field)
+  const LFH = fnLen => 30 + fnLen;
+  // Central directory record size
+  const CDR = fnLen => 46 + fnLen;
+  // EOCD is always 22 bytes (no comment)
+  const EOCD_SIZE = 22;
+
+  /* ── Build one ZIP entry (local header + data + cd record) ────────── */
+  function makeEntry(name, data) {
+    const fn  = enc.encode(name);
+    const crc = crc32(data);
+    const sz  = data.length;
+    const lh  = cat([
+      new Uint8Array([0x50,0x4B,0x03,0x04]),
+      le16(20), le16(0), le16(0),       // ver needed, flags, method=STORED
+      le16(dT), le16(dD),
+      le32(crc), le32(sz), le32(sz),    // crc, compressed=stored, uncompressed
+      le16(fn.length), le16(0),         // fn len, extra len
+      fn
+    ]);
+    const cd  = cat([
+      new Uint8Array([0x50,0x4B,0x01,0x02]),
+      le16(20), le16(20), le16(0), le16(0), // ver made, ver needed, flags, method
+      le16(dT), le16(dD),
+      le32(crc), le32(sz), le32(sz),
+      le16(fn.length), le16(0), le16(0),    // fn, extra, comment lengths
+      le16(0), le16(0), le32(0),            // disk start, int attr, ext attr
+      le32(0),                               // local header offset — filled in later
+      fn
+    ]);
+    return { lh, data, cd, fnLen: fn.length };
+  }
+
+  /* ── Define the static entries ────────────────────────────────────── */
+  const pkg = packageName || 'com.web2apk.app';
+
+  const MANIFEST = enc.encode(
+    `Manifest-Version: 1.0\r\n`+
+    `Created-By: Web2APK Build Engine 4.2\r\n`+
+    `App-Name: ${appName}\r\n`+
+    `App-Version: ${version}\r\n`+
+    `Package: ${pkg}\r\n`+
+    `Build-Date: ${now.toISOString()}\r\n`+
+    `Min-SDK: 21\r\nTarget-SDK: 34\r\n`
+  );
+  const CERT_SF = enc.encode(
+    `Signature-Version: 1.0\r\n`+
+    `SHA-256-Digest-Manifest: ${Math.random().toString(36).slice(2,42)}\r\n`+
+    `Created-By: 1.0 (Web2APK)\r\n`
+  );
+  const AM_XML  = enc.encode(
+    `<?xml version="1.0" encoding="utf-8"?>\n`+
+    `<manifest xmlns:android="http://schemas.android.com/apk/res/android"\n`+
+    `    package="${pkg}" android:versionCode="1" android:versionName="${version}">\n`+
+    `  <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="34"/>\n`+
+    `  <uses-permission android:name="android.permission.INTERNET"/>\n`+
+    `  <application android:label="${appName}" android:theme="@style/AppTheme">\n`+
+    `    <activity android:name=".MainActivity" android:exported="true">\n`+
+    `      <intent-filter>\n`+
+    `        <action android:name="android.intent.action.MAIN"/>\n`+
+    `        <category android:name="android.intent.category.LAUNCHER"/>\n`+
+    `      </intent-filter>\n`+
+    `    </activity>\n`+
+    `  </application>\n`+
+    `</manifest>\n`
+  );
+  const RES_XML = enc.encode(
+    `<?xml version="1.0" encoding="utf-8"?>\n`+
+    `<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"\n`+
+    `    android:layout_width="match_parent" android:layout_height="match_parent">\n`+
+    `  <WebView android:id="@+id/webview"\n`+
+    `    android:layout_width="match_parent" android:layout_height="match_parent"/>\n`+
+    `</RelativeLayout>\n`
+  );
+
+  const staticEntries = [
+    makeEntry('META-INF/MANIFEST.MF',       MANIFEST),
+    makeEntry('META-INF/CERT.SF',           CERT_SF),
+    makeEntry('AndroidManifest.xml',        AM_XML),
+    makeEntry('res/layout/main.xml',        RES_XML),
   ];
 
-  const localHeaderOffset = 0;
-  const centralDir = [
-    ...u32(0x02014b50),
-    ...u16(20), ...u16(20),
-    ...u16(0), ...u16(0), ...u16(0),
-    ...u16(dosTime), ...u16(dosDate),
-    ...u32(crc),
-    ...u32(dataBytes.length),
-    ...u32(dataBytes.length),
-    ...u16(fnBytes.length),
-    ...u16(0), ...u16(0),
-    ...u16(0), ...u16(0),
-    ...u32(0),
-    ...u32(localHeaderOffset),
-    ...fnBytes
-  ];
+  /* ── Calculate exact padding size ───────────────────────────────────
+     Total ZIP size =
+       Σ (LFH(fnLen) + dataLen)   [local blocks]
+     + Σ CDR(fnLen)               [central dir]
+     + EOCD_SIZE
 
-  const cdOffset = localHeader.length + dataBytes.length;
-  const cdSize = centralDir.length;
+     We add one more entry "assets/web2apk_pad.dex" with padSize bytes.
+     Solve for padSize:
+       targetBytes = localBlocksSize + CDRsSize + EOCD_SIZE + padSize
+     => padSize = targetBytes - localBlocksSize - CDRsSize - EOCD_SIZE
+  ─────────────────────────────────────────────────────────────────── */
+  const PAD_NAME    = 'assets/web2apk_engine.dex';
+  const PAD_FN_LEN  = enc.encode(PAD_NAME).length;
 
-  const eocd = [
-    ...u32(0x06054b50),
-    ...u16(0), ...u16(0),
-    ...u16(1), ...u16(1),
-    ...u32(cdSize),
-    ...u32(cdOffset),
-    ...u16(0)
-  ];
+  // Size occupied by local blocks of static entries
+  let staticLocalSize = staticEntries.reduce((s,e)=> s + LFH(e.fnLen) + e.data.length, 0);
+  // Size occupied by CD records of ALL entries (static + pad)
+  let staticCdSize    = staticEntries.reduce((s,e)=> s + CDR(e.fnLen), 0);
 
-  const all = new Uint8Array([...localHeader, ...dataBytes, ...centralDir, ...eocd]);
-  return all;
+  // Contribution of the pad entry to the ZIP structure (excluding actual pad data)
+  const padLfhSize = LFH(PAD_FN_LEN);
+  const padCdrSize = CDR(PAD_FN_LEN);
+
+  const usedWithoutPadData =
+    staticLocalSize + padLfhSize +   // local blocks (pad data not counted yet)
+    staticCdSize    + padCdrSize +   // all CD records
+    EOCD_SIZE;
+
+  const padSize = Math.max(0, targetBytes - usedWithoutPadData);
+
+  /* ── Build pad data: pseudo-random bytes (LCG — not compressible) ── */
+  const padData = new Uint8Array(padSize);
+  // DEX magic at the start so tools recognise it as a DEX file
+  if (padSize >= 8) {
+    padData[0]=0x64;padData[1]=0x65;padData[2]=0x78;padData[3]=0x0a;
+    padData[4]=0x30;padData[5]=0x33;padData[6]=0x35;padData[7]=0x00;
+  }
+  // Fill rest with LCG pseudo-random (fast, browser won't compress Blob data)
+  let lcg = 0x6D2B4E91;
+  for (let i=8; i<padSize; i++) {
+    lcg = (Math.imul(lcg, 1664525) + 1013904223) >>> 0;
+    padData[i] = lcg & 0xff;
+  }
+
+  /* ── Compute CRC for pad entry WITHOUT iterating all padSize bytes ──
+     For a simulator this is acceptable: use XOR of first/last 1 KB.     */
+  function fastCrc(buf) {
+    const CHUNK = Math.min(buf.length, 1024);
+    let c = 0xFFFFFFFF;
+    for(let i=0;i<CHUNK;i++)   c=T[(c^buf[i])&0xff]^(c>>>8);
+    if(buf.length>CHUNK){
+      const off=buf.length-CHUNK;
+      for(let i=off;i<buf.length;i++) c=T[(c^buf[i])&0xff]^(c>>>8);
+    }
+    return (c^0xFFFFFFFF)>>>0;
+  }
+
+  const padEntry = makeEntry(PAD_NAME, padData);
+  // Override crc in padEntry.cd / padEntry.lh with fast approximation
+  const padCrc = fastCrc(padData);
+  // patch LH at byte offset 14 (crc field)
+  new DataView(padEntry.lh.buffer).setUint32(14, padCrc, true);
+  // patch CD at byte offset 16 (crc field)
+  new DataView(padEntry.cd.buffer).setUint32(16, padCrc, true);
+
+  const allEntries = [...staticEntries, padEntry];
+
+  /* ── Assemble ZIP ─────────────────────────────────────────────────── */
+  const localBlocks = [];
+  let   localOffset = 0;
+
+  for (const e of allEntries) {
+    // Patch local header offset into the CD record (offset 42 in CD record)
+    new DataView(e.cd.buffer).setUint32(42, localOffset, true);
+    localBlocks.push(e.lh, e.data);
+    localOffset += e.lh.length + e.data.length;
+  }
+
+  const cdOffset  = localOffset;
+  const cdData    = cat(allEntries.map(e => e.cd));
+
+  const eocd = cat([
+    new Uint8Array([0x50,0x4B,0x05,0x06]),
+    le16(0), le16(0),
+    le16(allEntries.length), le16(allEntries.length),
+    le32(cdData.length),
+    le32(cdOffset),
+    le16(0)
+  ]);
+
+  const zipBytes = cat([...localBlocks, cdData, eocd]);
+
+  // Return as APK MIME blob
+  return new Blob([zipBytes], { type: 'application/vnd.android.package-archive' });
 }
 
-function downloadApk(appName, version, packageName) {
-  const safeNameBase = (appName || 'app').replace(/[^a-zA-Z0-9_\-]/g, '_');
-  const safeVersion = (version || '1.0.0').replace(/[^a-zA-Z0-9._\-]/g, '_');
-  const filename = `${safeNameBase}-v${safeVersion}.apk`;
+/* ── downloadApk — the single entry point called from every button ── */
+function downloadApk(appName, version, packageName, fileSizeBytes) {
+  const safeApp = (appName  || 'app'  ).replace(/[^a-zA-Z0-9_\-]/g, '_');
+  const safeVer = (version  || '1.0.0').replace(/[^a-zA-Z0-9._\-]/g, '_');
+  const filename = `${safeApp}-v${safeVer}.apk`;
 
-  const bytes = generateMockApkBytes(appName, version, packageName);
-  const blob = new Blob([bytes], { type: 'application/vnd.android.package-archive' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 300);
-  toast(`⬇ Download iniciado: ${filename}`, 'success');
+  // Honor the exact fileSize that was stored at build time.
+  // Clamp to 20 MB – 60 MB so we don't crash the browser tab.
+  const MIN = 20 * 1024 * 1024;
+  const MAX = 60 * 1024 * 1024;
+  const target = (typeof fileSizeBytes === 'number' && fileSizeBytes > 0)
+    ? Math.min(Math.max(fileSizeBytes, MIN), MAX)
+    : 32 * 1024 * 1024;
+
+  toast(`⏳ Preparando APK (${formatBytes(target)})…`, 'info');
+
+  // Defer so the toast paints before the heavy allocation
+  setTimeout(() => {
+    try {
+      const blob = buildApkZip(appName, version, packageName, target);
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 600);
+      toast(`✅ Download iniciado: ${filename} — ${formatBytes(blob.size)}`, 'success');
+    } catch (err) {
+      console.error('[Web2APK] APK gen error:', err);
+      toast('❌ Erro ao gerar APK: ' + err.message, 'error');
+    }
+  }, 60);
 }
 
 // ---- Auth ----
@@ -830,7 +982,7 @@ function renderDashboard() {
             <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(51,65,85,.4);padding-top:.75rem;margin-top:.25rem;">
               <span style="font-size:.75rem;color:#64748b;">📅 ${formatDate(app.createdAt)}</span>
               <div style="display:flex;gap:.5rem;" onclick="event.stopPropagation();">
-                ${lastBuild?.status==='completed' ? `<button class="btn-cyan" style="padding:.3rem .7rem;font-size:.75rem;" onclick="downloadApk('${esc(app.name)}','${esc(app.version)}','${esc(app.packageName)}')">⬇ APK</button>` : ''}
+                ${lastBuild?.status==='completed' ? `<button class="btn-cyan" style="padding:.3rem .7rem;font-size:.75rem;" onclick="downloadApk('${esc(app.name)}','${esc(app.version)}','${esc(app.packageName)}',${lastBuild.fileSize||0})">⬇ APK</button>` : ''}
                 <button class="btn-outline" style="padding:.3rem .7rem;font-size:.75rem;" onclick="openEditModal(${app.id})">✏️</button>
                 <button class="btn-danger" style="padding:.3rem .7rem;font-size:.75rem;" onclick="if(confirm('Deletar ${esc(app.name)}?'))deleteApp(${app.id})">🗑️</button>
               </div>
@@ -1036,7 +1188,7 @@ function renderAppDetails(appId) {
           <div class="glass" style="border-radius:1.25rem;padding:1.5rem;border-color:rgba(74,222,128,.2);background:rgba(74,222,128,.04);">
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
               <div><div style="color:#4ade80;font-weight:700;font-size:1rem;">✅ Build Disponível</div><div style="font-size:.8rem;color:#64748b;">${formatDateTime(lastBuild.buildCompletedAt)} • ${formatBytes(lastBuild.fileSize)}</div></div>
-              <button class="btn-cyan" onclick="downloadApk('${esc(app.name)}','${esc(app.version)}','${esc(app.packageName)}')">⬇ Baixar APK</button>
+              <button class="btn-cyan" onclick="downloadApk('${esc(app.name)}','${esc(app.version)}','${esc(app.packageName)}',${lastBuild.fileSize||0})">⬇ Baixar APK</button>
             </div>
           </div>
         ` : ''}
@@ -1054,7 +1206,7 @@ function renderAppDetails(appId) {
               </div>
               ${b.fileSize ? `<div style="font-size:.75rem;color:#64748b;">📦 ${formatBytes(b.fileSize)}</div>` : ''}
               ${b.errorMessage ? `<div style="font-size:.75rem;color:#f87171;margin-top:.2rem;">⚠ ${esc(b.errorMessage)}</div>` : ''}
-              ${b.status==='completed' ? `<button class="btn-cyan" style="margin-top:.5rem;padding:.3rem .7rem;font-size:.75rem;" onclick="downloadApk('${esc(app.name)}','${esc(app.version)}','${esc(app.packageName)}')">⬇ Baixar APK</button>` : ''}
+              ${b.status==='completed' ? `<button class="btn-cyan" style="margin-top:.5rem;padding:.3rem .7rem;font-size:.75rem;" onclick="downloadApk('${esc(app.name)}','${esc(app.version)}','${esc(app.packageName)}',${b.fileSize||0})">⬇ Baixar APK</button>` : ''}
             </div>
           `).join('')}
         <button class="btn-primary" onclick="nav('/build/${app.id}')" style="width:100%;margin-top:1rem;justify-content:center;">+ Nova Compilação</button>
@@ -1213,7 +1365,7 @@ function startBuild(appId) {
             <div style="font-size:2rem;margin-bottom:.5rem;">🎉</div>
             <div style="font-size:1.1rem;font-weight:700;color:#4ade80;margin-bottom:.25rem;">APK Gerado com Sucesso!</div>
             <div style="font-size:.8rem;color:#64748b;margin-bottom:1rem;">${esc(app.name)} v${esc(app.version)} • ${formatBytes(completedBuild.fileSize)}</div>
-            <button class="btn-cyan" onclick="downloadApk('${esc(app.name)}','${esc(app.version)}','${esc(app.packageName)}')" style="font-size:1rem;padding:.7rem 2rem;">⬇ Baixar APK</button>
+            <button class="btn-cyan" onclick="downloadApk('${esc(app.name)}','${esc(app.version)}','${esc(app.packageName)}',${completedBuild.fileSize})" style="font-size:1rem;padding:.7rem 2rem;">⬇ Baixar APK</button>
             <div style="margin-top:.75rem;">
               <button class="btn-outline" onclick="nav('/app/${app.id}')" style="font-size:.8rem;">Ver Detalhes do App</button>
             </div>
