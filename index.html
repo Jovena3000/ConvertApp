@@ -152,8 +152,10 @@ function installAppAsPWA(app) {
   <iframe src="${appUrl}" allow="accelerometer; autoplay; camera; geolocation; microphone; payment; usb" allowfullscreen></iframe>
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('${swURL}');
-    }
+  navigator.serviceWorker.register('/service-worker.js')
+    .then(() => console.log('Service Worker registrado'))
+    .catch(err => console.log('Erro:', err));
+}
   <\/script>
 </body>
 </html>`;
