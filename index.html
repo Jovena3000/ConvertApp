@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>ConvertAPK • Criador de Apps para Android</title>
-  <link rel="manifest" href="manifest.json">
+  <title>ConvertAPK • Seu site vira app Android</title>
+  <!-- Meta tags PWA (serão sobrescritas pelo manifesto dinâmico, mas ajudam) -->
+  <link rel="manifest" href="data:application/manifest+json,{}">
   <meta name="theme-color" content="#FF006E">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="ConvertAPK">
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23FF006E'/%3E%3Ctext x='50' y='67' font-size='50' text-anchor='middle' fill='white' font-family='Arial'%3E⚡%3C/text%3E%3C/svg%3E">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=JetBrains+Mono&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
   <style>
@@ -31,6 +32,9 @@
     .toast-error { background: rgba(15,23,42,0.95); border: 1px solid #f87171; color: #f87171; }
     @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     .app-icon-default { background: linear-gradient(135deg, #1e1b4b, #4c1d95); display: flex; align-items: center; justify-content: center; border-radius: 0.75rem; flex-shrink: 0; font-size: 1.5rem; }
+    .progress-bar-track { width: 100%; height: 8px; background: #1e293b; border-radius: 99px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #FF006E, #00d9ff); transition: width 0.3s ease; }
+    .log-output { background: #020617; border: 1px solid #1e293b; border-radius: 0.75rem; padding: 0.75rem; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #94a3b8; height: 280px; overflow-y: auto; }
     .badge-pink { background: rgba(255,0,110,0.15); color: #ff6eb4; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.7rem; }
     .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
     .modal-content { max-width: 500px; width: 90%; background: #0f172a; border: 1px solid #FF006E; border-radius: 1.5rem; padding: 1.5rem; color: white; }
@@ -41,18 +45,47 @@
 <div id="app-root" class="flex flex-col min-h-screen"></div>
 
 <script>
+// ========================= CONFIGURAÇÃO DO PWA DINÂMICO =========================
+// Cria um manifesto em tempo real e registra service worker com cache básico
+(function setupPWA() {
+  const manifestObj = {
+    name: "ConvertAPK - Criador de Apps",
+    short_name: "ConvertAPK",
+    start_url: "/",
+    display: "standalone",
+    theme_color: "#FF006E",
+    background_color: "#020617",
+    icons: [
+      { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23FF006E'/%3E%3Ctext x='50' y='67' font-size='50' text-anchor='middle' fill='white' font-family='Arial'%3E⚡%3C/text%3E%3C/svg%3E", sizes: "any", type: "image/svg+xml", purpose: "any" }
+    ]
+  };
+  const manifestBlob = new Blob([JSON.stringify(manifestObj)], {type: "application/manifest+json"});
+  const manifestURL = URL.createObjectURL(manifestBlob);
+  document.querySelector('link[rel="manifest"]').setAttribute('href', manifestURL);
+
+  // Service worker minimal para cache e instalação
+  const swCode = `self.addEventListener('install', e => e.waitUntil(caches.open('convertapk').then(c => c.addAll(['/']))));
+self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));`;
+  const swBlob = new Blob([swCode], {type: "application/javascript"});
+  const swURL = URL.createObjectURL(swBlob);
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register(swURL).catch(err => console.warn("SW registro falhou:", err));
+  }
+})();
+
 // ======================== ESTADO GLOBAL ========================
 let user = null;
 let apps = [];
 let toastQueue = [];
 let editModalAppId = null;
 let currentToast = null;
-let deferredPrompt = null; // para instalação do PWA
+let deferredPrompt = null;
 
 // Capturar evento de instalação do PWA
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
+  console.log("PWA installable");
 });
 
 function installPWA() {
@@ -60,7 +93,7 @@ function installPWA() {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
   } else {
-    // Exibe tutorial manual
+    // Exibe tutorial manual (já que o evento não ocorreu)
     const modal = document.createElement('div');
     modal.className = 'modal';
     modal.innerHTML = `
@@ -84,10 +117,18 @@ function installPWA() {
 const loadStorage = () => {
   try {
     user = JSON.parse(localStorage.getItem('convertapk_user'));
-    apps = JSON.parse(localStorage.getItem('convertapk_apps')) || [
-      { id: 1, userId: 1, name: "TechNews Brasil", description: "Portal de tecnologia", websiteUrl: "https://technews.com.br", packageName: "com.convertapk.technews", version: "1.2.0", themeColor: "#FF006E", orientation: "portrait", permissions: ["INTERNET"], offlineSupport: true, deepLinking: false, analyticsEnabled: true, iconUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=100&q=80", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
-    ];
+    apps = JSON.parse(localStorage.getItem('convertapk_apps')) || [];
   } catch(e) { console.warn(e); }
+  if (!apps.length) {
+    // exemplo inicial
+    apps.push({
+      id: 1, userId: 1, name: "TechNews Brasil", description: "Portal de tecnologia",
+      websiteUrl: "https://technews.com.br", packageName: "com.convertapk.technews", version: "1.0.0",
+      themeColor: "#FF006E", orientation: "portrait", permissions: ["INTERNET"], offlineSupport: true,
+      deepLinking: false, analyticsEnabled: true, iconUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=100&q=80",
+      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+    });
+  }
 };
 const persist = () => {
   localStorage.setItem('convertapk_user', JSON.stringify(user));
@@ -109,6 +150,8 @@ const showNextToast = () => {
 };
 
 const esc = (str) => String(str ?? '').replace(/[&<>]/g, (m) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]));
+const formatBytes = (b) => b ? (b/1e6).toFixed(1)+' MB' : '-';
+const formatDate = (s) => s ? new Date(s).toLocaleDateString('pt-BR') : '-';
 
 // ======================== CRUD APPS ========================
 const createApp = (data) => {
@@ -152,10 +195,10 @@ const handleUpgrade = (tier) => {
   navigate('/dashboard');
 };
 
-// ======================== DOWNLOAD DE APK DEMONSTRATIVO ========================
-function downloadDemonstrationApk(app) {
+// ======================== DOWNLOAD DE APK DEMONSTRATIVO (NÃO FUNCIONAL) ========================
+function downloadDemoApk(app) {
   const filename = `${app.name.replace(/[^a-z0-9]/gi, '_')}_v${app.version}.apk`;
-  const content = `APK DEMONSTRATIVO - NÃO FUNCIONAL\n\n` +
+  const content = `APK DEMONSTRATIVO - NÃO INSTALÁVEL\n\n` +
     `App: ${app.name}\nURL: ${app.websiteUrl}\nPacote: ${app.packageName}\n\n` +
     `⚠️ Este arquivo NÃO é um APK Android verdadeiro.\n\n` +
     `✅ Para ter este aplicativo funcionando no seu celular, clique no botão "Instalar App" – ele adicionará o ConvertAPK à tela inicial como um aplicativo nativo (PWA), sem erros de análise.\n\n` +
@@ -171,7 +214,7 @@ function downloadDemonstrationApk(app) {
   toast(`Download do APK demonstrativo: ${filename}. Instale o app via PWA (botão "Instalar App") para ter a experiência real.`, 'info');
 }
 
-// ======================== SIMULAÇÃO DE BUILD (apenas visual, sem APK falso) ========================
+// ======================== SIMULAÇÃO DE BUILD ========================
 function startBuild(appId) {
   const app = apps.find(a => a.id === appId);
   if (!app) return;
@@ -196,8 +239,7 @@ function startBuild(appId) {
   log(`🚀 Build simulado para ${app.name}`, 'info');
 
   const phases = [
-    "Preparando ambiente", "Coletando configurações", "Simulando compilação",
-    "Empacotando APK demonstrativo", "Finalizando"
+    "Preparando configurações", "Validando URL", "Compilando WebView", "Empacotando recursos", "Assinatura digital (mock)", "Finalizando"
   ];
   let step = 0;
   const totalSteps = phases.length;
@@ -215,9 +257,11 @@ function startBuild(appId) {
           <div class="text-center p-4 border border-green-500/30 rounded-xl bg-green-500/5">
             <div class="text-2xl mb-2">🎉</div>
             <div class="text-green-400 font-bold">Simulação concluída!</div>
-            <div class="text-sm text-slate-400 my-2">O APK real requer backend.</div>
-            <button class="btn-primary" onclick="installPWA()">📲 Instalar ConvertAPK como App</button>
-            <button class="btn-outline mt-2" onclick="downloadDemonstrationApk(apps.find(a=>a.id===${app.id}))">⬇ Baixar APK demonstrativo</button>
+            <div class="text-sm text-slate-400 my-2">O APK real exige backend.</div>
+            <div class="flex flex-col gap-2">
+              <button class="btn-primary" onclick="installPWA()">📲 Instalar ConvertAPK como App</button>
+              <button class="btn-outline" onclick="downloadDemoApk(apps.find(a=>a.id===${app.id}))">⬇ Baixar APK demonstrativo</button>
+            </div>
             <p class="text-xs text-slate-500 mt-3">✅ Para ter este app específico no celular, instale o ConvertAPK via PWA e use-o diretamente – ele já é um aplicativo funcional.</p>
           </div>`;
       }
@@ -303,7 +347,7 @@ const renderNavbar = () => `
   <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
     <div onclick="navigate('/')" class="flex items-center gap-3 cursor-pointer">
       <div class="w-10 h-10 bg-gradient-to-r from-pink-600 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">⚡</div>
-      <div><div class="text-2xl font-black bg-gradient-to-r from-pink-500 to-cyan-400 bg-clip-text text-transparent">ConvertAPK</div><div class="text-[10px] text-cyan-400">PWA + APK Demo</div></div>
+      <div><div class="text-2xl font-black bg-gradient-to-r from-pink-500 to-cyan-400 bg-clip-text text-transparent">ConvertAPK</div><div class="text-[10px] text-cyan-400">PWA INSTALÁVEL</div></div>
     </div>
     <div class="flex items-center gap-4">
       ${user ? `
@@ -317,9 +361,14 @@ const renderNavbar = () => `
   </div>
 </nav>`;
 
-const renderFooter = () => `<footer class="border-t border-pink-500/10 bg-slate-950/50 py-8 mt-auto"><div class="text-center text-xs text-slate-600">© 2026 ConvertAPK — Gerador de Apps (PWA + APK demonstrativo)</div></footer>`;
+const renderFooter = () => `<footer class="border-t border-pink-500/10 bg-slate-950/50 py-8 mt-auto"><div class="text-center text-xs text-slate-600">© 2026 ConvertAPK — App Android verdadeiro via PWA | APK real mediante backend</div></footer>`;
 const renderToast = () => currentToast ? `<div class="toast toast-${currentToast.type === 'error' ? 'error' : 'success'}">${currentToast.msg}</div>` : '';
-const renderEditModal = () => !editModalAppId ? '' : `<div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onclick="if(event.target===this) editModalAppId=null;rerender()"><div class="glass rounded-2xl p-6 max-w-md w-full"><h3 class="text-xl mb-4">Editar App</h3><input class="input-field mb-2" id="editName" placeholder="Nome" value="${esc(apps.find(a=>a.id===editModalAppId)?.name)}"><input class="input-field mb-2" id="editUrl" placeholder="URL" value="${esc(apps.find(a=>a.id===editModalAppId)?.websiteUrl)}"><textarea class="input-field mb-2" id="editDesc" rows="2">${esc(apps.find(a=>a.id===editModalAppId)?.description||'')}</textarea><div class="flex gap-2"><button class="btn-primary flex-1" onclick="saveEditModal(${editModalAppId})">Salvar</button><button class="btn-outline" onclick="editModalAppId=null;rerender()">Cancelar</button></div></div></div>`;
+const renderEditModal = () => {
+  if (!editModalAppId) return '';
+  const app = apps.find(a=>a.id===editModalAppId);
+  if (!app) return '';
+  return `<div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onclick="if(event.target===this) editModalAppId=null;rerender()"><div class="glass rounded-2xl p-6 max-w-md w-full"><h3 class="text-xl mb-4">Editar App</h3><input class="input-field mb-2" id="editName" placeholder="Nome" value="${esc(app.name)}"><input class="input-field mb-2" id="editUrl" placeholder="URL" value="${esc(app.websiteUrl)}"><textarea class="input-field mb-2" id="editDesc" rows="2">${esc(app.description||'')}</textarea><div class="flex gap-2"><button class="btn-primary flex-1" onclick="saveEditModal(${editModalAppId})">Salvar</button><button class="btn-outline" onclick="editModalAppId=null;rerender()">Cancelar</button></div></div></div>`;
+};
 
 const renderLanding = () => `
 <div class="max-w-7xl mx-auto px-6 py-16 text-center">
@@ -327,7 +376,7 @@ const renderLanding = () => `
   <p class="text-xl mt-4">Crie e instale apps Android a partir de qualquer site, <strong>sem código e sem erros</strong>.</p>
   <div class="flex justify-center gap-4 mt-8">
     <button class="btn-primary" onclick="handleLogin()">Começar Agora →</button>
-    <button class="btn-outline" onclick="installPWA()">📲 Instalar App</button>
+    <button class="btn-outline" onclick="installPWA()">📲 Instalar App (PWA)</button>
   </div>
   <div class="mt-12 grid md:grid-cols-3 gap-6">
     <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">📱</div><h3>PWA 100% funcional</h3><p>Adicione à tela inicial e use como app nativo.</p></div>
@@ -395,9 +444,7 @@ function rerender() {
   root.innerHTML = renderNavbar() + `<main class="flex-1">${main}</main>` + renderFooter() + renderToast() + renderEditModal();
 }
 
-// Registrar Service Worker (se existir)
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(e=>console.log('SW não encontrado, PWA pode não funcionar'));
-
+// Inicialização
 loadStorage();
 window.addEventListener('hashchange', rerender);
 rerender();
