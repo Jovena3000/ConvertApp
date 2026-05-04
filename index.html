@@ -4,818 +4,384 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>ConvertAPK • Instale qualquer site como app nativo</title>
+  <link rel="manifest" href="data:application/manifest+json,{}">
   <meta name="theme-color" content="#FF006E">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="ConvertAPK">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23FF006E'/%3E%3Ctext x='49' y='67' font-size='50' text-anchor='middle' fill='white'%3E📱%3C/text%3E%3C/svg%3E">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=JetBrains+Mono&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
   <style>
-    :root { --pink:#FF006E; --cyan:#00d9ff; --purple:#7C3AED; }
-    *,*::before,*::after { box-sizing:border-box; scroll-behavior:smooth; }
-    body { background:#020617; font-family:'Rajdhani',sans-serif; font-size:16px; }
-    h1,h2,h3,h4 { font-family:'Orbitron',monospace; }
-    .mono { font-family:'JetBrains Mono',monospace; }
-    ::-webkit-scrollbar { width:5px; }
-    ::-webkit-scrollbar-track { background:#0f172a; }
-    ::-webkit-scrollbar-thumb { background:#FF006E; border-radius:10px; }
-    .glass { backdrop-filter:blur(14px); background:rgba(15,23,42,.70); border:1px solid rgba(51,65,85,.55); }
-    .glass-pink  { border-color:rgba(255,0,110,.35) !important; }
-    .glass-cyan  { border-color:rgba(0,217,255,.25) !important; background:rgba(0,217,255,.03) !important; }
-    .grid-bg {
-      background-image:linear-gradient(rgba(255,0,110,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,0,110,.04) 1px,transparent 1px);
-      background-size:42px 42px;
-    }
-    .btn { font-family:'Rajdhani',sans-serif; font-weight:700; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:.4rem; border-radius:.75rem; padding:.6rem 1.4rem; transition:all .2s; font-size:1rem; }
-    .btn-primary { background:linear-gradient(135deg,var(--pink),#9333ea); color:#fff; }
-    .btn-primary:hover { filter:brightness(1.12); transform:translateY(-1px); box-shadow:0 0 22px rgba(255,0,110,.45); }
-    .btn-cyan    { background:linear-gradient(135deg,#0891b2,var(--cyan)); color:#000; }
-    .btn-cyan:hover { filter:brightness(1.1); transform:translateY(-1px); }
-    .btn-outline { background:transparent; border:1px solid rgba(255,0,110,.5); color:var(--pink); }
-    .btn-outline:hover { background:rgba(255,0,110,.1); border-color:var(--pink); }
-    .btn-ghost   { background:transparent; border:1px solid rgba(51,65,85,.6); color:#94a3b8; }
-    .btn-ghost:hover { border-color:#94a3b8; color:#e2e8f0; }
-    .btn-danger  { background:transparent; border:1px solid rgba(239,68,68,.4); color:#f87171; }
-    .btn-danger:hover { background:rgba(239,68,68,.1); }
-    .btn-green   { background:linear-gradient(135deg,#16a34a,#4ade80); color:#000; font-weight:700; }
-    .btn-green:hover { filter:brightness(1.1); transform:translateY(-1px); }
-    .input-field { width:100%; background:rgba(2,6,23,.85); border:1px solid #1e293b; color:#e2e8f0; padding:.65rem 1rem; border-radius:.75rem; outline:none; font-family:'Rajdhani',sans-serif; font-size:1rem; transition:border-color .2s,box-shadow .2s; }
-    .input-field:focus { border-color:var(--pink); box-shadow:0 0 0 3px rgba(255,0,110,.15); }
-    .input-field::placeholder { color:#475569; }
-    .field-label { display:block; font-size:.7rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom:.35rem; }
-    .upload-zone { border:2px dashed rgba(255,0,110,.3); border-radius:1rem; padding:1.2rem; text-align:center; cursor:pointer; transition:all .2s; background:rgba(255,0,110,.03); }
-    .upload-zone:hover,.upload-zone.drag-over { border-color:var(--pink); background:rgba(255,0,110,.09); }
-    .prog-track { width:100%; height:8px; background:#1e293b; border-radius:99px; overflow:hidden; }
-    .prog-fill { height:100%; border-radius:99px; background:linear-gradient(90deg,var(--pink),var(--cyan)); transition:width .45s ease; }
-    .log-box { background:#020617; border:1px solid #1e293b; border-radius:.75rem; padding:.75rem; font-family:'JetBrains Mono',monospace; font-size:.68rem; color:#64748b; overflow-y:auto; height:280px; line-height:1.6; }
-    .log-ok   { color:#4ade80; } .log-warn { color:#facc15; } .log-err { color:#f87171; } .log-info { color:#38bdf8; } .log-pink { color:#f472b6; }
-    .toast { position:fixed; bottom:2rem; right:1.5rem; z-index:9999; padding:.85rem 1.4rem; border-radius:1rem; backdrop-filter:blur(14px); animation:slideUp .3s ease; display:flex; align-items:center; gap:.6rem; max-width:400px; font-weight:700; font-size:.9rem; }
-    .toast-success { background:rgba(15,23,42,.97); border:1px solid #4ade80; color:#4ade80; }
-    .toast-error   { background:rgba(15,23,42,.97); border:1px solid #f87171; color:#f87171; }
-    .toast-info    { background:rgba(15,23,42,.97); border:1px solid #38bdf8; color:#38bdf8; }
-    @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
-    .badge { display:inline-flex; align-items:center; padding:.15rem .6rem; border-radius:99px; font-size:.68rem; font-weight:700; letter-spacing:.05em; }
-    .b-pink  { background:rgba(255,0,110,.15); color:#ff6eb4; border:1px solid rgba(255,0,110,.3); }
-    .b-green { background:rgba(74,222,128,.12); color:#4ade80; border:1px solid rgba(74,222,128,.3); }
-    .b-cyan  { background:rgba(0,217,255,.12); color:#00d9ff; border:1px solid rgba(0,217,255,.3); }
-    .app-card { transition:border-color .2s,box-shadow .2s,transform .15s; cursor:pointer; }
-    .app-card:hover { border-color:rgba(255,0,110,.55)!important; box-shadow:0 0 24px rgba(255,0,110,.14); transform:translateY(-2px); }
-    .icon-default { background:linear-gradient(135deg,#1e1b4b,#4c1d95); display:flex; align-items:center; justify-content:center; font-size:1.4rem; border-radius:.75rem; flex-shrink:0; }
-    .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,.82); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; z-index:500; padding:1rem; }
-    .install-highlight { border:2px solid rgba(0,217,255,.35); background:rgba(0,217,255,.04); border-radius:1rem; padding:1.25rem; }
-    .divider { height:1px; background:linear-gradient(90deg,transparent,rgba(255,0,110,.4),rgba(0,217,255,.4),transparent); margin:1.5rem 0; }
-    @keyframes pulse-dot { 0%,100%{opacity:.5}50%{opacity:1} }
-    .pulse { animation:pulse-dot 1.2s infinite; }
+    * { scroll-behavior: smooth; }
+    body { background: #020617; font-family: 'Rajdhani', sans-serif; }
+    h1,h2,h3,h4 { font-family: 'Orbitron', monospace; }
+    .glass { backdrop-filter: blur(12px); background: rgba(15,23,42,0.7); border: 1px solid rgba(51,65,85,0.6); }
+    .glass-pink { border-color: rgba(255,0,110,0.3); }
+    .btn-primary { background: linear-gradient(135deg, #FF006E, #9333ea); color: white; font-weight: 700; padding: 0.6rem 1.4rem; border-radius: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; transition: all 0.2s; border: none; }
+    .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 0 20px rgba(255,0,110,0.4); }
+    .btn-outline { background: transparent; border: 1px solid rgba(255,0,110,0.5); color: #FF006E; font-weight: 700; padding: 0.6rem 1.4rem; border-radius: 0.75rem; cursor: pointer; transition: 0.2s; }
+    .btn-outline:hover { background: rgba(255,0,110,0.1); border-color: #FF006E; }
+    .input-field { width: 100%; background: rgba(2,6,23,0.8); border: 1px solid #1e293b; color: #e2e8f0; padding: 0.65rem 1rem; border-radius: 0.75rem; outline: none; }
+    .input-field:focus { border-color: #FF006E; box-shadow: 0 0 0 2px rgba(255,0,110,0.2); }
+    .upload-zone { border: 2px dashed rgba(255,0,110,0.3); border-radius: 1rem; padding: 1rem; text-align: center; cursor: pointer; transition: 0.2s; background: rgba(255,0,110,0.03); }
+    .upload-zone:hover { border-color: #FF006E; background: rgba(255,0,110,0.08); }
+    .toast { position: fixed; bottom: 2rem; right: 1.5rem; z-index: 9999; padding: 0.85rem 1.4rem; border-radius: 1rem; backdrop-filter: blur(12px); animation: slideUp 0.3s ease; }
+    .toast-success { background: rgba(15,23,42,0.95); border: 1px solid #4ade80; color: #4ade80; }
+    .toast-error { background: rgba(15,23,42,0.95); border: 1px solid #f87171; color: #f87171; }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .app-icon-default { background: linear-gradient(135deg, #1e1b4b, #4c1d95); display: flex; align-items: center; justify-content: center; border-radius: 0.75rem; flex-shrink: 0; font-size: 1.5rem; }
+    .badge-pink { background: rgba(255,0,110,0.15); color: #ff6eb4; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.7rem; }
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-content { max-width: 500px; width: 90%; background: #0f172a; border: 1px solid #FF006E; border-radius: 1.5rem; padding: 1.5rem; color: white; }
+    iframe { width: 100%; height: 100%; border: none; }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 antialiased min-h-screen">
 <div id="app-root" class="flex flex-col min-h-screen"></div>
 
 <script>
-'use strict';
-
-// ================================================================
-//  ConvertAPK — Instala qualquer site como PWA nativo
-//  CORREÇÃO CENTRAL: installAppAsPWA() gera HTML self-contained
-//  Os blob URLs de manifest e SW são criados DENTRO da nova aba
-//  (não herdados da janela pai), resolvendo o problema cross-origin.
-// ================================================================
-
-// ── Bootstrap PWA do próprio ConvertAPK ──────────────────────────
-(function(){
-  // Manifest
-  var mData = JSON.stringify({name:'ConvertAPK',short_name:'ConvertAPK',start_url:'/',display:'standalone',theme_color:'#FF006E',background_color:'#020617',icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23FF006E'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle' fill='white'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E",sizes:'any',type:'image/svg+xml'}]});
-  var mBlob = new Blob([mData],{type:'application/manifest+json'});
-  var mUrl  = URL.createObjectURL(mBlob);
-  var link  = document.createElement('link'); link.rel='manifest'; link.href=mUrl; document.head.appendChild(link);
-  if('serviceWorker' in navigator){
-    var sw="self.addEventListener('install',function(e){e.waitUntil(caches.open('ca-v1').then(function(c){return c.addAll(['/']);}));});self.addEventListener('fetch',function(e){e.respondWith(caches.match(e.request).then(function(r){return r||fetch(e.request);}));});";
-    navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(function(){});
-  }
+// ========== PWA PRINCIPAL (ConvertAPK) ==========
+(function setupMainPWA() {
+  const manifest = {
+    name: "ConvertAPK - Criador de Apps",
+    short_name: "ConvertAPK",
+    start_url: "/",
+    display: "standalone",
+    theme_color: "#FF006E",
+    background_color: "#020617",
+    icons: [{ src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23FF006E'/%3E%3Ctext x='49' y='67' font-size='50' text-anchor='middle' fill='white'%3E📱%3C/text%3E%3C/svg%3E", sizes: "any", type: "image/svg+xml" }]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type: "application/manifest+json"});
+  const url = URL.createObjectURL(blob);
+  document.querySelector('link[rel="manifest"]').setAttribute('href', url);
+  const swCode = `self.addEventListener('install', e => e.waitUntil(caches.open('convertapk').then(c => c.addAll(['/']))));
+self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));`;
+  const swBlob = new Blob([swCode], {type: "application/javascript"});
+  const swUrl = URL.createObjectURL(swBlob);
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register(swUrl);
 })();
 
-// ── Estado ───────────────────────────────────────────────────────
-var user=null, apps=[], toastQueue=[], currentToast=null;
-var editModalAppId=null, showInstallGuide=false;
-var deferredInstallPrompt=null;
-window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); deferredInstallPrompt=e; });
+// ========== ESTADO GLOBAL ==========
+let user = null, apps = [], toastQueue = [], editModalAppId = null, currentToast = null;
+let deferredPrompt = null;
 
-// ── Storage ──────────────────────────────────────────────────────
-function loadStorage(){
-  try{ user=JSON.parse(localStorage.getItem('ca_user')||'null'); apps=JSON.parse(localStorage.getItem('ca_apps')||'[]'); }catch(e){ apps=[]; }
-  if(!apps.length) apps=[{id:1,userId:1,name:'TechNews Brasil',description:'Portal de notícias de tecnologia.',websiteUrl:'https://technews.com.br',packageName:'com.convertapk.technews',version:'1.0.0',themeColor:'#FF006E',orientation:'portrait',permissions:['INTERNET'],offlineSupport:true,deepLinking:false,analyticsEnabled:true,iconUrl:'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=100&q=80',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()}];
-}
-function persist(){ try{ localStorage.setItem('ca_user',JSON.stringify(user)); localStorage.setItem('ca_apps',JSON.stringify(apps)); }catch(e){} }
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
 
-// ── Router ───────────────────────────────────────────────────────
-function getRoute(){ return window.location.hash.slice(1)||'/'; }
-function navigate(r){ window.location.hash=r; rerender(); }
-window.navigate=navigate;
-
-// ── Toast ────────────────────────────────────────────────────────
-function toast(msg,type){ type=type||'success'; toastQueue.push({msg:msg,type:type}); if(!currentToast) nextToast(); }
-function nextToast(){ if(!toastQueue.length){ currentToast=null; rerender(); return; } currentToast=toastQueue.shift(); rerender(); setTimeout(nextToast,3200); }
-window.toast=toast;
-
-// ── Helpers ──────────────────────────────────────────────────────
-function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; }); }
-function fmtDate(s){ try{ return new Date(s).toLocaleDateString('pt-BR'); }catch(e){ return ''; } }
-function fileToB64(f){ return new Promise(function(res,rej){ var r=new FileReader(); r.onload=function(){ res(r.result); }; r.onerror=rej; r.readAsDataURL(f); }); }
-function validImg(f){ if(!f.type.match(/^image\/(jpeg|png|gif|webp)$/)){ toast('Apenas JPG/PNG/GIF/WEBP','error'); return false; } if(f.size>2097152){ toast('Máx 2MB','error'); return false; } return true; }
-function iconHtml(url,sz){
-  sz=sz||48;
-  var st='width:'+sz+'px;height:'+sz+'px;border-radius:.75rem;object-fit:cover;flex-shrink:0;display:block;';
-  if(url&&url!=='[base64-image]') return '<img src="'+esc(url)+'" style="'+st+'" onerror="this.outerHTML=\'<div class=icon-default style=width:'+sz+'px;height:'+sz+'px;>&#128241;</div>\'">';
-  return '<div class="icon-default" style="width:'+sz+'px;height:'+sz+'px;">&#128241;</div>';
+function installMainPWA() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+  } else {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML = `
+      <div class="modal-content">
+        <h3 class="text-xl font-bold mb-3">📱 Instalar ConvertAPK</h3>
+        <p class="text-sm mb-3">Seu navegador não ofereceu instalação automática. Siga:</p>
+        <ul class="list-disc list-inside text-sm space-y-2 text-slate-300">
+          <li><strong>Chrome/Edge (Android):</strong> Menu → "Adicionar à tela inicial"</li>
+          <li><strong>Samsung Internet:</strong> Menu → "Adicionar página à tela inicial"</li>
+          <li><strong>iOS (Safari):</strong> Compartilhar → "Adicionar à Tela de Início"</li>
+        </ul>
+        <button class="btn-primary w-full mt-4" onclick="this.closest('.modal').remove()">Entendi</button>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  }
 }
 
-// ── Auth ─────────────────────────────────────────────────────────
-window.handleLogin=function(){ user={id:1,name:'Cyber Dev',email:'dev@convertapk.com',role:'free'}; persist(); toast('Bem-vindo, Cyber Dev!'); navigate('/dashboard'); };
-window.handleLogout=function(){ user=null; persist(); toast('Desconectado','info'); navigate('/'); };
-window.handleUpgrade=function(tier){ if(!user) user={id:1,name:'Cyber Dev',email:'dev@convertapk.com',role:tier}; else user.role=tier; persist(); toast('Plano '+tier.toUpperCase()+' ativado! 🚀'); navigate('/dashboard'); };
-
-// ── CRUD ─────────────────────────────────────────────────────────
-window.createApp=function(data){ var a=Object.assign({},data,{id:Date.now(),userId:user?user.id:1,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()}); apps=[a].concat(apps); persist(); toast('"'+a.name+'" criado! ✨'); navigate('/dashboard'); };
-window.updateApp=function(id,data){ apps=apps.map(function(a){ return a.id===id?Object.assign({},a,data,{updatedAt:new Date().toISOString()}):a; }); persist(); toast('App atualizado!'); rerender(); };
-window.deleteApp=function(id){ var n=(apps.find(function(a){ return a.id===id; })||{}).name||'App'; apps=apps.filter(function(a){ return a.id!==id; }); persist(); toast('"'+n+'" removido','info'); navigate('/dashboard'); };
-
-// ================================================================
-//  installAppAsPWA — CORREÇÃO PRINCIPAL
-//
-//  PROBLEMA ORIGINAL:
-//    O HTML gerado referenciava blob: URLs criadas na janela PAI
-//    (manifest blob URL, SW blob URL). Quando abre em nova aba,
-//    essas blob URLs são cross-origin e inacessíveis — o manifest
-//    não carrega, o SW não registra, portanto não há instalação.
-//
-//  SOLUÇÃO:
-//    O HTML gerado é 100% self-contained. Ele contém um <script>
-//    que roda NO CONTEXTO DA NOVA ABA e cria SEUS PRÓPRIOS blob
-//    URLs para manifest e SW ali mesmo. Sem herança cross-origin.
-//
-//  FLUXO:
-//    1. Gera string HTML com manifest e SW codificados como JSON
-//       literal e template string escapados.
-//    2. Abre via blob URL (que funciona para o HTML inicial).
-//    3. Dentro da nova aba, o script cria novos blob URLs locais.
-//    4. beforeinstallprompt dispara naquela aba → botão Instalar.
-//    5. Fallback: instruções manuais se o prompt não aparecer.
-// ================================================================
-window.installAppAsPWA = function(app) {
-  if (!app) { toast('App não encontrado','error'); return; }
-
-  var name    = app.name       || 'Meu App';
-  var url     = app.websiteUrl || '';
-  var color   = app.themeColor || '#FF006E';
-  var version = app.version    || '1.0.0';
-  var desc    = app.description|| '';
-  var short   = name.substring(0,12);
-  var orient  = app.orientation|| 'portrait';
-
-  if (!url) { toast('URL do app não configurada','error'); return; }
-
-  // Ícone — base64 ou URL externa; fallback SVG inline
-  var defIcon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23FF006E'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle' fill='white'%3E%F0%9F%93%B1%3C/text%3E%3C/svg%3E";
-  var icon = (app.iconUrl && app.iconUrl !== '[base64-image]') ? app.iconUrl : defIcon;
-  var iconType = icon.startsWith('data:image/png') ? 'image/png'
-               : icon.startsWith('data:image/jpeg') ? 'image/jpeg'
-               : icon.startsWith('data:image/gif')  ? 'image/gif'
-               : icon.startsWith('data:image/webp') ? 'image/webp'
-               : 'image/svg+xml';
-
-  // Manifest como objeto JS — será JSON.stringify'd e embutido no HTML
-  var manifestObj = {
-    name: name, short_name: short, description: desc,
-    start_url: './', display: 'standalone',
-    orientation: orient, theme_color: color,
-    background_color: '#020617',
+// ========== PWA DINÂMICO PARA CADA APP CRIADO ==========
+function installAppAsPWA(app) {
+  // Gera uma página HTML com manifesto e service worker próprios, apontando para a URL do app
+  const appId = app.id;
+  const appName = app.name;
+  const appUrl = app.websiteUrl;
+  const appIcon = app.iconUrl || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23FF006E'/%3E%3Ctext x='49' y='67' font-size='50' text-anchor='middle' fill='white'%3E📱%3C/text%3E%3C/svg%3E";
+  const theme = app.themeColor || "#FF006E";
+  
+  // Manifesto personalizado
+  const manifest = {
+    name: appName,
+    short_name: appName.substring(0, 12),
+    start_url: "index.html",
+    display: "standalone",
+    theme_color: theme,
+    background_color: "#020617",
     icons: [
-      { src: icon, sizes: '512x512', type: iconType, purpose: 'any maskable' },
-      { src: icon, sizes: '192x192', type: iconType, purpose: 'any' }
+      { src: appIcon, sizes: "512x512", type: "image/png", purpose: "any maskable" }
     ]
   };
-
-  // Service Worker — faz cache da URL do app
-  var swCode = [
-    "var CACHE='"+name.replace(/'/g,"\\'")+"--v"+version+"';",
-    "var APP='"+url.replace(/'/g,"\\'")+"';",
-    "self.addEventListener('install',function(e){",
-    "  e.waitUntil(caches.open(CACHE).then(function(c){",
-    "    return c.add(APP).catch(function(){});",
-    "  }));",
-    "  self.skipWaiting();",
-    "});",
-    "self.addEventListener('activate',function(e){",
-    "  e.waitUntil(clients.claim());",
-    "});",
-    "self.addEventListener('fetch',function(e){",
-    "  e.respondWith(caches.match(e.request).then(function(r){",
-    "    return r||fetch(e.request);",
-    "  }));",
-    "});"
-  ].join('\n');
-
-  // Serializa para embedding seguro — escapamos backtick e backslash
-  var manifestJSON = JSON.stringify(manifestObj)
-    .replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/\$/g,'\\$');
-  var swEscaped = swCode
-    .replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/\$/g,'\\$');
-
-  // Ícone para img tag — só escapa aspas duplas
-  var iconForImg = icon.replace(/"/g,'&quot;');
-
-  // ── HTML gerado — self-contained ────────────────────────────
-  var html = '<!DOCTYPE html>\n'
-    + '<html lang="pt">\n'
-    + '<head>\n'
-    + '<meta charset="UTF-8">\n'
-    + '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n'
-    + '<meta name="mobile-web-app-capable" content="yes">\n'
-    + '<meta name="apple-mobile-web-app-capable" content="yes">\n'
-    + '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">\n'
-    + '<meta name="apple-mobile-web-app-title" content="'+name.replace(/"/g,'&quot;')+'">\n'
-    + '<meta name="theme-color" content="'+color+'">\n'
-    + '<title>'+name.replace(/</g,'&lt;')+'</title>\n'
-    + '<style>\n'
-    + '*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}\n'
-    + 'html,body{width:100%;height:100%;overflow:hidden;background:#000}\n'
-    + '#frame{position:fixed;inset:0;width:100%;height:100%;border:none}\n'
-    + '#bar{\n'
-    + '  position:fixed;top:0;left:0;right:0;z-index:9999;\n'
-    + '  background:linear-gradient(135deg,'+color+',#7C3AED);\n'
-    + '  padding:.6rem 1rem;display:flex;align-items:center;gap:.7rem;\n'
-    + '  font-family:system-ui,sans-serif;font-size:.85rem;color:#fff;\n'
-    + '  box-shadow:0 2px 16px rgba(0,0,0,.4);\n'
-    + '  transform:translateY(0);transition:transform .35s ease;\n'
-    + '}\n'
-    + '#bar.hidden{transform:translateY(-110%)}\n'
-    + '#bar .ic{width:36px;height:36px;border-radius:8px;object-fit:cover;flex-shrink:0}\n'
-    + '#bar .info{flex:1;line-height:1.3;min-width:0}\n'
-    + '#bar .app-n{font-weight:700;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}\n'
-    + '#bar .app-u{font-size:.7rem;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}\n'
-    + '#bar .bi{background:#fff;color:'+color+';font-weight:700;border:none;padding:.38rem .85rem;border-radius:.5rem;cursor:pointer;font-size:.78rem;white-space:nowrap;flex-shrink:0}\n'
-    + '#bar .bc{background:none;border:none;color:rgba(255,255,255,.7);font-size:1.2rem;cursor:pointer;flex-shrink:0;line-height:1}\n'
-    + '#modal{display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);align-items:center;justify-content:center}\n'
-    + '#modal.on{display:flex}\n'
-    + '.mbox{background:#0f172a;border:1px solid '+color+';border-radius:1.25rem;padding:1.5rem;max-width:400px;width:90%;color:#e2e8f0;font-family:system-ui,sans-serif}\n'
-    + '.mbox h3{font-size:1rem;font-weight:700;margin:0 0 .75rem}\n'
-    + '.mbox p{font-size:.82rem;color:#94a3b8;margin-bottom:.75rem}\n'
-    + '.mbox ul{list-style:none;display:flex;flex-direction:column;gap:.45rem;margin-bottom:1rem}\n'
-    + '.mbox li{display:flex;gap:.5rem;align-items:flex-start;font-size:.8rem;background:rgba(255,255,255,.04);border-radius:.5rem;padding:.45rem .7rem}\n'
-    + '.mbox .step{font-weight:700;color:'+color+';flex-shrink:0}\n'
-    + '.mbox .cb{background:linear-gradient(135deg,'+color+',#9333ea);color:#fff;border:none;padding:.55rem 1.2rem;border-radius:.65rem;cursor:pointer;font-weight:700;font-size:.88rem;width:100%}\n'
-    + '#st{position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);background:rgba(15,23,42,.96);border:1px solid #4ade80;color:#4ade80;font-family:system-ui,sans-serif;font-size:.75rem;padding:.45rem 1rem;border-radius:99px;display:none;z-index:9999;white-space:nowrap}\n'
-    + '</style>\n'
-    + '</head>\n'
-    + '<body>\n'
-    + '<iframe id="frame" src="'+url.replace(/"/g,'&quot;')+'" allow="accelerometer;autoplay;camera;fullscreen;geolocation;gyroscope;microphone;payment;usb" allowfullscreen sandbox="allow-downloads allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-presentation allow-same-origin allow-scripts allow-top-navigation"></iframe>\n'
-    + '<div id="bar">\n'
-    + '  <img class="ic" src="'+iconForImg+'" alt="" onerror="this.style.display=\'none\'">\n'
-    + '  <div class="info"><div class="app-n">'+name.replace(/</g,'&lt;')+'</div><div class="app-u">'+url.replace(/</g,'&lt;')+'</div></div>\n'
-    + '  <button class="bi" id="btnI">&#128242; Instalar</button>\n'
-    + '  <button class="bc" id="btnC" title="Fechar">&#10005;</button>\n'
-    + '</div>\n'
-    + '<div id="modal">\n'
-    + '  <div class="mbox">\n'
-    + '    <h3>&#128242; Instalar '+name.replace(/</g,'&lt;')+'</h3>\n'
-    + '    <p>Escolha a instrução para seu dispositivo:</p>\n'
-    + '    <ul>\n'
-    + '      <li><span class="step">Android Chrome</span><span>Menu &#8942; &rarr; "Adicionar &agrave; tela inicial" ou "Instalar app"</span></li>\n'
-    + '      <li><span class="step">Samsung Internet</span><span>Menu &#8801; &rarr; "Adicionar p&aacute;gina &agrave; tela inicial"</span></li>\n'
-    + '      <li><span class="step">iOS Safari</span><span>Compartilhar &#8679; &rarr; "Adicionar &agrave; Tela de In&iacute;cio"</span></li>\n'
-    + '      <li><span class="step">Desktop Chrome</span><span>&Iacute;cone &#8853; na barra de endere&ccedil;os &rarr; Instalar</span></li>\n'
-    + '    </ul>\n'
-    + '    <button class="cb" onclick="document.getElementById(\'modal\').classList.remove(\'on\')">Entendi &#10003;</button>\n'
-    + '  </div>\n'
-    + '</div>\n'
-    + '<div id="st"></div>\n'
-    + '<script>\n'
-    + '(function(){\n'
-    + '  // 1) Manifest — criado AQUI, nesta aba (sem herança cross-origin)\n'
-    + '  var mJson = `'+manifestJSON+'`;\n'
-    + '  var mBlob = new Blob([mJson],{type:"application/manifest+json"});\n'
-    + '  var mUrl  = URL.createObjectURL(mBlob);\n'
-    + '  var mLink = document.createElement("link");\n'
-    + '  mLink.rel="manifest"; mLink.href=mUrl;\n'
-    + '  document.head.appendChild(mLink);\n'
-    + '\n'
-    + '  // 2) Service Worker — criado AQUI, nesta aba\n'
-    + '  if("serviceWorker" in navigator){\n'
-    + '    var swSrc = `'+swEscaped+'`;\n'
-    + '    var swBlob = new Blob([swSrc],{type:"application/javascript"});\n'
-    + '    var swUrl  = URL.createObjectURL(swBlob);\n'
-    + '    navigator.serviceWorker.register(swUrl).then(function(){\n'
-    + '      showSt("&#10003; Service Worker ativo — app funciona offline");\n'
-    + '    }).catch(function(){ /* Firefox bloqueia blob SW */ });\n'
-    + '  }\n'
-    + '\n'
-    + '  // 3) Lógica de instalação\n'
-    + '  var dPrm=null;\n'
-    + '  var bar=document.getElementById("bar");\n'
-    + '  var btnI=document.getElementById("btnI");\n'
-    + '  var btnC=document.getElementById("btnC");\n'
-    + '  var modal=document.getElementById("modal");\n'
-    + '\n'
-    + '  window.addEventListener("beforeinstallprompt",function(e){\n'
-    + '    e.preventDefault(); dPrm=e;\n'
-    + '    btnI.textContent="&#11015;&#65039; Instalar Agora";\n'
-    + '  });\n'
-    + '\n'
-    + '  btnI.addEventListener("click",function(){\n'
-    + '    if(dPrm){\n'
-    + '      dPrm.prompt();\n'
-    + '      dPrm.userChoice.then(function(c){\n'
-    + '        if(c.outcome==="accepted"){ bar.classList.add("hidden"); showSt("&#127881; App instalado!"); }\n'
-    + '        dPrm=null;\n'
-    + '      });\n'
-    + '    } else {\n'
-    + '      modal.classList.add("on");\n'
-    + '    }\n'
-    + '  });\n'
-    + '\n'
-    + '  btnC.addEventListener("click",function(){ bar.classList.add("hidden"); });\n'
-    + '\n'
-    + '  window.addEventListener("appinstalled",function(){\n'
-    + '    bar.classList.add("hidden"); showSt("&#127881; '+name.replace(/'/g,"\\'")+' instalado!");\n'
-    + '  });\n'
-    + '\n'
-    + '  // 4) Ajuste do iframe abaixo da barra\n'
-    + '  var frame=document.getElementById("frame");\n'
-    + '  var barH=document.getElementById("bar").offsetHeight||52;\n'
-    + '  frame.style.top=barH+"px";\n'
-    + '  frame.style.height="calc(100% - "+barH+"px)";\n'
-    + '  document.getElementById("bar").addEventListener("transitionend",function(){\n'
-    + '    if(bar.classList.contains("hidden")){ frame.style.top="0"; frame.style.height="100%"; }\n'
-    + '  });\n'
-    + '\n'
-    + '  // 5) Status helper\n'
-    + '  var stEl=document.getElementById("st");\n'
-    + '  function showSt(msg){ stEl.innerHTML=msg; stEl.style.display="block"; setTimeout(function(){ stEl.style.display="none"; },4000); }\n'
-    + '})();\n'
-    + '<\/script>\n'
-    + '</body>\n'
-    + '</html>';
-
-  // Abre em nova aba via blob URL
-  var blob = new Blob([html],{type:'text/html;charset=utf-8'});
-  var bUrl = URL.createObjectURL(blob);
-  var tab  = window.open(bUrl,'_blank');
-
-  if (tab) {
-    toast('"'+name+'" aberto! Toque em "Instalar" na barra no topo da nova aba.','success');
-    setTimeout(function(){ URL.revokeObjectURL(bUrl); }, 12000);
+  const manifestBlob = new Blob([JSON.stringify(manifest)], {type: "application/manifest+json"});
+  const manifestURL = URL.createObjectURL(manifestBlob);
+  
+  // Service Worker que faz cache da URL do app (navegação offline básica)
+  const swCode = `
+    const CACHE_NAME = 'app-${appId}';
+    const APP_URL = '${appUrl}';
+    self.addEventListener('install', e => e.waitUntil(
+      caches.open(CACHE_NAME).then(c => c.add(APP_URL))
+    ));
+    self.addEventListener('fetch', e => {
+      if (e.request.url === APP_URL || e.request.url === self.location.origin + '/') {
+        e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+      } else {
+        e.respondWith(fetch(e.request));
+      }
+    });
+  `;
+  const swBlob = new Blob([swCode], {type: "application/javascript"});
+  const swURL = URL.createObjectURL(swBlob);
+  
+  // HTML da página que exibe o app em iframe
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="manifest" href="${manifestURL}">
+  <meta name="theme-color" content="${theme}">
+  <title>${appName}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #000; height: 100vh; overflow: hidden; }
+    iframe { width: 100%; height: 100%; border: none; }
+  </style>
+</head>
+<body>
+  <iframe src="${appUrl}" allow="accelerometer; autoplay; camera; geolocation; microphone; payment; usb" allowfullscreen></iframe>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('${swURL}');
+    }
+  <\/script>
+</body>
+</html>`;
+  
+  const htmlBlob = new Blob([html], {type: "text/html"});
+  const htmlURL = URL.createObjectURL(htmlBlob);
+  
+  // Abre a página em uma nova aba. Nessa aba, o usuário poderá instalar como PWA
+  const newWindow = window.open(htmlURL, "_blank");
+  if (!newWindow) {
+    toast("Permita pop-ups para instalar o app.", "error");
   } else {
-    URL.revokeObjectURL(bUrl);
-    // Fallback: download do HTML
-    var dl=document.createElement('a');
-    dl.href=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'}));
-    dl.download=name.replace(/[^a-zA-Z0-9_-]/g,'_')+'.html';
-    document.body.appendChild(dl); dl.click(); setTimeout(function(){ document.body.removeChild(dl); },500);
-    toast('Pop-ups bloqueados. HTML baixado — abra no Chrome para instalar.','info');
+    toast(`Abriu uma nova aba com ${appName}. Toque em "Instalar App" nela.`, "success");
   }
-};
+}
 
-// ── Instalar o próprio ConvertAPK ────────────────────────────────
-window.installMainPWA = function(){
-  if(deferredInstallPrompt){
-    deferredInstallPrompt.prompt();
-    deferredInstallPrompt.userChoice.then(function(){ deferredInstallPrompt=null; });
-  } else {
-    showInstallGuide=true; rerender();
-  }
+// ========== PERSISTÊNCIA ==========
+const loadStorage = () => {
+  try {
+    user = JSON.parse(localStorage.getItem('convertapk_user'));
+    apps = JSON.parse(localStorage.getItem('convertapk_apps')) || [];
+  } catch(e) {}
+  if (!apps.length) apps.push({
+    id: 1, userId: 1, name: "TechNews Brasil", description: "Portal de tecnologia", websiteUrl: "https://technews.com.br",
+    packageName: "com.convertapk.technews", version: "1.0.0", themeColor: "#FF006E", orientation: "portrait",
+    permissions: ["INTERNET"], offlineSupport: true, deepLinking: false, analyticsEnabled: true,
+    iconUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=100&q=80",
+    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+  });
 };
+const persist = () => { localStorage.setItem('convertapk_user', JSON.stringify(user)); localStorage.setItem('convertapk_apps', JSON.stringify(apps)); };
+const getRoute = () => window.location.hash.slice(1) || '/';
+const navigate = (route) => { window.location.hash = route; rerender(); };
+const toast = (msg, type='success') => { toastQueue.push({ msg, type }); if (!currentToast) showNextToast(); };
+const showNextToast = () => { if (!toastQueue.length) { currentToast = null; rerender(); return; } currentToast = toastQueue.shift(); rerender(); setTimeout(showNextToast, 3000); };
+const esc = (s) => String(s??'').replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
 
-// ── Build simulator ──────────────────────────────────────────────
-window.startBuild = function(appId){
-  var app=apps.find(function(a){ return a.id===appId; });
-  if(!app) return;
-  var pre=document.getElementById('buildPreChecks');
-  var prog=document.getElementById('buildProgress');
-  var result=document.getElementById('buildResult');
-  var logs=document.getElementById('buildLogs');
-  var bar=document.getElementById('buildProgressBar');
-  var pct=document.getElementById('buildPct');
-  var phase=document.getElementById('buildPhaseLabel');
-  var dot=document.getElementById('consoleStatusDot');
-  if(pre) pre.style.display='none';
-  if(prog) prog.style.display='block';
-  if(dot){ dot.style.background='#facc15'; dot.classList.add('pulse'); }
-  function log(msg,cls){ if(!logs) return; logs.innerHTML+='\n<span class="'+(cls||'')+'">['+new Date().toLocaleTimeString()+'] '+msg+'</span>'; logs.scrollTop=logs.scrollHeight; }
-  log('Iniciando simulação: '+app.name,'log-pink');
-  log('URL: '+app.websiteUrl,'log-info');
-  var phases=[
-    {l:'Preparando ambiente',p:12},{l:'Validando URL',p:25},
-    {l:'Compilando WebView wrapper',p:40},{l:'Empacotando assets',p:55},
-    {l:'Gerando manifesto PWA',p:68},{l:'Configurando Service Worker',p:80},
-    {l:'Assinatura digital',p:91},{l:'Finalizando',p:100}
-  ];
-  var i=0;
-  function run(){
-    if(i>=phases.length){
-      if(dot){ dot.style.background='#4ade80'; dot.classList.remove('pulse'); }
-      log('Simulação concluída! Clique em "Instalar" abaixo.','log-ok');
-      if(result){
-        result.style.display='block';
-        result.innerHTML='<div class="install-highlight" style="margin-top:1rem;">'
-          +'<div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem;">'
-          +'<span style="font-size:1.8rem;">🎉</span>'
-          +'<div><div style="color:#4ade80;font-weight:700;">Simulação concluída!</div>'
-          +'<div style="font-size:.8rem;color:#64748b;">'+esc(app.name)+' · v'+esc(app.version)+'</div></div></div>'
-          +'<p style="font-size:.82rem;color:#94a3b8;margin-bottom:1rem;">Uma nova aba abrirá com seu app carregado. Uma barra azul aparece no topo com o botão <strong style="color:#00d9ff;">Instalar</strong>. Toque nele para adicionar à tela inicial.</p>'
-          +'<button class="btn btn-green" onclick="installAppAsPWA(apps.find(function(a){return a.id==='+appId+'}))" style="width:100%;justify-content:center;">📲 Instalar "'+esc(app.name)+'" no Celular</button>'
-          +'<div style="margin-top:.6rem;display:flex;gap:.5rem;">'
-          +'<button class="btn btn-ghost" onclick="navigate(\'/app/'+appId+'\')" style="flex:1;justify-content:center;font-size:.82rem;">Ver Detalhes</button>'
-          +'</div></div>';
+// ========== CRUD APPS ==========
+const createApp = (data) => {
+  const newApp = { ...data, id: Date.now(), userId: user?.id || 1, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+  apps = [newApp, ...apps]; persist(); toast(`"${newApp.name}" criado! ✨`); navigate('/dashboard');
+};
+const updateApp = (id, data) => { apps = apps.map(a => a.id === id ? { ...a, ...data, updatedAt: new Date().toISOString() } : a); persist(); toast("App atualizado"); rerender(); };
+const deleteApp = (id) => { apps = apps.filter(a => a.id !== id); persist(); toast("App removido"); navigate('/dashboard'); };
+
+// ========== AUTENTICAÇÃO ==========
+const handleLogin = () => { user = { id: 1, name: "Cyber Dev", email: "dev@convertapk.com", role: "user" }; persist(); toast("Conectado!"); navigate('/dashboard'); };
+const handleLogout = () => { user = null; persist(); toast("Desconectado"); navigate('/'); };
+const handleUpgrade = (tier) => { if (!user) user = { id: 1, name: "Cyber Dev", email: "dev@convertapk.com", role: tier }; else user.role = tier; persist(); toast(`Plano ${tier.toUpperCase()} ativado! 🚀`); navigate('/dashboard'); };
+
+// ========== SIMULAÇÃO DE BUILD (APENAS VISUAL) ==========
+function startBuild(appId) {
+  const app = apps.find(a => a.id === appId);
+  if (!app) return;
+  const pre = document.getElementById('buildPreChecks'), prog = document.getElementById('buildProgress'), result = document.getElementById('buildResult');
+  if (pre) pre.style.display = 'none'; if (prog) prog.style.display = 'block';
+  const logsDiv = document.getElementById('buildLogs'), bar = document.getElementById('buildProgressBar'), pct = document.getElementById('buildPct');
+  const phaseLabel = document.getElementById('buildPhaseLabel'), dot = document.getElementById('consoleStatusDot');
+  if (dot) dot.style.background = '#facc15';
+  const log = (msg, type) => { if (logsDiv) logsDiv.innerHTML += `\n<span class="text-${type||'info'}">[${new Date().toLocaleTimeString()}] ${msg}</span>`; logsDiv.scrollTop = logsDiv.scrollHeight; };
+  log(`🚀 Simulação para ${app.name}`, 'pink-400');
+  const phases = ["Preparando ambiente", "Validando URL", "Compilando WebView", "Empacotando recursos", "Assinatura (simulada)", "Finalizando"];
+  let step = 0;
+  const interval = setInterval(() => {
+    if (step >= phases.length) {
+      clearInterval(interval);
+      log("✅ Simulação concluída! Use 'Instalar Este App' para ter o aplicativo no celular.", "green-400");
+      if (bar) bar.style.width = '100%'; if (pct) pct.textContent = '100%'; if (phaseLabel) phaseLabel.textContent = 'Pronto!'; if (dot) dot.style.background = '#4ade80';
+      if (result) {
+        result.style.display = 'block';
+        result.innerHTML = `
+          <div class="text-center p-4 border border-green-500/30 rounded-xl bg-green-500/5">
+            <div class="text-2xl mb-2">🎉</div>
+            <div class="text-green-400 font-bold">Simulação concluída!</div>
+            <div class="text-sm text-slate-400 my-2">Para instalar este app no celular, clique em "Instalar Este App".</div>
+            <button class="btn-primary" onclick="installAppAsPWA(apps.find(a=>a.id===${app.id}))">📲 Instalar Este App</button>
+          </div>`;
       }
       return;
     }
-    var p=phases[i];
-    if(bar) bar.style.width=p.p+'%';
-    if(pct) pct.textContent=p.p+'%';
-    if(phase) phase.textContent=p.l;
-    log('['+p.l+']...');
-    i++;
-    setTimeout(run,480);
-  }
-  setTimeout(run,150);
+    const percent = Math.round(((step+1)/phases.length)*100);
+    if (bar) bar.style.width = percent+'%'; if (pct) pct.textContent = percent+'%'; if (phaseLabel) phaseLabel.textContent = phases[step];
+    log(`[${phases[step]}] ...`, 'info');
+    step++;
+  }, 500);
+}
+
+// ========== UPLOAD DE IMAGEM ==========
+const fileToBase64 = (f) => new Promise(r => { const rd = new FileReader(); rd.onload = () => r(rd.result); rd.readAsDataURL(f); });
+let caIconData = null, quickIconData = null, editIconData = null;
+window.handleCaImage = async (file) => {
+  if (!file || !file.type.startsWith('image/')) return toast('Apenas imagem', 'error');
+  if (file.size > 2e6) return toast('Máx 2MB', 'error');
+  const b64 = await fileToBase64(file); caIconData = b64; document.getElementById('caIconPreview').innerHTML = `<img src="${b64}" class="w-full h-full object-cover rounded-xl">`;
+};
+window.clearCaIcon = () => { caIconData = null; document.getElementById('caIconPreview').innerHTML = '📱'; document.getElementById('caIconUrl').value = ''; };
+window.submitCreateApp = () => {
+  const name = document.getElementById('caName')?.value.trim(), url = document.getElementById('caUrl')?.value.trim(), pkg = document.getElementById('caPkg')?.value.trim();
+  if (!name || !url || !pkg) return toast('Preencha todos os campos', 'error');
+  createApp({
+    name, websiteUrl: url, description: document.getElementById('caDesc')?.value || '',
+    packageName: pkg, version: document.getElementById('caVersion')?.value || '1.0.0', themeColor: document.getElementById('caColor')?.value || '#FF006E',
+    orientation: document.getElementById('caOrientation')?.value || 'portrait', permissions: ['INTERNET'],
+    offlineSupport: document.getElementById('caOffline')?.checked, deepLinking: document.getElementById('caDeep')?.checked,
+    analyticsEnabled: document.getElementById('caAnalytics')?.checked, iconUrl: caIconData || document.getElementById('caIconUrl')?.value || ''
+  });
+};
+window.handleQuickImage = async (file) => { if (!file) return; const b64 = await fileToBase64(file); quickIconData = b64; document.getElementById('quickIconPreview').innerHTML = `<img src="${b64}" class="h-12 rounded-lg">`; };
+window.handleQuickForm = () => {
+  const name = document.getElementById('qName')?.value.trim() || 'Quick App', url = document.getElementById('qUrl')?.value.trim();
+  if (!url) return toast('URL obrigatória', 'error');
+  if (!user) handleLogin();
+  createApp({ name, websiteUrl: url, description: 'Criado rapidamente', packageName: `com.quick.${Date.now()}`, version: '1.0.0', themeColor: '#FF006E', orientation: 'portrait', permissions: ['INTERNET'], offlineSupport: true, deepLinking: false, analyticsEnabled: true, iconUrl: quickIconData || '' });
+  quickIconData = null;
+};
+window.openEditModal = (id) => { editModalAppId = id; editIconData = null; rerender(); };
+window.saveEditModal = (id) => {
+  const name = document.getElementById('editName')?.value.trim(), url = document.getElementById('editUrl')?.value.trim();
+  if (!name || !url) return toast('Nome e URL obrigatórios', 'error');
+  const icon = editIconData || document.getElementById('editIconUrl')?.value.trim() || apps.find(a=>a.id===id)?.iconUrl || '';
+  updateApp(id, { name, websiteUrl: url, description: document.getElementById('editDesc')?.value || '', packageName: document.getElementById('editPkg')?.value || '', version: document.getElementById('editVersion')?.value || '1.0.0', themeColor: document.getElementById('editColor')?.value || '#FF006E', orientation: document.getElementById('editOrientation')?.value || 'portrait', offlineSupport: document.getElementById('editOffline')?.checked, deepLinking: document.getElementById('editDeep')?.checked, analyticsEnabled: document.getElementById('editAnalytics')?.checked, iconUrl: icon });
+  editModalAppId = null; editIconData = null; rerender();
+};
+window.handleEditImage = async (file) => { if (!file) return; editIconData = await fileToBase64(file); document.getElementById('editIconPreview').innerHTML = `<img src="${editIconData}" class="w-16 h-16 rounded-xl object-cover">`; };
+
+// ========== RENDER ==========
+const renderNavbar = () => `
+<nav class="sticky top-0 z-50 border-b border-pink-500/20 backdrop-blur-xl bg-slate-950/80">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+    <div onclick="navigate('/')" class="flex items-center gap-3 cursor-pointer">
+      <div class="w-10 h-10 bg-gradient-to-r from-pink-600 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">⚡</div>
+      <div><div class="text-2xl font-black bg-gradient-to-r from-pink-500 to-cyan-400 bg-clip-text text-transparent">ConvertAPK</div><div class="text-[10px] text-cyan-400">INSTALE QUALQUER SITE</div></div>
+    </div>
+    <div class="flex items-center gap-4">
+      ${user ? `
+        <span class="cursor-pointer hidden sm:block" onclick="navigate('/dashboard')">Painel</span>
+        <span class="cursor-pointer hidden sm:block" onclick="navigate('/create-app')">Novo App</span>
+        <button class="btn-outline text-sm py-1 px-3" onclick="installMainPWA()">📲 Instalar ConvertAPK</button>
+        <div class="flex items-center gap-2 bg-slate-900/60 px-3 py-1 rounded-full"><span class="text-sm font-bold">${esc(user.name)}</span><div class="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-600 to-cyan-400 flex items-center justify-center">${user.name.charAt(0)}</div></div>
+        <button class="btn-outline text-sm py-1 px-3" onclick="handleLogout()">Sair</button>
+      ` : `<button class="btn-primary" onclick="handleLogin()">Entrar</button>`}
+    </div>
+  </div>
+</nav>`;
+
+const renderFooter = () => `<footer class="border-t border-pink-500/10 bg-slate-950/50 py-8 mt-auto"><div class="text-center text-xs text-slate-600">© 2026 ConvertAPK — Crie e instale apps com um clique (PWA dinâmico)</div></footer>`;
+const renderToast = () => currentToast ? `<div class="toast toast-${currentToast.type === 'error' ? 'error' : 'success'}">${currentToast.msg}</div>` : '';
+const renderEditModal = () => {
+  if (!editModalAppId) return '';
+  const a = apps.find(x=>x.id===editModalAppId);
+  if (!a) return '';
+  return `<div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onclick="if(event.target===this) editModalAppId=null;rerender()"><div class="glass rounded-2xl p-6 max-w-md w-full"><h3 class="text-xl mb-4">Editar App</h3><input class="input-field mb-2" id="editName" value="${esc(a.name)}"><input class="input-field mb-2" id="editUrl" value="${esc(a.websiteUrl)}"><textarea class="input-field mb-2" id="editDesc" rows="2">${esc(a.description||'')}</textarea><div class="flex gap-2"><button class="btn-primary flex-1" onclick="saveEditModal(${editModalAppId})">Salvar</button><button class="btn-outline" onclick="editModalAppId=null;rerender()">Cancelar</button></div></div></div>`;
 };
 
-// ── Upload de imagem ─────────────────────────────────────────────
-var caIconData=null, quickIconData=null, editIconData=null;
+const renderLanding = () => `
+<div class="max-w-7xl mx-auto px-6 py-16 text-center">
+  <h1 class="text-5xl font-black bg-gradient-to-r from-pink-500 to-cyan-400 bg-clip-text text-transparent">ConvertAPK</h1>
+  <p class="text-xl mt-4">Transforme QUALQUER site em um aplicativo Android <strong>sem código</strong> e instale no celular.</p>
+  <div class="flex justify-center gap-4 mt-8">
+    <button class="btn-primary" onclick="handleLogin()">Começar →</button>
+    <button class="btn-outline" onclick="installMainPWA()">📲 Instalar ConvertAPK</button>
+  </div>
+  <div class="mt-12 grid md:grid-cols-3 gap-6">
+    <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">📱</div><h3>App exato que você criou</h3><p>Com o nome, ícone e URL que você escolheu.</p></div>
+    <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">⚡</div><h3>Instalação em um clique</h3><p>Nova aba → "Adicionar à tela inicial" → app pronto.</p></div>
+    <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">🔧</div><h3>Sem APK, sem erros</h3><p>Usamos PWA, a tecnologia que o Chrome recomenda.</p></div>
+  </div>
+</div>`;
 
-window.handleCaImage=function(file){ if(!file||!validImg(file)) return; fileToB64(file).then(function(b64){ caIconData=b64; var p=document.getElementById('caIconPreview'); if(p) p.innerHTML='<img src="'+b64+'" style="width:100%;height:100%;object-fit:cover;border-radius:.75rem;">'; }); };
-window.clearCaIcon=function(){ caIconData=null; var p=document.getElementById('caIconPreview'); if(p) p.innerHTML='&#128241;'; var u=document.getElementById('caIconUrl'); if(u) u.value=''; };
-window.submitCreateApp=function(){
-  var name=document.getElementById('caName')&&document.getElementById('caName').value.trim();
-  var url=document.getElementById('caUrl')&&document.getElementById('caUrl').value.trim();
-  var pkg=document.getElementById('caPkg')&&document.getElementById('caPkg').value.trim();
-  if(!name||!url||!pkg){ toast('Preencha Nome, URL e Package','error'); return; }
-  createApp({name:name,websiteUrl:url,description:document.getElementById('caDesc')&&document.getElementById('caDesc').value||'',packageName:pkg,version:document.getElementById('caVersion')&&document.getElementById('caVersion').value||'1.0.0',themeColor:document.getElementById('caColor')&&document.getElementById('caColor').value||'#FF006E',orientation:document.getElementById('caOrientation')&&document.getElementById('caOrientation').value||'portrait',permissions:['INTERNET'],offlineSupport:!!(document.getElementById('caOffline')&&document.getElementById('caOffline').checked),deepLinking:!!(document.getElementById('caDeep')&&document.getElementById('caDeep').checked),analyticsEnabled:!!(document.getElementById('caAnalytics')&&document.getElementById('caAnalytics').checked),iconUrl:caIconData||(document.getElementById('caIconUrl')&&document.getElementById('caIconUrl').value.trim())||''});
-  caIconData=null;
+const renderDashboard = () => `
+<div class="max-w-7xl mx-auto px-6 py-10">
+  <div class="flex justify-between items-center mb-8"><h1 class="text-3xl font-black">Meus Apps</h1><button class="btn-primary" onclick="navigate('/create-app')">+ Novo App</button></div>
+  <div class="grid md:grid-cols-2 gap-6">${apps.map(app => `
+    <div class="glass rounded-2xl p-4 cursor-pointer hover:border-pink-500/50 transition" onclick="navigate('/app/${app.id}')">
+      <div class="flex gap-3"><div class="w-12 h-12 rounded-xl overflow-hidden">${app.iconUrl ? `<img src="${app.iconUrl}" class="w-full h-full object-cover">` : '<div class="app-icon-default w-full h-full">📱</div>'}</div><div><div class="font-bold">${esc(app.name)}</div><div class="text-xs text-slate-400 truncate">${esc(app.websiteUrl)}</div></div></div>
+      <div class="flex justify-between mt-3"><span class="badge-pink">v${app.version}</span><button class="text-pink-400 text-sm" onclick="event.stopPropagation();installAppAsPWA(apps.find(a=>a.id===${app.id}))">Instalar App</button></div>
+    </div>`).join('')}</div>
+</div>`;
+
+const renderCreateApp = () => `
+<div class="max-w-3xl mx-auto px-6 py-10">
+  <button class="btn-outline mb-4" onclick="navigate('/dashboard')">← Voltar</button>
+  <div class="glass rounded-2xl p-6"><h2 class="text-2xl font-black mb-4">Criar novo app</h2>
+    <input class="input-field mb-3" id="caName" placeholder="Nome do App *">
+    <input class="input-field mb-3" id="caUrl" placeholder="URL do Site *">
+    <textarea class="input-field mb-3" id="caDesc" placeholder="Descrição"></textarea>
+    <input class="input-field mb-3" id="caPkg" placeholder="Package name" value="com.convertapk.${Date.now()}">
+    <input class="input-field mb-3" id="caVersion" value="1.0.0">
+    <input type="color" id="caColor" value="#FF006E" class="mb-3 w-full h-10 rounded-xl">
+    <div class="upload-zone mb-3" onclick="document.getElementById('caIconFile').click()">📸 Clique para enviar ícone</div>
+    <input type="file" id="caIconFile" accept="image/*" style="display:none" onchange="handleCaImage(this.files[0])">
+    <div id="caIconPreview" class="w-16 h-16 mb-3"></div>
+    <div class="flex gap-4 mb-4"><label><input type="checkbox" id="caOffline" checked> Offline</label><label><input type="checkbox" id="caDeep"> Deep Link</label><label><input type="checkbox" id="caAnalytics" checked> Analytics</label></div>
+    <button class="btn-primary w-full" onclick="submitCreateApp()">Criar App</button>
+  </div>
+</div>`;
+
+const renderAppDetails = (id) => {
+  const app = apps.find(a=>a.id===id);
+  if (!app) return '<div class="text-center py-20">App não encontrado</div>';
+  return `<div class="max-w-4xl mx-auto px-6 py-10"><button class="btn-outline mb-4" onclick="navigate('/dashboard')">← Voltar</button><div class="glass rounded-2xl p-6"><div class="flex gap-4"><div class="w-20 h-20 rounded-xl overflow-hidden">${app.iconUrl ? `<img src="${app.iconUrl}" class="w-full h-full object-cover">` : '<div class="app-icon-default w-full h-full">📱</div>'}</div><div><h2 class="text-2xl font-black">${esc(app.name)}</h2><p>${esc(app.websiteUrl)}</p><div class="flex gap-2 mt-4"><button class="btn-primary" onclick="installAppAsPWA(apps.find(a=>a.id===${app.id}))">📲 Instalar Este App</button><button class="btn-outline" onclick="navigate('/build/${app.id}')">Simular Build</button></div></div></div></div></div>`;
 };
-window.handleQuickImage=function(file){ if(!file||!validImg(file)) return; fileToB64(file).then(function(b64){ quickIconData=b64; var p=document.getElementById('quickIconPreview'); if(p) p.innerHTML='<img src="'+b64+'" style="height:48px;border-radius:.5rem;">'; }); };
-window.handleQuickForm=function(){
-  var name=(document.getElementById('qName')&&document.getElementById('qName').value.trim())||'Quick App';
-  var url=document.getElementById('qUrl')&&document.getElementById('qUrl').value.trim();
-  if(!url){ toast('URL obrigatória','error'); return; }
-  if(!user) handleLogin();
-  createApp({name:name,websiteUrl:url,description:'Criado rapidamente',packageName:'com.quick.'+(Date.now()%100000),version:'1.0.0',themeColor:'#FF006E',orientation:'portrait',permissions:['INTERNET'],offlineSupport:true,deepLinking:false,analyticsEnabled:true,iconUrl:quickIconData||''});
-  quickIconData=null;
-};
-window.openEditModal=function(id){ editModalAppId=id; editIconData=null; rerender(); };
-window.handleEditImage=function(file){ if(!file||!validImg(file)) return; fileToB64(file).then(function(b64){ editIconData=b64; var p=document.getElementById('editIconPreview'); if(p) p.innerHTML='<img src="'+b64+'" style="width:64px;height:64px;border-radius:.75rem;object-fit:cover;">'; }); };
-window.saveEditModal=function(id){
-  var name=document.getElementById('editName')&&document.getElementById('editName').value.trim();
-  var url=document.getElementById('editUrl')&&document.getElementById('editUrl').value.trim();
-  if(!name||!url){ toast('Nome e URL obrigatórios','error'); return; }
-  var icon=editIconData||(document.getElementById('editIconUrl')&&document.getElementById('editIconUrl').value.trim())||(apps.find(function(a){ return a.id===id; })||{}).iconUrl||'';
-  updateApp(id,{name:name,websiteUrl:url,description:document.getElementById('editDesc')&&document.getElementById('editDesc').value||'',packageName:document.getElementById('editPkg')&&document.getElementById('editPkg').value||'',version:document.getElementById('editVersion')&&document.getElementById('editVersion').value||'1.0.0',themeColor:document.getElementById('editColor')&&document.getElementById('editColor').value||'#FF006E',orientation:document.getElementById('editOrientation')&&document.getElementById('editOrientation').value||'portrait',offlineSupport:!!(document.getElementById('editOffline')&&document.getElementById('editOffline').checked),deepLinking:!!(document.getElementById('editDeep')&&document.getElementById('editDeep').checked),analyticsEnabled:!!(document.getElementById('editAnalytics')&&document.getElementById('editAnalytics').checked),iconUrl:icon});
-  editModalAppId=null; editIconData=null; rerender();
+
+const renderBuildPage = (id) => {
+  const app = apps.find(a=>a.id===id);
+  if (!app) return '<div>App não encontrado</div>';
+  return `<div class="max-w-6xl mx-auto px-6 py-10"><button class="btn-outline mb-4" onclick="navigate('/app/${id}')">← Voltar</button><div class="grid md:grid-cols-3 gap-6"><div class="md:col-span-2 glass rounded-2xl p-6"><div id="buildPreChecks"><div class="flex gap-4 items-center mb-6"><div class="w-14 h-14 rounded-xl overflow-hidden">${app.iconUrl ? `<img src="${app.iconUrl}" class="w-full h-full object-cover">` : '<div class="app-icon-default w-full h-full">📱</div>'}</div><div><h2 class="text-xl font-black">${esc(app.name)}</h2></div></div><button class="btn-primary w-full" onclick="startBuild(${id})">▶ Simular Compilação</button></div><div id="buildProgress" style="display:none"><div id="buildPhaseLabel" class="font-bold mb-2"></div><div class="progress-bar-track"><div id="buildProgressBar" class="progress-bar-fill" style="width:0%"></div></div><div class="text-right text-sm mt-1" id="buildPct">0%</div></div><div id="buildResult" style="display:none"></div></div><div class="glass rounded-2xl p-4"><div class="flex items-center gap-2 mb-3"><span id="consoleStatusDot" class="w-2 h-2 bg-slate-500 rounded-full"></span><span class="text-xs font-bold">CONSOLE</span></div><div id="buildLogs" class="log-output h-80"><span class="text-slate-500">[READY] Clique em "Simular Compilação".</span></div></div></div></div>`;
 };
 
-// ================================================================
-//  RENDER ENGINE
-// ================================================================
+const renderPricing = () => `<div class="max-w-4xl mx-auto px-6 py-16 text-center"><h1 class="text-4xl font-black">Planos</h1><div class="grid md:grid-cols-2 gap-6 mt-8"><div class="glass p-6 rounded-2xl"><h3>Grátis</h3><p>✓ Instalação de apps via PWA<br>✓ Apps ilimitados<br>✓ Ícones personalizados</p><button class="btn-primary mt-4" onclick="handleLogin()">Começar Grátis</button></div><div class="glass border-pink-500 p-6 rounded-2xl"><h3>Premium</h3><p>✓ Geração real de APK (backend)<br>✓ Suporte prioritário<br>✓ Remoção de marca</p><button class="btn-outline mt-4" onclick="handleUpgrade('premium')">Contratar</button></div></div></div>`;
 
-function renderNavbar(){
-  return '<nav style="position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(255,0,110,.18);backdrop-filter:blur(18px);background:rgba(2,6,23,.88);">'
-    +'<div style="max-width:1280px;margin:0 auto;padding:.9rem 1.5rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;">'
-    +'<div onclick="navigate(\'/\')" style="display:flex;align-items:center;gap:.75rem;cursor:pointer;">'
-    +'<div style="width:42px;height:42px;background:linear-gradient(135deg,#FF006E,#7C3AED,#00d9ff);border-radius:.75rem;display:flex;align-items:center;justify-content:center;font-size:1.4rem;box-shadow:0 0 18px rgba(255,0,110,.4);">⚡</div>'
-    +'<div><div style="font-family:\'Orbitron\',monospace;font-size:1.25rem;font-weight:900;background:linear-gradient(90deg,#FF006E,#a855f7,#00d9ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;">ConvertAPK</div>'
-    +'<div style="font-size:.6rem;color:#00d9ff;font-family:\'JetBrains Mono\',monospace;letter-spacing:.1em;">INSTALE QUALQUER SITE</div></div></div>'
-    +'<div style="display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;">'
-    +(user
-      ? '<span style="color:#94a3b8;font-weight:700;font-size:.88rem;cursor:pointer;" onclick="navigate(\'/dashboard\')" onmouseover="this.style.color=\'#FF006E\'" onmouseout="this.style.color=\'#94a3b8\'">Painel</span>'
-        +'<span style="color:#94a3b8;font-weight:700;font-size:.88rem;cursor:pointer;" onclick="navigate(\'/create-app\')" onmouseover="this.style.color=\'#FF006E\'" onmouseout="this.style.color=\'#94a3b8\'">Novo App</span>'
-        +'<button class="btn btn-outline" onclick="installMainPWA()" style="padding:.38rem .85rem;font-size:.78rem;">📲 Instalar</button>'
-        +'<div style="display:flex;align-items:center;gap:.5rem;background:rgba(15,23,42,.7);border:1px solid rgba(255,0,110,.2);padding:.3rem .7rem;border-radius:99px;">'
-        +'<span style="font-size:.82rem;font-weight:700;">'+esc(user.name)+'</span>'
-        +'<div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#FF006E,#00d9ff);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.8rem;color:#000;">'+esc(user.name.charAt(0))+'</div></div>'
-        +'<button class="btn btn-ghost" onclick="handleLogout()" style="padding:.38rem .8rem;font-size:.78rem;">Sair</button>'
-      : '<button class="btn btn-outline" onclick="installMainPWA()" style="padding:.38rem .85rem;font-size:.78rem;">📲 Instalar App</button>'
-        +'<button class="btn btn-primary" onclick="handleLogin()">Entrar</button>'
-    )
-    +'</div></div></nav>';
+function rerender() {
+  const root = document.getElementById('app-root'); if (!root) return;
+  const route = getRoute();
+  let main = '';
+  if (!user && !['/', '/pricing'].includes(route)) main = renderLanding();
+  else if (route === '/') main = renderLanding();
+  else if (route === '/dashboard') main = renderDashboard();
+  else if (route === '/create-app') main = renderCreateApp();
+  else if (route === '/pricing') main = renderPricing();
+  else if (route.startsWith('/app/')) main = renderAppDetails(parseInt(route.split('/')[2]));
+  else if (route.startsWith('/build/')) main = renderBuildPage(parseInt(route.split('/')[2]));
+  else main = renderLanding();
+  root.innerHTML = renderNavbar() + `<main class="flex-1">${main}</main>` + renderFooter() + renderToast() + renderEditModal();
 }
 
-function renderFooter(){
-  return '<footer style="border-top:1px solid rgba(255,0,110,.1);background:rgba(2,6,23,.5);padding:2rem 1.5rem;text-align:center;margin-top:auto;">'
-    +'<div style="font-size:.72rem;color:#334155;">© 2026 ConvertAPK — Instale qualquer site como app usando PWA (Progressive Web App)</div>'
-    +'</footer>';
-}
-
-function renderToast(){
-  if(!currentToast) return '';
-  var cls=currentToast.type==='error'?'toast-error':currentToast.type==='info'?'toast-info':'toast-success';
-  var ico=currentToast.type==='error'?'❌':currentToast.type==='info'?'ℹ️':'✅';
-  return '<div class="toast '+cls+'">'+ico+' '+esc(currentToast.msg)+'</div>';
-}
-
-function renderEditModal(){
-  if(!editModalAppId) return '';
-  var a=apps.find(function(x){ return x.id===editModalAppId; });
-  if(!a) return '';
-  return '<div class="modal-bg" onclick="if(event.target===this){editModalAppId=null;rerender();}">'
-    +'<div class="glass glass-pink" style="border-radius:1.5rem;padding:1.75rem;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;">'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">'
-    +'<h3 style="font-size:1rem;margin:0;">✏️ Editar App</h3>'
-    +'<button onclick="editModalAppId=null;rerender();" style="background:none;border:none;color:#94a3b8;font-size:1.3rem;cursor:pointer;">✕</button></div>'
-    +'<div style="display:flex;flex-direction:column;gap:.9rem;">'
-    +'<div style="display:flex;gap:.75rem;align-items:flex-start;">'
-    +'<div id="editIconPreview" style="width:64px;height:64px;border-radius:.75rem;overflow:hidden;background:linear-gradient(135deg,#1e1b4b,#4c1d95);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;">'
-    +(a.iconUrl&&a.iconUrl!=='[base64-image]'?'<img src="'+esc(a.iconUrl)+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.outerHTML=\'&#128241;\'">'  :'&#128241;')+'</div>'
-    +'<div style="flex:1;">'
-    +'<div class="upload-zone" onclick="document.getElementById(\'editIconFile\').click();" ondragover="event.preventDefault();this.classList.add(\'drag-over\');" ondragleave="this.classList.remove(\'drag-over\');" ondrop="event.preventDefault();this.classList.remove(\'drag-over\');handleEditImage(event.dataTransfer.files[0]);">'
-    +'<div style="font-size:.8rem;color:#94a3b8;">📸 Clique ou arraste nova imagem</div></div>'
-    +'<input type="file" id="editIconFile" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none;" onchange="handleEditImage(this.files[0])">'
-    +'<input class="input-field" id="editIconUrl" placeholder="Ou cole URL da imagem..." value="'+esc(!a.iconUrl||a.iconUrl.startsWith('data:')||a.iconUrl==='[base64-image]'?'':a.iconUrl)+'" style="margin-top:.5rem;font-size:.85rem;"></div></div>'
-    +'<div><label class="field-label">Nome *</label><input class="input-field" id="editName" value="'+esc(a.name)+'"></div>'
-    +'<div><label class="field-label">URL *</label><input class="input-field" id="editUrl" value="'+esc(a.websiteUrl)+'"></div>'
-    +'<div><label class="field-label">Descrição</label><textarea class="input-field" id="editDesc" rows="2">'+esc(a.description||'')+'</textarea></div>'
-    +'<div><label class="field-label">Package</label><input class="input-field" id="editPkg" value="'+esc(a.packageName)+'"></div>'
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">'
-    +'<div><label class="field-label">Versão</label><input class="input-field" id="editVersion" value="'+esc(a.version)+'"></div>'
-    +'<div><label class="field-label">Cor</label><input type="color" id="editColor" value="'+(a.themeColor||'#FF006E')+'" style="width:100%;height:42px;border:1px solid #1e293b;background:rgba(2,6,23,.8);border-radius:.75rem;cursor:pointer;"></div></div>'
-    +'<div><label class="field-label">Orientação</label><select class="input-field" id="editOrientation">'
-    +'<option value="portrait" '+(a.orientation==='portrait'?'selected':'')+'>Portrait</option>'
-    +'<option value="landscape" '+(a.orientation==='landscape'?'selected':'')+'>Landscape</option>'
-    +'<option value="both" '+(a.orientation==='both'?'selected':'')+'>Ambos</option></select></div>'
-    +'<div style="display:flex;gap:1.2rem;flex-wrap:wrap;font-size:.88rem;">'
-    +'<label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;"><input type="checkbox" id="editOffline" '+(a.offlineSupport?'checked':'')+' style="accent-color:#FF006E;"> Offline</label>'
-    +'<label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;"><input type="checkbox" id="editDeep" '+(a.deepLinking?'checked':'')+' style="accent-color:#FF006E;"> Deep Link</label>'
-    +'<label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;"><input type="checkbox" id="editAnalytics" '+(a.analyticsEnabled?'checked':'')+' style="accent-color:#FF006E;"> Analytics</label></div>'
-    +'<div style="display:flex;gap:.75rem;margin-top:.25rem;">'
-    +'<button class="btn btn-primary" onclick="saveEditModal('+a.id+')" style="flex:1;justify-content:center;">💾 Salvar</button>'
-    +'<button class="btn btn-ghost" onclick="editModalAppId=null;rerender();">Cancelar</button></div>'
-    +'</div></div></div>';
-}
-
-function renderInstallGuide(){
-  if(!showInstallGuide) return '';
-  return '<div class="modal-bg" onclick="if(event.target===this){showInstallGuide=false;rerender();}">'
-    +'<div class="glass glass-pink" style="border-radius:1.5rem;padding:1.75rem;max-width:440px;width:100%;">'
-    +'<h3 style="font-size:1rem;margin:0 0 1rem;">📲 Instalar ConvertAPK</h3>'
-    +'<div style="display:flex;flex-direction:column;gap:.55rem;margin-bottom:1.25rem;font-size:.82rem;">'
-    +'<div style="background:rgba(255,255,255,.04);border-radius:.6rem;padding:.55rem .75rem;">🟢 <strong>Android Chrome/Edge:</strong> Menu ⋮ → "Adicionar à tela inicial"</div>'
-    +'<div style="background:rgba(255,255,255,.04);border-radius:.6rem;padding:.55rem .75rem;">🔵 <strong>Samsung Internet:</strong> Menu ≡ → "Adicionar página à tela inicial"</div>'
-    +'<div style="background:rgba(255,255,255,.04);border-radius:.6rem;padding:.55rem .75rem;">🍎 <strong>iOS Safari:</strong> Compartilhar ↑ → "Adicionar à Tela de Início"</div>'
-    +'<div style="background:rgba(255,255,255,.04);border-radius:.6rem;padding:.55rem .75rem;">💻 <strong>Desktop Chrome:</strong> Ícone ⊕ na barra de endereços → Instalar</div>'
-    +'</div>'
-    +'<button class="btn btn-primary" onclick="showInstallGuide=false;rerender();" style="width:100%;justify-content:center;">Entendi ✓</button>'
-    +'</div></div>';
-}
-
-// ── Páginas ──────────────────────────────────────────────────────
-function renderLanding(){
-  return '<div class="grid-bg" style="padding:4.5rem 1.5rem 5rem;position:relative;overflow:hidden;">'
-    +'<div style="position:absolute;top:-120px;left:-100px;width:600px;height:600px;background:radial-gradient(circle,rgba(255,0,110,.1),transparent 70%);pointer-events:none;"></div>'
-    +'<div style="position:absolute;bottom:-80px;right:-60px;width:400px;height:400px;background:radial-gradient(circle,rgba(0,217,255,.07),transparent 70%);pointer-events:none;"></div>'
-    +'<div style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;position:relative;">'
-
-    // Left
-    +'<div>'
-    +'<div style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,0,110,.1);border:1px solid rgba(255,0,110,.3);padding:.3rem .9rem;border-radius:99px;margin-bottom:1.5rem;">'
-    +'<span style="width:7px;height:7px;background:#FF006E;border-radius:50%;display:inline-block;"></span>'
-    +'<span style="font-size:.7rem;font-weight:700;letter-spacing:.1em;color:#FF006E;">PWA TECHNOLOGY 2026</span></div>'
-    +'<h1 style="font-size:clamp(1.8rem,4.5vw,3.2rem);line-height:1.05;margin:0 0 1.2rem;">'
-    +'Transforme QUALQUER<br>'
-    +'<span style="background:linear-gradient(90deg,#FF006E,#a855f7,#00d9ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Site em App Nativo</span></h1>'
-    +'<p style="color:#94a3b8;font-size:1.05rem;margin-bottom:2rem;max-width:460px;">Sem Play Store. Sem APK. Com PWA — a tecnologia que Chrome, Samsung e Safari recomendam para instalar sites como apps reais.</p>'
-    +'<div style="display:flex;gap:.9rem;flex-wrap:wrap;margin-bottom:2.5rem;">'
-    +'<button class="btn btn-primary" onclick="handleLogin()" style="font-size:1rem;padding:.75rem 1.75rem;">⚡ Criar App Grátis →</button>'
-    +'<button class="btn btn-outline" onclick="installMainPWA()">📲 Instalar ConvertAPK</button></div>'
-    +'<div style="display:flex;gap:2rem;">'
-    +'<div><div style="font-size:1.3rem;">📱</div><div style="font-weight:700;font-size:.88rem;">Apps Reais</div><div style="font-size:.72rem;color:#64748b;">Instaláveis no celular</div></div>'
-    +'<div><div style="font-size:1.3rem;">⚡</div><div style="font-weight:700;font-size:.88rem;">1 Clique</div><div style="font-size:.72rem;color:#64748b;">Para instalar</div></div>'
-    +'<div><div style="font-size:1.3rem;">🔒</div><div style="font-weight:700;font-size:.88rem;">Sem APK</div><div style="font-size:.72rem;color:#64748b;">Sem riscos</div></div>'
-    +'</div></div>'
-
-    // Right — quick form
-    +'<div class="glass glass-pink" style="border-radius:1.5rem;padding:1.75rem;box-shadow:0 0 40px rgba(255,0,110,.15);">'
-    +'<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1.25rem;">'
-    +'<span style="font-size:1.3rem;">⚡</span><h3 style="margin:0;font-size:.95rem;">Criador Expresso</h3>'
-    +'<span class="badge b-green" style="margin-left:auto;">LIVE</span></div>'
-    +'<div style="display:flex;flex-direction:column;gap:.75rem;">'
-    +'<div><label class="field-label">Nome do App</label><input class="input-field" id="qName" placeholder="Meu App Incrível"></div>'
-    +'<div><label class="field-label">URL do Site *</label><input class="input-field" id="qUrl" type="url" placeholder="https://meusite.com.br"></div>'
-    +'<div><label class="field-label">Ícone (opcional)</label>'
-    +'<div class="upload-zone" onclick="document.getElementById(\'quickIconFile\').click();" ondragover="event.preventDefault();this.classList.add(\'drag-over\');" ondragleave="this.classList.remove(\'drag-over\');" ondrop="event.preventDefault();this.classList.remove(\'drag-over\');handleQuickImage(event.dataTransfer.files[0]);">'
-    +'<div id="quickIconPreview" style="font-size:.82rem;color:#94a3b8;">📸 Clique ou arraste (JPG/PNG, máx 2MB)</div></div>'
-    +'<input type="file" id="quickIconFile" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none;" onchange="handleQuickImage(this.files[0])"></div>'
-    +'<button class="btn btn-primary" onclick="handleQuickForm()" style="width:100%;justify-content:center;margin-top:.25rem;">Criar e Instalar →</button>'
-    +'</div></div>'
-
-    +'</div></div>'
-
-    // Steps
-    +'<div style="max-width:1100px;margin:0 auto;padding:4rem 1.5rem;">'
-    +'<h2 style="text-align:center;font-size:1.6rem;margin-bottom:.5rem;">Como funciona em <span style="color:#FF006E;">3 passos</span></h2>'
-    +'<p style="text-align:center;color:#64748b;margin-bottom:2.5rem;font-size:.9rem;">Do zero ao app instalado em menos de 1 minuto</p>'
-    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.25rem;">'
-    +[['01','Cole a URL','Informe o endereço do seu site ou webapp','🔗','#FF006E'],
-      ['02','Personalize','Nome, ícone, cor e configurações do app','🎨','#a855f7'],
-      ['03','Instale no celular','Clique em Instalar — uma nova aba abre com o botão de instalação','📲','#00d9ff']
-    ].map(function(x){ return '<div class="glass" style="border-radius:1.25rem;padding:1.5rem;border-color:rgba(51,65,85,.4);">'
-      +'<div style="font-family:\'Orbitron\',monospace;font-size:2rem;color:'+x[4]+';opacity:.7;margin-bottom:.5rem;">'+x[0]+'</div>'
-      +'<div style="font-size:1.5rem;margin-bottom:.5rem;">'+x[3]+'</div>'
-      +'<h3 style="font-size:.88rem;margin:.25rem 0;">'+x[1]+'</h3>'
-      +'<p style="font-size:.78rem;color:#64748b;margin:0;">'+x[2]+'</p></div>'; }).join('')
-    +'</div>'
-    +'<div class="glass glass-cyan" style="border-radius:1.25rem;padding:1.5rem;margin-top:2rem;">'
-    +'<h3 style="font-size:.88rem;color:#00d9ff;margin:0 0 .75rem;">💡 Por que PWA em vez de APK?</h3>'
-    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.65rem;font-size:.8rem;color:#94a3b8;">'
-    +['✅ Sem Play Store — instala direto pelo Chrome','✅ Sempre atualizado — sem baixar updates','✅ Funciona offline — Service Worker integrado','✅ Ícone na tela inicial — parece app nativo','✅ Notificações push — como apps nativos','✅ Sem riscos — nenhum APK de fonte desconhecida'].map(function(f){ return '<div>'+f+'</div>'; }).join('')
-    +'</div></div></div>';
-}
-
-function renderDashboard(){
-  return '<div style="max-width:1280px;margin:0 auto;padding:2.5rem 1.5rem;">'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:2rem;">'
-    +'<div><h1 style="margin:0;font-size:1.5rem;background:linear-gradient(90deg,#FF006E,#a855f7,#00d9ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Meus Apps</h1>'
-    +'<p style="margin:.2rem 0 0;color:#64748b;font-size:.875rem;">Olá, '+esc(user?user.name:'Dev')+' — '+apps.length+' app'+(apps.length!==1?'s':'')+' criado'+(apps.length!==1?'s':'')+'</p></div>'
-    +'<button class="btn btn-primary" onclick="navigate(\'/create-app\')">+ Novo App</button></div>'
-    +(apps.length===0
-      ? '<div class="glass" style="border-radius:1.5rem;padding:4rem;text-align:center;">'
-        +'<div style="font-size:3rem;margin-bottom:1rem;">📱</div>'
-        +'<h3 style="font-size:1rem;margin-bottom:.5rem;">Nenhum app ainda</h3>'
-        +'<p style="color:#64748b;font-size:.875rem;margin-bottom:1.25rem;">Crie seu primeiro app agora!</p>'
-        +'<button class="btn btn-primary" onclick="navigate(\'/create-app\')">+ Criar Primeiro App</button></div>'
-      : '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:1rem;">'
-        +apps.map(function(app){
-          return '<div class="glass glass-pink app-card" style="border-radius:1.25rem;padding:1.2rem;" onclick="navigate(\'/app/'+app.id+'\')">'
-            +'<div style="display:flex;gap:.75rem;align-items:center;margin-bottom:.9rem;">'
-            +iconHtml(app.iconUrl,52)
-            +'<div style="flex:1;min-width:0;">'
-            +'<div style="font-weight:700;font-size:1rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(app.name)+'</div>'
-            +'<div style="font-size:.72rem;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(app.websiteUrl)+'</div>'
-            +'<span class="badge b-pink" style="margin-top:.3rem;">v'+esc(app.version)+'</span></div></div>'
-            +'<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(51,65,85,.4);padding-top:.75rem;" onclick="event.stopPropagation();">'
-            +'<span style="font-size:.72rem;color:#64748b;">📅 '+fmtDate(app.createdAt)+'</span>'
-            +'<div style="display:flex;gap:.4rem;">'
-            +'<button class="btn btn-green" style="padding:.3rem .65rem;font-size:.73rem;" onclick="installAppAsPWA(apps.find(function(a){return a.id==='+app.id+'}))">📲 Instalar</button>'
-            +'<button class="btn btn-outline" style="padding:.3rem .65rem;font-size:.73rem;" onclick="openEditModal('+app.id+')">✏️</button>'
-            +'<button class="btn btn-danger" style="padding:.3rem .65rem;font-size:.73rem;" onclick="if(confirm(\'Deletar '+esc(app.name.replace(/'/g,"\\\'"))+'?\'))deleteApp('+app.id+')">🗑️</button>'
-            +'</div></div></div>';
-        }).join('')
-        +'</div>'
-    )
-    +'</div>';
-}
-
-function renderCreateApp(){
-  var rPkg='com.convertapk.app'+(Math.floor(Math.random()*9000)+1000);
-  return '<div style="max-width:860px;margin:0 auto;padding:2.5rem 1.5rem;">'
-    +'<div style="display:flex;align-items:center;gap:1rem;margin-bottom:2rem;">'
-    +'<button class="btn btn-ghost" onclick="navigate(\'/dashboard\')" style="padding:.4rem .9rem;">← Voltar</button>'
-    +'<h1 style="margin:0;font-size:1.3rem;">Criar Novo App</h1></div>'
-    +'<div class="glass glass-pink" style="border-radius:1.5rem;padding:1.75rem;">'
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">'
-    +'<div style="display:flex;flex-direction:column;gap:1rem;">'
-    +'<div><label class="field-label">Nome do App *</label><input class="input-field" id="caName" placeholder="Meu Super App" required></div>'
-    +'<div><label class="field-label">URL do Site *</label><input class="input-field" id="caUrl" type="url" placeholder="https://meusite.com.br" required></div>'
-    +'<div><label class="field-label">Descrição</label><textarea class="input-field" id="caDesc" rows="2" placeholder="Descreva seu app..."></textarea></div>'
-    +'<div><label class="field-label">Package Name *</label><input class="input-field" id="caPkg" placeholder="com.empresa.app" value="'+rPkg+'" required></div>'
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">'
-    +'<div><label class="field-label">Versão</label><input class="input-field" id="caVersion" value="1.0.0"></div>'
-    +'<div><label class="field-label">Cor tema</label><input type="color" id="caColor" value="#FF006E" style="width:100%;height:42px;border:1px solid #1e293b;background:rgba(2,6,23,.8);border-radius:.75rem;cursor:pointer;"></div></div>'
-    +'<div><label class="field-label">Orientação</label><select class="input-field" id="caOrientation"><option value="portrait">Portrait</option><option value="landscape">Landscape</option><option value="both">Ambos</option></select></div>'
-    +'<div style="display:flex;flex-direction:column;gap:.5rem;font-size:.88rem;">'
-    +'<label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;"><input type="checkbox" id="caOffline" checked style="accent-color:#FF006E;"> Suporte Offline</label>'
-    +'<label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;"><input type="checkbox" id="caDeep" style="accent-color:#FF006E;"> Deep Linking</label>'
-    +'<label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;"><input type="checkbox" id="caAnalytics" checked style="accent-color:#FF006E;"> Analytics</label></div></div>'
-    +'<div style="display:flex;flex-direction:column;gap:1rem;">'
-    +'<label class="field-label">Ícone do App</label>'
-    +'<div id="caIconPreview" style="width:120px;height:120px;margin:0 auto;border-radius:1rem;overflow:hidden;background:linear-gradient(135deg,#1e1b4b,#4c1d95);display:flex;align-items:center;justify-content:center;font-size:3rem;border:2px solid rgba(255,0,110,.2);">📱</div>'
-    +'<div class="upload-zone" onclick="document.getElementById(\'caIconFile\').click();" ondragover="event.preventDefault();this.classList.add(\'drag-over\');" ondragleave="this.classList.remove(\'drag-over\');" ondrop="event.preventDefault();this.classList.remove(\'drag-over\');handleCaImage(event.dataTransfer.files[0]);">'
-    +'<div style="font-size:.85rem;color:#94a3b8;">📸 Clique ou arraste<br><span style="font-size:.75rem;">JPG/PNG/WEBP — máx 2MB</span></div></div>'
-    +'<input type="file" id="caIconFile" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none;" onchange="handleCaImage(this.files[0])">'
-    +'<div style="display:flex;align-items:center;gap:.5rem;"><div style="flex:1;height:1px;background:rgba(51,65,85,.5);"></div><span style="font-size:.7rem;color:#475569;font-weight:700;">OU</span><div style="flex:1;height:1px;background:rgba(51,65,85,.5);"></div></div>'
-    +'<input class="input-field" id="caIconUrl" placeholder="Cole URL da imagem..." style="font-size:.85rem;">'
-    +'<button class="btn btn-danger" onclick="clearCaIcon()" style="font-size:.8rem;justify-content:center;">✕ Limpar Ícone</button>'
-    +'<div style="background:rgba(0,217,255,.05);border:1px solid rgba(0,217,255,.2);border-radius:.75rem;padding:.9rem;font-size:.77rem;color:#94a3b8;margin-top:auto;">'
-    +'<div style="color:#00d9ff;font-weight:700;margin-bottom:.3rem;">ℹ️ Como vai funcionar?</div>'
-    +'Depois de criar, clique em <strong style="color:#fff;">📲 Instalar</strong>. Uma nova aba abrirá com seu app carregado. Nela, uma barra aparece no topo com o botão de instalação.</div>'
-    +'</div></div>'
-    +'<div class="divider"></div>'
-    +'<div style="display:flex;gap:.75rem;flex-wrap:wrap;">'
-    +'<button class="btn btn-primary" onclick="submitCreateApp()" style="padding:.75rem 2rem;">⚡ Criar App</button>'
-    +'<button class="btn btn-ghost" onclick="navigate(\'/dashboard\')">Cancelar</button>'
-    +'</div></div></div>';
-}
-
-function renderAppDetails(appId){
-  var app=apps.find(function(a){ return a.id===appId; });
-  if(!app) return '<div style="text-align:center;padding:4rem;"><p>App não encontrado.</p><button class="btn btn-outline" onclick="navigate(\'/dashboard\')" style="margin-top:1rem;">← Dashboard</button></div>';
-  return '<div style="max-width:1100px;margin:0 auto;padding:2.5rem 1.5rem;">'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:2rem;">'
-    +'<button class="btn btn-ghost" onclick="navigate(\'/dashboard\')" style="padding:.4rem .9rem;">← Dashboard</button>'
-    +'<div style="display:flex;gap:.6rem;flex-wrap:wrap;">'
-    +'<button class="btn btn-outline" onclick="openEditModal('+app.id+')" style="border-color:rgba(0,217,255,.4);color:#00d9ff;">✏️ Editar</button>'
-    +'<button class="btn btn-ghost" onclick="navigate(\'/build/'+app.id+'\')">⚙️ Simular Build</button>'
-    +'<button class="btn btn-green" onclick="installAppAsPWA(apps.find(function(a){return a.id==='+app.id+'}))">📲 Instalar Este App</button>'
-    +'<button class="btn btn-danger" onclick="if(confirm(\'Excluir?\'))deleteApp('+app.id+')">🗑️</button></div></div>'
-    +'<div class="glass glass-pink" style="border-radius:1.25rem;padding:1.75rem;margin-bottom:1.25rem;">'
-    +'<div style="display:flex;gap:1.25rem;align-items:center;flex-wrap:wrap;">'+iconHtml(app.iconUrl,80)
-    +'<div><h2 style="margin:0;font-size:1.4rem;">'+esc(app.name)+'</h2>'
-    +'<a href="'+esc(app.websiteUrl)+'" target="_blank" rel="noopener" style="color:#FF006E;font-size:.875rem;">'+esc(app.websiteUrl)+' ↗</a>'
-    +'<div style="display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap;">'
-    +'<span class="badge b-pink">v'+esc(app.version)+'</span>'
-    +(app.offlineSupport?'<span class="badge b-green">Offline</span>':'')
-    +(app.deepLinking?'<span class="badge b-cyan">Deep Link</span>':'')+'</div></div></div>'
-    +(app.description?'<p style="color:#94a3b8;margin:1rem 0 0;font-size:.875rem;">'+esc(app.description)+'</p>':'')
-    +'<div class="divider"></div>'
-    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;font-size:.85rem;">'
-    +'<div><span style="color:#64748b;font-size:.68rem;display:block;text-transform:uppercase;letter-spacing:.06em;">Package</span><span style="font-family:\'JetBrains Mono\',monospace;font-size:.75rem;">'+esc(app.packageName)+'</span></div>'
-    +'<div><span style="color:#64748b;font-size:.68rem;display:block;text-transform:uppercase;letter-spacing:.06em;">Orientação</span>'+esc(app.orientation)+'</div>'
-    +'<div><span style="color:#64748b;font-size:.68rem;display:block;text-transform:uppercase;letter-spacing:.06em;">Criado em</span>'+fmtDate(app.createdAt)+'</div>'
-    +'</div></div>'
-    +'<div class="install-highlight">'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">'
-    +'<div><div style="font-weight:700;color:#00d9ff;margin-bottom:.25rem;">📲 Instalar como App PWA</div>'
-    +'<div style="font-size:.8rem;color:#64748b;">Uma nova aba abrirá com seu app. Toque em "Instalar" na barra que aparece no topo.</div></div>'
-    +'<button class="btn btn-green" onclick="installAppAsPWA(apps.find(function(a){return a.id==='+app.id+'}))" style="padding:.7rem 1.5rem;">📲 Instalar Agora</button>'
-    +'</div></div></div>';
-}
-
-function renderBuildPage(appId){
-  var app=apps.find(function(a){ return a.id===appId; });
-  if(!app) return '<div style="text-align:center;padding:4rem;">App não encontrado.</div>';
-  return '<div style="max-width:1100px;margin:0 auto;padding:2.5rem 1.5rem;">'
-    +'<div style="display:flex;align-items:center;gap:1rem;margin-bottom:2rem;">'
-    +'<button class="btn btn-ghost" onclick="navigate(\'/app/'+app.id+'\')" style="padding:.4rem .9rem;">← Voltar</button>'
-    +'<div><h1 style="margin:0;font-size:1.2rem;">⚙️ Simular Build: '+esc(app.name)+'</h1>'
-    +'<div style="font-size:.75rem;color:#64748b;">'+esc(app.packageName)+' · v'+esc(app.version)+'</div></div></div>'
-    +'<div style="display:grid;grid-template-columns:1.6fr 1fr;gap:1.25rem;">'
-    +'<div class="glass glass-pink" style="border-radius:1.25rem;padding:1.75rem;">'
-    +'<div style="display:flex;gap:1rem;align-items:center;margin-bottom:1.5rem;">'
-    +iconHtml(app.iconUrl,52)
-    +'<div><div style="font-weight:700;">'+esc(app.name)+'</div><div style="font-size:.78rem;color:#64748b;">'+esc(app.websiteUrl)+'</div></div></div>'
-    +'<div id="buildPreChecks">'
-    +'<h3 style="font-size:.75rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.9rem;">Checklist</h3>'
-    +'<div style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:1.25rem;font-size:.85rem;">'
-    +[['URL configurada',!!app.websiteUrl],['Package name',!!app.packageName],['Ícone',!!(app.iconUrl&&app.iconUrl!=='[base64-image]')],['Versão',!!app.version]].map(function(x){
-      return '<div style="display:flex;align-items:center;gap:.5rem;"><span style="color:'+(x[1]?'#4ade80':'#f87171')+'">'+(x[1]?'✔':'✖')+'</span><span style="color:'+(x[1]?'#e2e8f0':'#94a3b8')+'">'+x[0]+'</span></div>';
-    }).join('')
-    +'</div>'
-    +'<button class="btn btn-primary" onclick="startBuild('+app.id+')" style="width:100%;justify-content:center;padding:.8rem;">▶ Simular Compilação</button></div>'
-    +'<div id="buildProgress" style="display:none;">'
-    +'<div style="display:flex;justify-content:space-between;margin-bottom:.4rem;font-size:.875rem;">'
-    +'<span id="buildPhaseLabel" style="font-weight:700;">Inicializando...</span>'
-    +'<span id="buildPct" style="color:#94a3b8;">0%</span></div>'
-    +'<div class="prog-track"><div class="prog-fill" id="buildProgressBar" style="width:0%"></div></div></div>'
-    +'<div id="buildResult" style="display:none;"></div></div>'
-    +'<div class="glass" style="border-radius:1.25rem;padding:1.25rem;">'
-    +'<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;">'
-    +'<span style="width:8px;height:8px;background:#64748b;border-radius:50%;display:inline-block;" id="consoleStatusDot"></span>'
-    +'<span style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#64748b;">Console</span></div>'
-    +'<div class="log-box" id="buildLogs"><span class="log-info">[READY] Aguardando início da simulação...</span></div>'
-    +'</div></div></div>';
-}
-
-function renderPricing(){
-  return '<div style="max-width:1000px;margin:0 auto;padding:3.5rem 1.5rem;text-align:center;">'
-    +'<h1 style="font-size:2rem;margin-bottom:.5rem;">Planos <span style="color:#FF006E;">ConvertAPK</span></h1>'
-    +'<p style="color:#64748b;margin-bottom:2.5rem;">Escolha o plano ideal</p>'
-    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;text-align:left;">'
-    +[{name:'Grátis',price:'R$ 0',per:'',color:'#94a3b8',features:['Apps ilimitados','Instalação via PWA','Ícones personalizados','Offline com Service Worker'],missing:['Geração real de APK','Whitelabel'],cta:'Começar Grátis',action:'handleLogin()',popular:false},
-      {name:'Premium',price:'R$ 29',per:'/mês',color:'#FF006E',features:['Tudo do Grátis','Geração real de APK','Notificações push','Whitelabel total','Suporte prioritário'],missing:[],cta:'Ativar Premium',action:"handleUpgrade('premium')",popular:true}
-    ].map(function(p){
-      return '<div class="glass" style="border-radius:1.5rem;padding:1.75rem;position:relative;'+(p.popular?'border-color:rgba(255,0,110,.45);box-shadow:0 0 28px rgba(255,0,110,.18);':'') +'">'
-        +(p.popular?'<div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#FF006E,#9333ea);color:#fff;font-size:.68rem;font-weight:700;letter-spacing:.08em;padding:.3rem 1rem;border-radius:99px;">🔥 POPULAR</div>':'')
-        +'<div style="font-family:\'Orbitron\',monospace;color:'+p.color+';font-size:.85rem;margin-bottom:.5rem;">'+p.name+'</div>'
-        +'<div style="display:flex;align-items:baseline;gap:.2rem;margin-bottom:1.25rem;">'
-        +'<span style="font-family:\'Orbitron\',monospace;font-size:2rem;font-weight:900;">'+p.price+'</span>'
-        +'<span style="color:#64748b;font-size:.875rem;">'+p.per+'</span></div>'
-        +'<div style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:1.5rem;font-size:.85rem;">'
-        +p.features.map(function(f){ return '<div style="display:flex;align-items:center;gap:.4rem;"><span style="color:#4ade80;">✓</span>'+f+'</div>'; }).join('')
-        +p.missing.map(function(f){ return '<div style="display:flex;align-items:center;gap:.4rem;color:#475569;"><span>✗</span>'+f+'</div>'; }).join('')
-        +'</div>'
-        +'<button class="btn '+(p.popular?'btn-primary':'btn-outline')+'" onclick="'+p.action+'" style="width:100%;justify-content:center;'+(p.popular?'':'border-color:'+p.color+';color:'+p.color+';')+'">'+p.cta+'</button>'
-        +'</div>';
-    }).join('')
-    +'</div></div>';
-}
-
-// ── Main rerender ─────────────────────────────────────────────────
-function rerender(){
-  var root=document.getElementById('app-root');
-  if(!root) return;
-  var route=getRoute();
-  var main='';
-  if(!user&&route!=='/'&&route!=='/pricing') main=renderLanding();
-  else if(route==='/') main=renderLanding();
-  else if(route==='/dashboard') main=renderDashboard();
-  else if(route==='/create-app') main=renderCreateApp();
-  else if(route==='/pricing') main=renderPricing();
-  else if(/^\/app\/\d+$/.test(route)) main=renderAppDetails(parseInt(route.split('/')[2]));
-  else if(/^\/build\/\d+$/.test(route)) main=renderBuildPage(parseInt(route.split('/')[2]));
-  else main=renderLanding();
-  root.innerHTML=renderNavbar()+'<main style="flex:1;">'+main+'</main>'+renderFooter()+renderToast()+renderEditModal()+renderInstallGuide();
-}
-window.rerender=rerender;
-window.addEventListener('hashchange',rerender);
 loadStorage();
+window.addEventListener('hashchange', rerender);
 rerender();
 </script>
 </body>
