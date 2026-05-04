@@ -2,204 +2,39 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>ConvertAPK • Criador de APK No-Code para Android</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>ConvertAPK • Criador de APK No-Code</title>
+  <!-- PWA metas -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FF006E">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CnvertAPK">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <!-- Tailwind + fonts -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=JetBrains+Mono&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --pink: #FF006E;
-      --cyan: #00d9ff;
-      --purple: #7C3AED;
-      --bg: #020617;
-      --surface: rgba(15,23,42,0.7);
-    }
-    * { scroll-behavior: smooth; box-sizing: border-box; }
-    body {
-      background-color: var(--bg);
-      font-family: 'Rajdhani', system-ui, sans-serif;
-      font-size: 16px;
-      line-height: 1.5;
-    }
+    * { scroll-behavior: smooth; }
+    body { background-color: #020617; font-family: 'Rajdhani', sans-serif; }
     h1,h2,h3,h4 { font-family: 'Orbitron', monospace; }
-    code, .mono { font-family: 'JetBrains Mono', monospace; }
-    ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: #0f172a; }
-    ::-webkit-scrollbar-thumb { background: var(--pink); border-radius: 10px; }
-
-    /* Glow effects */
-    .glow-pink  { box-shadow: 0 0 24px rgba(255,0,110,0.35); }
-    .glow-cyan  { box-shadow: 0 0 24px rgba(0,217,255,0.25); }
-    .text-glow  { text-shadow: 0 0 16px rgba(255,0,110,0.5); }
-    .text-glow-cyan { text-shadow: 0 0 16px rgba(0,217,255,0.5); }
-
-    /* Glass panel */
-    .glass {
-      backdrop-filter: blur(14px);
-      background: rgba(15,23,42,0.65);
-      border: 1px solid rgba(51,65,85,0.55);
-    }
+    .glass { backdrop-filter: blur(12px); background: rgba(15,23,42,0.7); border: 1px solid rgba(51,65,85,0.6); }
     .glass-pink { border-color: rgba(255,0,110,0.3); }
-
-    /* Grid background */
-    .grid-bg {
-      background-image:
-        linear-gradient(rgba(255,0,110,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,0,110,0.04) 1px, transparent 1px);
-      background-size: 40px 40px;
-    }
-    /* Scanline */
-    .scanlines::after {
-      content:''; position:absolute; inset:0; pointer-events:none;
-      background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.08) 2px,rgba(0,0,0,0.08) 4px);
-    }
-
-    /* Buttons */
-    .btn-primary {
-      background: linear-gradient(135deg, var(--pink), #9333ea);
-      border: none; color:#fff; font-family:'Rajdhani',sans-serif;
-      font-weight:700; font-size:1rem; letter-spacing:.05em;
-      padding:.6rem 1.4rem; border-radius:.75rem; cursor:pointer;
-      transition: all .2s; display:inline-flex; align-items:center; gap:.4rem;
-    }
-    .btn-primary:hover { filter:brightness(1.15); transform:translateY(-1px); box-shadow:0 0 20px rgba(255,0,110,.45); }
-    .btn-outline {
-      background: transparent;
-      border: 1px solid rgba(255,0,110,.5); color:var(--pink);
-      font-family:'Rajdhani',sans-serif; font-weight:700;
-      padding:.6rem 1.4rem; border-radius:.75rem; cursor:pointer;
-      transition:all .2s;
-    }
-    .btn-outline:hover { background:rgba(255,0,110,.1); border-color:var(--pink); }
-    .btn-cyan {
-      background: linear-gradient(135deg, #0891b2, var(--cyan));
-      border:none; color:#000; font-weight:700; font-family:'Rajdhani',sans-serif;
-      padding:.6rem 1.4rem; border-radius:.75rem; cursor:pointer; transition:all .2s;
-    }
-    .btn-cyan:hover { filter:brightness(1.1); transform:translateY(-1px); }
-    .btn-danger {
-      background: transparent; border: 1px solid rgba(239,68,68,.5);
-      color:#f87171; font-family:'Rajdhani',sans-serif; font-weight:700;
-      padding:.5rem 1rem; border-radius:.75rem; cursor:pointer; transition:all .2s;
-    }
-    .btn-danger:hover { background:rgba(239,68,68,.12); }
-
-    /* Input */
-    .input-field {
-      width:100%; background:rgba(2,6,23,.8);
-      border:1px solid rgba(51,65,85,.8); color:#e2e8f0;
-      font-family:'Rajdhani',sans-serif; font-size:1rem;
-      padding:.65rem 1rem; border-radius:.75rem; outline:none;
-      transition: border-color .2s, box-shadow .2s;
-    }
-    .input-field:focus { border-color:var(--pink); box-shadow:0 0 0 3px rgba(255,0,110,.12); }
-    .input-field::placeholder { color:#475569; }
-    label.field-label {
-      display:block; font-size:.75rem; font-weight:700;
-      letter-spacing:.08em; text-transform:uppercase; color:#94a3b8; margin-bottom:.4rem;
-    }
-
-    /* Card hover */
-    .app-card {
-      transition: border-color .2s, box-shadow .2s, transform .15s;
-      cursor:pointer;
-    }
-    .app-card:hover {
-      border-color: rgba(255,0,110,.5) !important;
-      box-shadow: 0 0 24px rgba(255,0,110,.15);
-      transform: translateY(-2px);
-    }
-
-    /* Upload zone */
-    .upload-zone {
-      border: 2px dashed rgba(255,0,110,.3); border-radius:1rem;
-      padding:1.5rem; text-align:center; cursor:pointer;
-      transition: all .2s; background:rgba(255,0,110,.03);
-    }
-    .upload-zone:hover, .upload-zone.drag-over {
-      border-color:var(--pink); background:rgba(255,0,110,.08);
-    }
-
-    /* Build progress bar */
-    .progress-bar-track {
-      width:100%; height:8px; background:#1e293b; border-radius:99px; overflow:hidden;
-    }
-    .progress-bar-fill {
-      height:100%; border-radius:99px;
-      background: linear-gradient(90deg, var(--pink), var(--cyan));
-      transition: width .4s ease;
-    }
-
-    /* Log output */
-    .log-output {
-      background:#020617; border:1px solid rgba(51,65,85,.6);
-      border-radius:.75rem; padding:.75rem; font-family:'JetBrains Mono',monospace;
-      font-size:.7rem; color:#94a3b8; overflow-y:auto; height:280px;
-    }
-    .log-output .log-ok   { color:#4ade80; }
-    .log-output .log-warn { color:#facc15; }
-    .log-output .log-err  { color:#f87171; }
-    .log-output .log-info { color:#38bdf8; }
-
-    /* Toast */
-    .toast {
-      position:fixed; bottom:2rem; right:1.5rem; z-index:9999;
-      padding:.85rem 1.4rem; border-radius:1rem;
-      font-family:'Rajdhani',sans-serif; font-weight:700; font-size:.95rem;
-      backdrop-filter:blur(12px); animation:slideUp .3s ease;
-      display:flex; align-items:center; gap:.6rem; max-width:360px;
-    }
-    .toast-success { background:rgba(15,23,42,.95); border:1px solid rgba(74,222,128,.5); color:#4ade80; }
-    .toast-error   { background:rgba(15,23,42,.95); border:1px solid rgba(248,113,113,.5); color:#f87171; }
-    .toast-info    { background:rgba(15,23,42,.95); border:1px solid rgba(56,189,248,.5); color:#38bdf8; }
-    @keyframes slideUp { from { transform:translateY(20px); opacity:0; } to { transform:translateY(0); opacity:1; } }
-
-    /* Badge */
-    .badge { display:inline-flex; align-items:center; padding:.15rem .6rem; border-radius:99px; font-size:.7rem; font-weight:700; letter-spacing:.05em; }
-    .badge-pink   { background:rgba(255,0,110,.15); color:#ff6eb4; border:1px solid rgba(255,0,110,.3); }
-    .badge-green  { background:rgba(74,222,128,.12); color:#4ade80; border:1px solid rgba(74,222,128,.3); }
-    .badge-red    { background:rgba(248,113,113,.12); color:#f87171; border:1px solid rgba(248,113,113,.3); }
-    .badge-cyan   { background:rgba(0,217,255,.12); color:#00d9ff; border:1px solid rgba(0,217,255,.3); }
-    .badge-yellow { background:rgba(250,204,21,.12); color:#facc15; border:1px solid rgba(250,204,21,.3); }
-
-    /* Stat card */
-    .stat-card { glass; border-radius:1rem; padding:1.2rem 1.5rem; }
-
-    /* Default app icon */
-    .app-icon-default {
-      background: linear-gradient(135deg,#1e1b4b,#312e81,#4c1d95);
-      display:flex; align-items:center; justify-content:center;
-      font-size:1.6rem; border-radius:.75rem; flex-shrink:0;
-    }
-
-    /* Nav link */
-    .nav-link {
-      font-family:'Rajdhani',sans-serif; font-weight:700;
-      font-size:.9rem; letter-spacing:.06em; text-transform:uppercase;
-      color:#94a3b8; transition:color .2s; cursor:pointer; padding:.25rem 0;
-      border-bottom:2px solid transparent;
-    }
-    .nav-link:hover { color:var(--pink); border-bottom-color:rgba(255,0,110,.4); }
-
-    /* Modal backdrop */
-    .modal-backdrop {
-      position:fixed; inset:0; z-index:200;
-      background:rgba(2,6,23,.85); backdrop-filter:blur(6px);
-      display:flex; align-items:center; justify-content:center; padding:1rem;
-    }
-
-    /* Section divider */
-    .cyber-divider {
-      height:1px;
-      background: linear-gradient(90deg, transparent, rgba(255,0,110,.4), rgba(0,217,255,.4), transparent);
-      margin: 2rem 0;
-    }
-
-    /* Animations */
-    @keyframes pulse-slow { 0%,100% { opacity:.6; } 50% { opacity:1; } }
-    .animate-pulse-slow { animation: pulse-slow 3s infinite; }
-    @keyframes spin-slow { to { transform:rotate(360deg); } }
-    .animate-spin-slow { animation: spin-slow 8s linear infinite; }
+    .btn-primary { background: linear-gradient(135deg, #FF006E, #9333ea); color: white; font-weight: 700; padding: 0.6rem 1.4rem; border-radius: 0.75rem; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.4rem; }
+    .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 0 20px rgba(255,0,110,0.4); }
+    .btn-outline { background: transparent; border: 1px solid rgba(255,0,110,0.5); color: #FF006E; font-weight: 700; padding: 0.6rem 1.4rem; border-radius: 0.75rem; cursor: pointer; transition: 0.2s; }
+    .btn-outline:hover { background: rgba(255,0,110,0.1); border-color: #FF006E; }
+    .input-field { width: 100%; background: rgba(2,6,23,0.8); border: 1px solid #1e293b; color: #e2e8f0; padding: 0.65rem 1rem; border-radius: 0.75rem; outline: none; }
+    .input-field:focus { border-color: #FF006E; box-shadow: 0 0 0 2px rgba(255,0,110,0.2); }
+    .upload-zone { border: 2px dashed rgba(255,0,110,0.3); border-radius: 1rem; padding: 1rem; text-align: center; cursor: pointer; transition: 0.2s; background: rgba(255,0,110,0.03); }
+    .upload-zone:hover { border-color: #FF006E; background: rgba(255,0,110,0.08); }
+    .toast { position: fixed; bottom: 2rem; right: 1.5rem; z-index: 9999; padding: 0.85rem 1.4rem; border-radius: 1rem; backdrop-filter: blur(12px); animation: slideUp 0.3s ease; }
+    .toast-success { background: rgba(15,23,42,0.95); border: 1px solid #4ade80; color: #4ade80; }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .app-icon-default { background: linear-gradient(135deg, #1e1b4b, #4c1d95); display: flex; align-items: center; justify-content: center; border-radius: 0.75rem; flex-shrink: 0; font-size: 1.5rem; }
+    .progress-bar-track { width: 100%; height: 8px; background: #1e293b; border-radius: 99px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #FF006E, #00d9ff); transition: width 0.3s ease; }
+    .log-output { background: #020617; border: 1px solid #1e293b; border-radius: 0.75rem; padding: 0.75rem; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #94a3b8; height: 280px; overflow-y: auto; }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 antialiased min-h-screen">
@@ -207,1317 +42,396 @@
 <div id="app-root" class="flex flex-col min-h-screen"></div>
 
 <script>
-// ============================================================
-//  WEB2APK — Full Featured App (Corrected + Enhanced)
-// ============================================================
-
-// ---- State ----
+// ======================== ESTADO GLOBAL ========================
 let user = null;
 let apps = [];
 let builds = [];
 let toastQueue = [];
-let toastTimer = null;
 let editModalAppId = null;
+let currentToast = null;
 
-// ---- Storage ----
-const KEYS = { user:'w2a_user', apps:'w2a_apps', builds:'w2a_builds' };
-
-function loadStorage() {
+// Carregar / salvar
+const loadStorage = () => {
   try {
-    const u = localStorage.getItem(KEYS.user);
-    if (u) user = JSON.parse(u);
-    const a = localStorage.getItem(KEYS.apps);
-    if (a) apps = JSON.parse(a);
-    else seedApps();
-    const b = localStorage.getItem(KEYS.builds);
-    if (b) builds = JSON.parse(b);
-    else seedBuilds();
-  } catch(e) { seedApps(); seedBuilds(); }
-}
-function persist() {
-  try {
-    localStorage.setItem(KEYS.user, JSON.stringify(user));
-    localStorage.setItem(KEYS.apps, JSON.stringify(apps));
-    localStorage.setItem(KEYS.builds, JSON.stringify(builds));
-  } catch(e) {
-    // If localStorage is full (e.g. due to base64 images), try to save without large images
-    try {
-      const appsLight = apps.map(a => ({ ...a, iconUrl: a.iconUrl && a.iconUrl.startsWith('data:') ? '[base64-image]' : a.iconUrl }));
-      localStorage.setItem(KEYS.apps, JSON.stringify(appsLight));
-      toast('Aviso: imagem não persistida (localStorage cheio)', 'error');
-    } catch(e2) {}
-  }
-}
+    user = JSON.parse(localStorage.getItem('w2a_user'));
+    apps = JSON.parse(localStorage.getItem('w2a_apps')) || [
+      { id: 1, userId: 1, name: "TechNews Brasil", description: "Portal de tecnologia", websiteUrl: "https://technews.com.br", packageName: "com.Convertapk.technews", version: "1.2.0", themeColor: "#FF006E", orientation: "portrait", permissions: ["INTERNET"], offlineSupport: true, deepLinking: false, analyticsEnabled: true, iconUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=100&q=80", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+    ];
+    builds = JSON.parse(localStorage.getItem('w2a_builds')) || [];
+  } catch(e) { console.warn(e); }
+};
+const persist = () => {
+  localStorage.setItem('w2a_user', JSON.stringify(user));
+  localStorage.setItem('w2a_apps', JSON.stringify(apps));
+  localStorage.setItem('w2a_builds', JSON.stringify(builds));
+};
 
-function seedApps() {
-  apps = [
-    {
-      id: 1, userId: 1, name: "TechNews Brasil",
-      description: "Portal de notícias de tecnologia cyberpunk.",
-      websiteUrl: "https://technews.com.br",
-      packageName: "com.web2apk.technews", version: "1.2.0",
-      themeColor: "#FF006E", orientation: "portrait",
-      permissions: ["INTERNET","ACCESS_FINE_LOCATION"],
-      offlineSupport: true, deepLinking: false, analyticsEnabled: true,
-      iconUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=100&q=80",
-      createdAt: new Date(Date.now()-86400000*5).toISOString(),
-      updatedAt: new Date().toISOString()
-    },
-    {
-      id: 2, userId: 1, name: "Cyber Fitness",
-      description: "Treinos e biohacking para o mundo moderno.",
-      websiteUrl: "https://cyberfitness.fit",
-      packageName: "com.web2apk.fitness", version: "1.0.1",
-      themeColor: "#00d9ff", orientation: "portrait",
-      permissions: ["INTERNET","CAMERA"],
-      offlineSupport: true, deepLinking: true, analyticsEnabled: true,
-      iconUrl: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=100&q=80",
-      createdAt: new Date(Date.now()-86400000).toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-  ];
-}
-function seedBuilds() {
-  builds = [
-    { id:101, appId:1, userId:1, status:"completed", apkUrl:"mock", fileSize:45219876,
-      buildStartedAt: new Date(Date.now()-86400000*2).toISOString(),
-      buildCompletedAt: new Date(Date.now()-86400000*1.9).toISOString(),
-      createdAt: new Date(Date.now()-86400000*2).toISOString(), errorMessage:null },
-    { id:102, appId:1, userId:1, status:"error", apkUrl:null, fileSize:null,
-      createdAt: new Date(Date.now()-86400000).toISOString(), errorMessage:"Erro de assinatura SSL" },
-    { id:103, appId:2, userId:1, status:"completed", apkUrl:"mock", fileSize:31250000,
-      buildStartedAt: new Date(Date.now()-86400000).toISOString(),
-      buildCompletedAt: new Date(Date.now()-86400000).toISOString(),
-      createdAt: new Date(Date.now()-86400000).toISOString() }
-  ];
-}
+// Rotas
+const getRoute = () => window.location.hash.slice(1) || '/';
+const navigate = (route) => { window.location.hash = route; rerender(); };
 
-// ---- Router ----
-function getRoute() { return window.location.hash.slice(1) || '/'; }
-function navigate(route) { window.location.hash = route; rerender(); }
-
-// ---- Toast ----
-function toast(msg, type='success') {
-  toastQueue.push({ msg, type, id: Date.now() });
-  if (!toastTimer) showNextToast();
-}
-function showNextToast() {
-  if (!toastQueue.length) { toastTimer = null; rerender(); return; }
-  const t = toastQueue.shift();
-  window._currentToast = t;
+// Toast
+const toast = (msg, type='success') => {
+  toastQueue.push({ msg, type });
+  if (!currentToast) showNextToast();
+};
+const showNextToast = () => {
+  if (!toastQueue.length) { currentToast = null; rerender(); return; }
+  currentToast = toastQueue.shift();
   rerender();
-  toastTimer = setTimeout(() => {
-    window._currentToast = null;
-    showNextToast();
-  }, 3000);
-}
+  setTimeout(showNextToast, 3000);
+};
 
-// ---- Image Helpers ----
-function fileToBase64(file) {
-  return new Promise((res, rej) => {
-    const r = new FileReader();
-    r.onload = () => res(r.result);
-    r.onerror = () => rej(new Error('Falha ao ler arquivo'));
-    r.readAsDataURL(file);
-  });
-}
-function validateImage(file) {
-  if (!file.type.match(/^image\/(jpeg|png|gif|webp)$/)) {
-    toast('Apenas JPG, PNG, GIF ou WEBP', 'error'); return false;
-  }
-  if (file.size > 2 * 1024 * 1024) {
-    toast('Imagem muito grande (máx 2MB)', 'error'); return false;
-  }
-  return true;
-}
+// Helpers
+const esc = (str) => String(str ?? '').replace(/[&<>]/g, (m) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]));
+const formatBytes = (b) => b ? (b/1e6).toFixed(1)+' MB' : '-';
+const formatDate = (s) => s ? new Date(s).toLocaleDateString('pt-BR') : '-';
 
-// ---- APK Generator --------------------------------------------------------
-// Produces a structurally valid ZIP file (APK = ZIP) of EXACTLY targetBytes.
-// Strategy:
-//   • Build all "metadata" entries first with known sizes.
-//   • Compute precisely how many padding bytes are needed for the last
-//     "assets/classes_pad.dex" entry so total ZIP == targetBytes.
-//   • CRC-32 is calculated only on small entries; the pad entry uses a fast
-//     XOR-based pseudo-CRC (acceptable for a simulator).
-// All entries use compression method 0 (STORED) so compressed == uncompressed.
+// Gerenciamento de apps e builds
+const createApp = (data) => {
+  const newApp = { ...data, id: Date.now(), userId: user?.id || 1, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+  apps = [newApp, ...apps];
+  persist();
+  toast(`"${newApp.name}" criado! ✨`);
+  navigate('/dashboard');
+};
+const updateApp = (id, data) => {
+  apps = apps.map(a => a.id === id ? { ...a, ...data, updatedAt: new Date().toISOString() } : a);
+  persist();
+  toast("App atualizado");
+  rerender();
+};
+const deleteApp = (id) => {
+  apps = apps.filter(a => a.id !== id);
+  builds = builds.filter(b => b.appId !== id);
+  persist();
+  toast("App removido");
+  navigate('/dashboard');
+};
+const addBuild = (build) => {
+  const idx = builds.findIndex(b => b.id === build.id);
+  if (idx >= 0) builds[idx] = build;
+  else builds = [build, ...builds];
+  persist();
+  rerender();
+};
 
-function buildApkZip(appName, version, packageName, targetBytes) {
-  /* ── tiny helpers ─────────────────────────────────────────────────── */
-  const enc = new TextEncoder();
-
-  // Write a number as little-endian bytes into a Uint8Array
-  function le16(v) { const a=new Uint8Array(2); a[0]=v&0xff; a[1]=(v>>>8)&0xff; return a; }
-  function le32(v) { const a=new Uint8Array(4); v=v>>>0; a[0]=v&0xff; a[1]=(v>>>8)&0xff; a[2]=(v>>>16)&0xff; a[3]=(v>>>24)&0xff; return a; }
-
-  // Concatenate multiple Uint8Array / Array-of-arrays
-  function cat(parts) {
-    const total = parts.reduce((s,p)=>s+p.length,0);
-    const out   = new Uint8Array(total);
-    let pos=0; for(const p of parts){out.set(p,pos);pos+=p.length;}
-    return out;
-  }
-
-  /* ── CRC-32 table (built once per call) ──────────────────────────── */
-  const T = new Uint32Array(256);
-  for(let i=0;i<256;i++){let c=i;for(let k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);T[i]=c;}
-  function crc32(buf){let c=0xFFFFFFFF;for(let i=0;i<buf.length;i++)c=T[(c^buf[i])&0xff]^(c>>>8);return(c^0xFFFFFFFF)>>>0;}
-
-  /* ── DOS timestamp ────────────────────────────────────────────────── */
-  const now=new Date();
-  const dT=((now.getHours()<<11)|(now.getMinutes()<<5)|(now.getSeconds()>>1))>>>0;
-  const dD=(((now.getFullYear()-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate())>>>0;
-
-  /* ── Local file header size for a given filename length ──────────── */
-  // Fixed part = 30 bytes; variable = fnLen bytes (no extra field)
-  const LFH = fnLen => 30 + fnLen;
-  // Central directory record size
-  const CDR = fnLen => 46 + fnLen;
-  // EOCD is always 22 bytes (no comment)
-  const EOCD_SIZE = 22;
-
-  /* ── Build one ZIP entry (local header + data + cd record) ────────── */
-  function makeEntry(name, data) {
-    const fn  = enc.encode(name);
-    const crc = crc32(data);
-    const sz  = data.length;
-    const lh  = cat([
-      new Uint8Array([0x50,0x4B,0x03,0x04]),
-      le16(20), le16(0), le16(0),       // ver needed, flags, method=STORED
-      le16(dT), le16(dD),
-      le32(crc), le32(sz), le32(sz),    // crc, compressed=stored, uncompressed
-      le16(fn.length), le16(0),         // fn len, extra len
-      fn
-    ]);
-    const cd  = cat([
-      new Uint8Array([0x50,0x4B,0x01,0x02]),
-      le16(20), le16(20), le16(0), le16(0), // ver made, ver needed, flags, method
-      le16(dT), le16(dD),
-      le32(crc), le32(sz), le32(sz),
-      le16(fn.length), le16(0), le16(0),    // fn, extra, comment lengths
-      le16(0), le16(0), le32(0),            // disk start, int attr, ext attr
-      le32(0),                               // local header offset — filled in later
-      fn
-    ]);
-    return { lh, data, cd, fnLen: fn.length };
-  }
-
-  /* ── Define the static entries ────────────────────────────────────── */
-  const pkg = packageName || 'com.web2apk.app';
-
-  const MANIFEST = enc.encode(
-    `Manifest-Version: 1.0\r\n`+
-    `Created-By: Web2APK Build Engine 4.2\r\n`+
-    `App-Name: ${appName}\r\n`+
-    `App-Version: ${version}\r\n`+
-    `Package: ${pkg}\r\n`+
-    `Build-Date: ${now.toISOString()}\r\n`+
-    `Min-SDK: 21\r\nTarget-SDK: 34\r\n`
-  );
-  const CERT_SF = enc.encode(
-    `Signature-Version: 1.0\r\n`+
-    `SHA-256-Digest-Manifest: ${Math.random().toString(36).slice(2,42)}\r\n`+
-    `Created-By: 1.0 (Web2APK)\r\n`
-  );
-  const AM_XML  = enc.encode(
-    `<?xml version="1.0" encoding="utf-8"?>\n`+
-    `<manifest xmlns:android="http://schemas.android.com/apk/res/android"\n`+
-    `    package="${pkg}" android:versionCode="1" android:versionName="${version}">\n`+
-    `  <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="34"/>\n`+
-    `  <uses-permission android:name="android.permission.INTERNET"/>\n`+
-    `  <application android:label="${appName}" android:theme="@style/AppTheme">\n`+
-    `    <activity android:name=".MainActivity" android:exported="true">\n`+
-    `      <intent-filter>\n`+
-    `        <action android:name="android.intent.action.MAIN"/>\n`+
-    `        <category android:name="android.intent.category.LAUNCHER"/>\n`+
-    `      </intent-filter>\n`+
-    `    </activity>\n`+
-    `  </application>\n`+
-    `</manifest>\n`
-  );
-  const RES_XML = enc.encode(
-    `<?xml version="1.0" encoding="utf-8"?>\n`+
-    `<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"\n`+
-    `    android:layout_width="match_parent" android:layout_height="match_parent">\n`+
-    `  <WebView android:id="@+id/webview"\n`+
-    `    android:layout_width="match_parent" android:layout_height="match_parent"/>\n`+
-    `</RelativeLayout>\n`
-  );
-
-  const staticEntries = [
-    makeEntry('META-INF/MANIFEST.MF',       MANIFEST),
-    makeEntry('META-INF/CERT.SF',           CERT_SF),
-    makeEntry('AndroidManifest.xml',        AM_XML),
-    makeEntry('res/layout/main.xml',        RES_XML),
-  ];
-
-  /* ── Calculate exact padding size ───────────────────────────────────
-     Total ZIP size =
-       Σ (LFH(fnLen) + dataLen)   [local blocks]
-     + Σ CDR(fnLen)               [central dir]
-     + EOCD_SIZE
-
-     We add one more entry "assets/web2apk_pad.dex" with padSize bytes.
-     Solve for padSize:
-       targetBytes = localBlocksSize + CDRsSize + EOCD_SIZE + padSize
-     => padSize = targetBytes - localBlocksSize - CDRsSize - EOCD_SIZE
-  ─────────────────────────────────────────────────────────────────── */
-  const PAD_NAME    = 'assets/web2apk_engine.dex';
-  const PAD_FN_LEN  = enc.encode(PAD_NAME).length;
-
-  // Size occupied by local blocks of static entries
-  let staticLocalSize = staticEntries.reduce((s,e)=> s + LFH(e.fnLen) + e.data.length, 0);
-  // Size occupied by CD records of ALL entries (static + pad)
-  let staticCdSize    = staticEntries.reduce((s,e)=> s + CDR(e.fnLen), 0);
-
-  // Contribution of the pad entry to the ZIP structure (excluding actual pad data)
-  const padLfhSize = LFH(PAD_FN_LEN);
-  const padCdrSize = CDR(PAD_FN_LEN);
-
-  const usedWithoutPadData =
-    staticLocalSize + padLfhSize +   // local blocks (pad data not counted yet)
-    staticCdSize    + padCdrSize +   // all CD records
-    EOCD_SIZE;
-
-  const padSize = Math.max(0, targetBytes - usedWithoutPadData);
-
-  /* ── Build pad data: pseudo-random bytes (LCG — not compressible) ── */
-  const padData = new Uint8Array(padSize);
-  // DEX magic at the start so tools recognise it as a DEX file
-  if (padSize >= 8) {
-    padData[0]=0x64;padData[1]=0x65;padData[2]=0x78;padData[3]=0x0a;
-    padData[4]=0x30;padData[5]=0x33;padData[6]=0x35;padData[7]=0x00;
-  }
-  // Fill rest with LCG pseudo-random (fast, browser won't compress Blob data)
-  let lcg = 0x6D2B4E91;
-  for (let i=8; i<padSize; i++) {
-    lcg = (Math.imul(lcg, 1664525) + 1013904223) >>> 0;
-    padData[i] = lcg & 0xff;
-  }
-
-  /* ── Compute CRC for pad entry WITHOUT iterating all padSize bytes ──
-     For a simulator this is acceptable: use XOR of first/last 1 KB.     */
-  function fastCrc(buf) {
-    const CHUNK = Math.min(buf.length, 1024);
-    let c = 0xFFFFFFFF;
-    for(let i=0;i<CHUNK;i++)   c=T[(c^buf[i])&0xff]^(c>>>8);
-    if(buf.length>CHUNK){
-      const off=buf.length-CHUNK;
-      for(let i=off;i<buf.length;i++) c=T[(c^buf[i])&0xff]^(c>>>8);
-    }
-    return (c^0xFFFFFFFF)>>>0;
-  }
-
-  const padEntry = makeEntry(PAD_NAME, padData);
-  // Override crc in padEntry.cd / padEntry.lh with fast approximation
-  const padCrc = fastCrc(padData);
-  // patch LH at byte offset 14 (crc field)
-  new DataView(padEntry.lh.buffer).setUint32(14, padCrc, true);
-  // patch CD at byte offset 16 (crc field)
-  new DataView(padEntry.cd.buffer).setUint32(16, padCrc, true);
-
-  const allEntries = [...staticEntries, padEntry];
-
-  /* ── Assemble ZIP ─────────────────────────────────────────────────── */
-  const localBlocks = [];
-  let   localOffset = 0;
-
-  for (const e of allEntries) {
-    // Patch local header offset into the CD record (offset 42 in CD record)
-    new DataView(e.cd.buffer).setUint32(42, localOffset, true);
-    localBlocks.push(e.lh, e.data);
-    localOffset += e.lh.length + e.data.length;
-  }
-
-  const cdOffset  = localOffset;
-  const cdData    = cat(allEntries.map(e => e.cd));
-
-  const eocd = cat([
-    new Uint8Array([0x50,0x4B,0x05,0x06]),
-    le16(0), le16(0),
-    le16(allEntries.length), le16(allEntries.length),
-    le32(cdData.length),
-    le32(cdOffset),
-    le16(0)
-  ]);
-
-  const zipBytes = cat([...localBlocks, cdData, eocd]);
-
-  // Return as APK MIME blob
-  return new Blob([zipBytes], { type: 'application/vnd.android.package-archive' });
-}
-
-/* ── downloadApk — the single entry point called from every button ── */
-function downloadApk(appName, version, packageName, fileSizeBytes) {
-  const safeApp = (appName  || 'app'  ).replace(/[^a-zA-Z0-9_\-]/g, '_');
-  const safeVer = (version  || '1.0.0').replace(/[^a-zA-Z0-9._\-]/g, '_');
-  const filename = `${safeApp}-v${safeVer}.apk`;
-
-  // Honor the exact fileSize that was stored at build time.
-  // Clamp to 20 MB – 60 MB so we don't crash the browser tab.
-  const MIN = 20 * 1024 * 1024;
-  const MAX = 60 * 1024 * 1024;
-  const target = (typeof fileSizeBytes === 'number' && fileSizeBytes > 0)
-    ? Math.min(Math.max(fileSizeBytes, MIN), MAX)
-    : 32 * 1024 * 1024;
-
-  toast(`⏳ Preparando APK (${formatBytes(target)})…`, 'info');
-
-  // Defer so the toast paints before the heavy allocation
-  setTimeout(() => {
-    try {
-      const blob = buildApkZip(appName, version, packageName, target);
-      const url  = URL.createObjectURL(blob);
-      const a    = document.createElement('a');
-      a.href     = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 600);
-      toast(`✅ Download iniciado: ${filename} — ${formatBytes(blob.size)}`, 'success');
-    } catch (err) {
-      console.error('[Web2APK] APK gen error:', err);
-      toast('❌ Erro ao gerar APK: ' + err.message, 'error');
-    }
-  }, 60);
-}
-
-// ---- Auth ----
-function handleLogin() {
-  user = { id:1, name:"Cyber Dev", email:"dev@web2apk.com", role:"user" };
-  persist(); toast("Bem-vindo, Cyber Dev! 🖥", "success"); navigate('/dashboard');
-}
-function handleLogout() {
-  user = null; persist(); toast("Desconectado.", "info"); navigate('/');
-}
-function handleUpgrade(tier) {
-  if (!user) user = { id:1, name:"Cyber Dev", email:"dev@web2apk.com", role:tier };
+// Auth
+const handleLogin = () => {
+  user = { id: 1, name: "Cyber Dev", email: "dev@convertapk.com", role: "user" };
+  persist();
+  toast("Conectado! 🖥️");
+  navigate('/dashboard');
+};
+const handleLogout = () => {
+  user = null;
+  persist();
+  toast("Desconectado");
+  navigate('/');
+};
+const handleUpgrade = (tier) => {
+  if (!user) user = { id: 1, name: "Cyber Dev", email: "dev@web2apk.com", role: tier };
   else user.role = tier;
-  persist(); toast(`Plano ${tier.toUpperCase()} ativado! 🚀`, "success"); navigate('/dashboard');
-}
+  persist();
+  toast(`Plano ${tier.toUpperCase()} ativado! 🚀`);
+  navigate('/dashboard');
+};
 
-// ---- App CRUD ----
-function createApp(data) {
-  const a = { ...data, id:Date.now(), userId:user?.id||1,
-    createdAt:new Date().toISOString(), updatedAt:new Date().toISOString() };
-  apps = [a, ...apps]; persist();
-  toast(`"${a.name}" criado com sucesso! ✨`); navigate('/dashboard');
-}
-function updateApp(id, data) {
-  apps = apps.map(a => a.id===id ? { ...a, ...data, updatedAt:new Date().toISOString() } : a);
-  persist(); toast("App atualizado!"); rerender();
-}
-function deleteApp(id) {
-  const name = apps.find(a=>a.id===id)?.name || 'App';
-  apps = apps.filter(a=>a.id!==id);
-  builds = builds.filter(b=>b.appId!==id);
-  persist(); toast(`"${name}" removido.`, 'info'); navigate('/dashboard');
-}
+// ======================== DOWNLOAD APK (MENSAGEM EDUCATIVA) ========================
+const downloadApk = (appName, version) => {
+  // Em vez de gerar APK inválido, exibimos um alerta explicativo
+  // Isso evita o erro "Falha ao analisar o pacote" no celular.
+  const msg = `⚠️ APK REAL requer BACKEND.\n\nO arquivo gerado pelo navegador NÃO é um APK Android válido.\n\n✅ Para gerar APKs funcionais e instaláveis, ative o plano Premium e utilize nossa API de compilação em servidor.\n\n📱 Teste a versão PWA: adicione este site à tela inicial e use como um app nativo!`;
+  alert(msg);
+  toast("APK real só é gerado no servidor (Plano Premium)", "error");
+};
 
-// ---- Build ----
-function addBuild(b) {
-  const i = builds.findIndex(x=>x.id===b.id);
-  if (i>=0) builds[i]=b; else builds=[b,...builds];
-  persist(); rerender();
-}
-
-// ---- Render helpers ----
-function appIconHtml(iconUrl, size='48') {
-  const s = `width:${size}px;height:${size}px;border-radius:.75rem;object-fit:cover;flex-shrink:0;`;
-  if (iconUrl && iconUrl !== '[base64-image]') {
-    return `<img src="${iconUrl}" style="${s}" onerror="this.replaceWith(defaultIconEl(${size}))" alt="icon">`;
-  }
-  return `<div class="app-icon-default" style="width:${size}px;height:${size}px;">📱</div>`;
-}
-
-function formatBytes(b) {
-  if (!b) return '-';
-  if (b > 1e6) return (b/1e6).toFixed(1)+' MB';
-  if (b > 1e3) return (b/1e3).toFixed(1)+' KB';
-  return b+' B';
-}
-function formatDate(s) {
-  if (!s) return '-';
-  try { return new Date(s).toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'}); }
-  catch { return s; }
-}
-function formatDateTime(s) {
-  if (!s) return '-';
-  try { return new Date(s).toLocaleString('pt-BR'); }
-  catch { return s; }
-}
-
-// ====== RENDER NAVBAR ======
-function renderNavbar() {
-  return `
-  <nav style="border-bottom:1px solid rgba(255,0,110,.2);backdrop-filter:blur(16px);background:rgba(2,6,23,.85);position:sticky;top:0;z-index:100;">
-    <div style="max-width:1280px;margin:0 auto;padding:.9rem 1.5rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;">
-      <div onclick="nav('/')" style="display:flex;align-items:center;gap:.75rem;cursor:pointer;">
-        <div style="width:42px;height:42px;background:linear-gradient(135deg,#FF006E,#7C3AED,#00d9ff);border-radius:.75rem;display:flex;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:0 0 18px rgba(255,0,110,.4);">⚡</div>
-        <div>
-          <div style="font-family:'Orbitron',monospace;font-size:1.3rem;background:linear-gradient(90deg,#FF006E,#a855f7,#00d9ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900;line-height:1;">Web2APK</div>
-          <div style="font-size:.6rem;color:#00d9ff;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;">CYBER ENGINE v4.2</div>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
-        ${user ? `
-          <span class="nav-link" onclick="nav('/dashboard')">Painel</span>
-          <span class="nav-link" onclick="nav('/create-app')">+ Novo App</span>
-          <span class="nav-link" style="color:#facc15;" onclick="nav('/pricing')">⭐ Planos</span>
-          <div style="display:flex;align-items:center;gap:.6rem;background:rgba(15,23,42,.7);border:1px solid rgba(255,0,110,.2);padding:.35rem .75rem;border-radius:99px;">
-            <div style="text-align:right;line-height:1.2;">
-              <div style="font-size:.8rem;font-weight:700;color:#e2e8f0;">${esc(user.name)}</div>
-              <div style="font-size:.65rem;color:#FF006E;text-transform:capitalize;">${esc(user.role)}</div>
-            </div>
-            <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#FF006E,#00d9ff);display:flex;align-items:center;justify-content:center;font-weight:900;color:#000;">${esc(user.name.charAt(0))}</div>
-          </div>
-          <button class="btn-outline" onclick="handleLogout()" style="padding:.4rem .8rem;font-size:.8rem;">Sair 🚪</button>
-        ` : `
-          <span class="nav-link" style="color:#facc15;" onclick="nav('/pricing')">⭐ Planos</span>
-          <button class="btn-primary" onclick="handleLogin()">Entrar / Criar Conta</button>
-        `}
-      </div>
-    </div>
-  </nav>`;
-}
-
-// ====== RENDER FOOTER ======
-function renderFooter() {
-  return `
-  <footer style="border-top:1px solid rgba(255,0,110,.12);background:rgba(2,6,23,.5);padding:2.5rem 1.5rem;margin-top:auto;">
-    <div style="max-width:1280px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:2rem;font-size:.875rem;color:#64748b;">
-      <div>
-        <div style="font-family:'Orbitron',monospace;color:#FF006E;margin-bottom:.5rem;">Web2APK</div>
-        <p>Transforme qualquer site em APK Android nativo. Rápido, sem código.</p>
-      </div>
-      <div><div style="color:#00d9ff;font-weight:700;margin-bottom:.5rem;">Funcionalidades</div><ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.3rem;"><li>Offline Mode</li><li>Push Notifications</li><li>AdMob Ads</li><li>Deep Linking</li></ul></div>
-      <div><div style="color:#a855f7;font-weight:700;margin-bottom:.5rem;">Navegação</div><ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.3rem;"><li onclick="nav('/dashboard')" style="cursor:pointer;color:#94a3b8;" onmouseover="this.style.color='#FF006E'" onmouseout="this.style.color='#94a3b8'">Dashboard</li><li onclick="nav('/create-app')" style="cursor:pointer;color:#94a3b8;" onmouseover="this.style.color='#FF006E'" onmouseout="this.style.color='#94a3b8'">Criar App</li><li onclick="nav('/pricing')" style="cursor:pointer;color:#94a3b8;" onmouseover="this.style.color='#FF006E'" onmouseout="this.style.color='#94a3b8'">Planos</li></ul></div>
-      <div><div style="color:#f59e0b;font-weight:700;margin-bottom:.5rem;">Status</div><div style="display:flex;gap:.5rem;align-items:center;"><span style="width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block;"></span><span>Build Engine Online</span></div><div style="margin-top:.5rem;">🔒 SSL Seguro</div></div>
-    </div>
-    <div style="text-align:center;margin-top:2rem;font-size:.7rem;color:#334155;">© 2026 Web2APK Cyber Platform — Todos os direitos reservados</div>
-  </footer>`;
-}
-
-// ====== RENDER TOAST ======
-function renderToast() {
-  const t = window._currentToast;
-  if (!t) return '';
-  const cls = t.type==='error'?'toast-error':t.type==='info'?'toast-info':'toast-success';
-  const icon = t.type==='error'?'❌':t.type==='info'?'ℹ️':'✅';
-  return `<div class="toast ${cls}">${icon} ${esc(t.msg)}</div>`;
-}
-
-// ====== RENDER EDIT MODAL ======
-function renderEditModal() {
-  if (!editModalAppId) return '';
-  const app = apps.find(a=>a.id===editModalAppId);
-  if (!app) return '';
-  return `
-  <div class="modal-backdrop" onclick="if(event.target===this){editModalAppId=null;rerender();}">
-    <div class="glass glass-pink" style="border-radius:1.5rem;padding:2rem;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
-        <h2 style="font-size:1.1rem;margin:0;">✏️ Editar App</h2>
-        <button onclick="editModalAppId=null;rerender();" style="background:none;border:none;color:#94a3b8;font-size:1.4rem;cursor:pointer;">✕</button>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:1rem;">
-        <!-- Image upload -->
-        <div>
-          <label class="field-label">Ícone do App</label>
-          <div style="display:flex;gap:1rem;align-items:flex-start;">
-            <div id="editIconPreview" style="width:64px;height:64px;flex-shrink:0;">
-              ${app.iconUrl && app.iconUrl!=='[base64-image]'
-                ? `<img src="${app.iconUrl}" style="width:64px;height:64px;border-radius:.75rem;object-fit:cover;" onerror="this.outerHTML='<div class=app-icon-default style=width:64px;height:64px;>📱</div>'">`
-                : `<div class="app-icon-default" style="width:64px;height:64px;">📱</div>`}
-            </div>
-            <div style="flex:1;">
-              <div class="upload-zone" id="editUploadZone" onclick="document.getElementById('editIconFile').click();"
-                ondragover="event.preventDefault();this.classList.add('drag-over');"
-                ondragleave="this.classList.remove('drag-over');"
-                ondrop="event.preventDefault();this.classList.remove('drag-over');handleEditImageDrop(event.dataTransfer.files[0]);">
-                <div style="font-size:.85rem;color:#94a3b8;">Clique ou arraste uma imagem<br><span style="font-size:.75rem;">JPG, PNG — máx 2MB</span></div>
-              </div>
-              <input type="file" id="editIconFile" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none;" onchange="handleEditImageFile(this.files[0])">
-              <input class="input-field" id="editIconUrl" placeholder="Ou cole uma URL de imagem..." value="${esc(app.iconUrl && !app.iconUrl.startsWith('data:') && app.iconUrl!=='[base64-image]' ? app.iconUrl : '')}" oninput="handleEditIconUrlInput(this.value)" style="margin-top:.5rem;font-size:.85rem;">
-            </div>
-          </div>
-        </div>
-        <div><label class="field-label">Nome do App *</label><input class="input-field" id="editName" value="${esc(app.name)}" required></div>
-        <div><label class="field-label">URL do Site *</label><input class="input-field" id="editUrl" value="${esc(app.websiteUrl)}" required></div>
-        <div><label class="field-label">Descrição</label><textarea class="input-field" id="editDesc" rows="2">${esc(app.description||'')}</textarea></div>
-        <div><label class="field-label">Package Name</label><input class="input-field" id="editPkg" value="${esc(app.packageName)}"></div>
-        <div><label class="field-label">Versão</label><input class="input-field" id="editVersion" value="${esc(app.version)}"></div>
-        <div style="display:flex;gap:1rem;align-items:center;">
-          <div><label class="field-label">Cor do Tema</label><input type="color" id="editColor" value="${app.themeColor||'#FF006E'}" style="width:48px;height:36px;border:none;background:none;cursor:pointer;border-radius:.5rem;"></div>
-          <div style="flex:1;"><label class="field-label">Orientação</label>
-            <select class="input-field" id="editOrientation">
-              <option value="portrait" ${app.orientation==='portrait'?'selected':''}>Portrait</option>
-              <option value="landscape" ${app.orientation==='landscape'?'selected':''}>Landscape</option>
-              <option value="both" ${app.orientation==='both'?'selected':''}>Ambos</option>
-            </select>
-          </div>
-        </div>
-        <div style="display:flex;gap:1rem;flex-wrap:wrap;">
-          <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-weight:600;">
-            <input type="checkbox" id="editOffline" ${app.offlineSupport?'checked':''} style="accent-color:#FF006E;width:16px;height:16px;"> Suporte Offline
-          </label>
-          <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-weight:600;">
-            <input type="checkbox" id="editDeep" ${app.deepLinking?'checked':''} style="accent-color:#FF006E;width:16px;height:16px;"> Deep Linking
-          </label>
-          <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-weight:600;">
-            <input type="checkbox" id="editAnalytics" ${app.analyticsEnabled?'checked':''} style="accent-color:#FF006E;width:16px;height:16px;"> Analytics
-          </label>
-        </div>
-        <div style="display:flex;gap:.75rem;margin-top:.5rem;">
-          <button class="btn-primary" onclick="saveEditModal(${app.id})" style="flex:1;">💾 Salvar Alterações</button>
-          <button class="btn-outline" onclick="editModalAppId=null;rerender();">Cancelar</button>
-        </div>
-      </div>
-    </div>
-  </div>`;
-}
-
-// Edit modal state for image
-window._editIconData = null;
-
-function handleEditImageFile(file) {
-  if (!file || !validateImage(file)) return;
-  fileToBase64(file).then(b64 => {
-    window._editIconData = b64;
-    const preview = document.getElementById('editIconPreview');
-    if (preview) preview.innerHTML = `<img src="${b64}" style="width:64px;height:64px;border-radius:.75rem;object-fit:cover;">`;
-    const urlInput = document.getElementById('editIconUrl');
-    if (urlInput) urlInput.value = '';
-  }).catch(() => toast('Falha ao ler imagem', 'error'));
-}
-function handleEditImageDrop(file) { handleEditImageFile(file); }
-function handleEditIconUrlInput(val) {
-  window._editIconData = null;
-  if (val && val.startsWith('http')) {
-    const preview = document.getElementById('editIconPreview');
-    if (preview) preview.innerHTML = `<img src="${val}" style="width:64px;height:64px;border-radius:.75rem;object-fit:cover;" onerror="this.outerHTML='<div class=app-icon-default style=width:64px;height:64px;>📱</div>'">`;
-  }
-}
-function saveEditModal(id) {
-  const name = document.getElementById('editName')?.value?.trim();
-  const url = document.getElementById('editUrl')?.value?.trim();
-  if (!name || !url) { toast('Nome e URL são obrigatórios', 'error'); return; }
-  const iconUrlField = document.getElementById('editIconUrl')?.value?.trim();
-  const iconUrl = window._editIconData || iconUrlField || apps.find(a=>a.id===id)?.iconUrl || '';
-  updateApp(id, {
-    name, websiteUrl: url,
-    description: document.getElementById('editDesc')?.value||'',
-    packageName: document.getElementById('editPkg')?.value||'',
-    version: document.getElementById('editVersion')?.value||'1.0.0',
-    themeColor: document.getElementById('editColor')?.value||'#FF006E',
-    orientation: document.getElementById('editOrientation')?.value||'portrait',
-    offlineSupport: document.getElementById('editOffline')?.checked||false,
-    deepLinking: document.getElementById('editDeep')?.checked||false,
-    analyticsEnabled: document.getElementById('editAnalytics')?.checked||false,
-    iconUrl
-  });
-  window._editIconData = null;
-  editModalAppId = null;
-  rerender();
-}
-
-// ====== RENDER LANDING ======
-function renderLanding() {
-  return `
-  <div class="grid-bg scanlines relative" style="padding:5rem 1.5rem 6rem;overflow:hidden;">
-    <div style="position:absolute;top:-80px;left:-80px;width:500px;height:500px;background:radial-gradient(circle,rgba(255,0,110,.12),transparent 70%);pointer-events:none;"></div>
-    <div style="position:absolute;bottom:-80px;right:-80px;width:400px;height:400px;background:radial-gradient(circle,rgba(0,217,255,.08),transparent 70%);pointer-events:none;"></div>
-    <div style="max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;position:relative;">
-      <div>
-        <div style="display:inline-flex;align-items:center;gap:.6rem;background:rgba(255,0,110,.1);border:1px solid rgba(255,0,110,.3);padding:.35rem 1rem;border-radius:99px;margin-bottom:1.5rem;">
-          <span style="width:8px;height:8px;background:#FF006E;border-radius:50%;display:inline-block;" class="animate-pulse-slow"></span>
-          <span style="font-size:.7rem;font-weight:700;letter-spacing:.1em;color:#FF006E;">REVOLUÇÃO NO-CODE 2026</span>
-        </div>
-        <h1 style="font-size:clamp(2rem,5vw,3.5rem);line-height:1.05;margin:0 0 1.2rem;">
-          Transforme Qualquer<br>
-          <span style="background:linear-gradient(90deg,#FF006E,#a855f7,#00d9ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Site em App Android</span>
-        </h1>
-        <p style="color:#94a3b8;font-size:1.1rem;margin-bottom:2rem;max-width:480px;">Crie APKs profissionais sem código em segundos. Offline, notificações, AdMob — tudo incluso.</p>
-        <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:2.5rem;">
-          <button class="btn-primary" onclick="handleLogin()" style="font-size:1rem;padding:.75rem 1.75rem;">⚡ Criar App Grátis →</button>
-          <button class="btn-outline" onclick="nav('/pricing')">Ver Planos</button>
-        </div>
-        <div style="display:flex;gap:2.5rem;">
-          <div><div style="font-family:'Orbitron',monospace;font-size:2rem;color:#FF006E;" class="text-glow">12K+</div><div style="font-size:.8rem;color:#64748b;">APKs Gerados</div></div>
-          <div><div style="font-family:'Orbitron',monospace;font-size:2rem;color:#00d9ff;" class="text-glow-cyan">30s</div><div style="font-size:.8rem;color:#64748b;">Build Rápida</div></div>
-          <div><div style="font-family:'Orbitron',monospace;font-size:2rem;color:#a855f7;">98%</div><div style="font-size:.8rem;color:#64748b;">Satisfação</div></div>
-        </div>
-      </div>
-      <div class="glass glass-pink glow-pink" style="border-radius:1.5rem;padding:2rem;">
-        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1.5rem;">
-          <span style="font-size:1.4rem;">⚡</span>
-          <h3 style="margin:0;font-size:1rem;">Criador Expresso</h3>
-          <span class="badge badge-green" style="margin-left:auto;">LIVE</span>
-        </div>
-        <div id="quickForm" style="display:flex;flex-direction:column;gap:.75rem;">
-          <div><label class="field-label">Nome do App</label><input class="input-field" id="qName" placeholder="Meu Incrível App"></div>
-          <div><label class="field-label">URL do Site *</label><input class="input-field" id="qUrl" placeholder="https://meusite.com.br" type="url"></div>
-          <div>
-            <label class="field-label">Ícone (opcional)</label>
-            <div class="upload-zone" id="quickUploadZone" onclick="document.getElementById('quickIconFile').click();"
-              ondragover="event.preventDefault();this.classList.add('drag-over');"
-              ondragleave="this.classList.remove('drag-over');"
-              ondrop="event.preventDefault();this.classList.remove('drag-over');handleQuickImageDrop(event.dataTransfer.files[0]);">
-              <div id="quickIconPreview" style="font-size:.85rem;color:#94a3b8;">📸 Clique ou arraste (JPG/PNG, máx 2MB)</div>
-            </div>
-            <input type="file" id="quickIconFile" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none;" onchange="handleQuickImageFile(this.files[0])">
-          </div>
-          <button class="btn-primary" onclick="handleQuickForm()" style="width:100%;justify-content:center;margin-top:.25rem;">Gerar APK Agora →</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div style="max-width:1280px;margin:0 auto;padding:4rem 1.5rem;text-align:center;">
-    <h2 style="font-size:1.8rem;margin-bottom:.5rem;">Como funciona em <span style="color:#FF006E;">4 passos</span></h2>
-    <p style="color:#64748b;margin-bottom:2.5rem;">De zero a APK em menos de um minuto</p>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;">
-      ${[['01','Cole a URL','Informe o endereço do seu site ou webapp','🔗','#FF006E'],
-         ['02','Personalize','Ícone, cores, permissões e orientação','🎨','#a855f7'],
-         ['03','Compile APK','Engine gera o APK assinado automaticamente','⚙️','#00d9ff'],
-         ['04','Baixe e instale','APK pronto para distribuição no Android','📲','#4ade80']
-        ].map(([n,t,d,i,c])=>`
-        <div class="glass" style="border-radius:1.25rem;padding:1.75rem 1.25rem;border-color:rgba(51,65,85,.4);">
-          <div style="font-family:'Orbitron',monospace;font-size:2.5rem;color:${c};opacity:.8;">${n}</div>
-          <div style="font-size:2rem;margin:.5rem 0;">${i}</div>
-          <h3 style="font-size:.95rem;margin:.5rem 0;">${t}</h3>
-          <p style="font-size:.8rem;color:#64748b;margin:0;">${d}</p>
-        </div>`).join('')}
-    </div>
-  </div>`;
-}
-
-// Quick form image state
-window._quickIconData = null;
-function handleQuickImageFile(file) {
-  if (!file || !validateImage(file)) return;
-  fileToBase64(file).then(b64 => {
-    window._quickIconData = b64;
-    const prev = document.getElementById('quickIconPreview');
-    if (prev) prev.innerHTML = `<img src="${b64}" style="max-height:60px;border-radius:.5rem;"> <span style="font-size:.75rem;color:#4ade80;display:block;margin-top:.3rem;">✓ Imagem carregada</span>`;
-  }).catch(() => toast('Falha ao ler imagem', 'error'));
-}
-function handleQuickImageDrop(file) { handleQuickImageFile(file); }
-function handleQuickForm() {
-  const name = document.getElementById('qName')?.value?.trim() || 'Quick App';
-  const url = document.getElementById('qUrl')?.value?.trim();
-  if (!url) { toast('URL do site é obrigatória', 'error'); return; }
-  if (!user) handleLogin();
-  const newApp = {
-    id: Date.now(), userId: user?.id||1,
-    name, websiteUrl: url, description: 'Criado rapidamente',
-    packageName: `com.quick.${Math.floor(Math.random()*9999)}`,
-    version: '1.0.0', themeColor: '#FF006E', orientation: 'portrait',
-    permissions: ['INTERNET'], offlineSupport: true, deepLinking: false,
-    analyticsEnabled: true,
-    iconUrl: window._quickIconData || '',
-    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
-  };
-  window._quickIconData = null;
-  apps = [newApp, ...apps]; persist();
-  toast(`"${name}" criado!`); navigate('/dashboard');
-}
-
-// ====== RENDER DASHBOARD ======
-function renderDashboard() {
-  const totalBuilds = builds.filter(b=>b.status==='completed').length;
-  const errorBuilds = builds.filter(b=>b.status==='error').length;
-  const appBuilds = apps.map(a => ({
-    app: a,
-    lastBuild: builds.filter(b=>b.appId===a.id).sort((x,y)=>new Date(y.createdAt)-new Date(x.createdAt))[0]
-  }));
-
-  return `
-  <div style="max-width:1280px;margin:0 auto;padding:2.5rem 1.5rem;">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:2rem;">
-      <div>
-        <h1 style="margin:0;font-size:1.6rem;background:linear-gradient(90deg,#FF006E,#a855f7,#00d9ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Painel Developer</h1>
-        <p style="margin:.25rem 0 0;color:#64748b;font-size:.875rem;">Bem-vindo de volta, ${esc(user?.name||'Dev')} 👾</p>
-      </div>
-      <button class="btn-primary" onclick="nav('/create-app')">+ Novo App</button>
-    </div>
-
-    <!-- Stats -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:2rem;">
-      ${[
-        ['Total Apps', apps.length, '📱', '#FF006E'],
-        ['Builds OK', totalBuilds, '✅', '#4ade80'],
-        ['Erros', errorBuilds, '⚠️', '#f87171'],
-        ['Plano', user?.role||'free', '⭐', '#facc15']
-      ].map(([l,v,i,c])=>`
-        <div class="glass" style="border-radius:1rem;padding:1.25rem;">
-          <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b;font-weight:700;">${i} ${l}</div>
-          <div style="font-family:'Orbitron',monospace;font-size:1.8rem;color:${c};margin-top:.25rem;">${v}</div>
-        </div>`).join('')}
-    </div>
-
-    <!-- App Cards -->
-    <h2 style="font-size:1rem;color:#94a3b8;margin-bottom:1rem;font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.06em;text-transform:uppercase;">Seus Aplicativos</h2>
-    ${apps.length === 0 ? `
-      <div style="text-align:center;padding:5rem 1rem;" class="glass" style="border-radius:1.5rem;">
-        <div style="font-size:3rem;margin-bottom:1rem;">📱</div>
-        <h3>Nenhum app ainda</h3>
-        <p style="color:#64748b;">Crie seu primeiro app Android agora!</p>
-        <button class="btn-primary" onclick="nav('/create-app')" style="margin-top:1rem;">+ Criar Primeiro App</button>
-      </div>
-    ` : `
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem;">
-        ${appBuilds.map(({app,lastBuild})=>`
-          <div class="glass glass-pink app-card" style="border-radius:1.25rem;padding:1.25rem;" onclick="nav('/app/${app.id}')">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.75rem;">
-              <div style="display:flex;gap:.75rem;align-items:center;">
-                ${appIconHtml(app.iconUrl, 52)}
-                <div>
-                  <div style="font-weight:700;font-size:1rem;">${esc(app.name)}</div>
-                  <div style="font-size:.75rem;color:#64748b;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(app.websiteUrl)}</div>
-                </div>
-              </div>
-              <div style="display:flex;flex-direction:column;gap:.4rem;align-items:flex-end;">
-                <span class="badge badge-pink">v${esc(app.version)}</span>
-                ${lastBuild ? `<span class="badge ${lastBuild.status==='completed'?'badge-green':lastBuild.status==='error'?'badge-red':'badge-yellow'}">${lastBuild.status}</span>` : '<span class="badge" style="background:rgba(100,116,139,.15);color:#64748b;border-color:rgba(100,116,139,.2);">sem build</span>'}
-              </div>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(51,65,85,.4);padding-top:.75rem;margin-top:.25rem;">
-              <span style="font-size:.75rem;color:#64748b;">📅 ${formatDate(app.createdAt)}</span>
-              <div style="display:flex;gap:.5rem;" onclick="event.stopPropagation();">
-                ${lastBuild?.status==='completed' ? `<button class="btn-cyan" style="padding:.3rem .7rem;font-size:.75rem;" onclick="downloadApk('${esc(app.name)}','${esc(app.version)}','${esc(app.packageName)}',${lastBuild.fileSize||0})">⬇ APK</button>` : ''}
-                <button class="btn-outline" style="padding:.3rem .7rem;font-size:.75rem;" onclick="openEditModal(${app.id})">✏️</button>
-                <button class="btn-danger" style="padding:.3rem .7rem;font-size:.75rem;" onclick="if(confirm('Deletar ${esc(app.name)}?'))deleteApp(${app.id})">🗑️</button>
-              </div>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    `}
-  </div>`;
-}
-
-// ====== RENDER CREATE APP ======
-function renderCreateApp() {
-  return `
-  <div style="max-width:860px;margin:0 auto;padding:2.5rem 1.5rem;">
-    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:2rem;">
-      <button class="btn-outline" onclick="nav('/dashboard')" style="padding:.4rem .9rem;">← Voltar</button>
-      <h1 style="margin:0;font-size:1.4rem;">Criar Novo Aplicativo</h1>
-    </div>
-    <div class="glass glass-pink" style="border-radius:1.5rem;padding:2rem;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
-        <!-- Left column -->
-        <div style="display:flex;flex-direction:column;gap:1.25rem;">
-          <div><label class="field-label">Nome do App *</label><input class="input-field" id="caName" placeholder="Meu Super App" required></div>
-          <div><label class="field-label">URL do Site *</label><input class="input-field" id="caUrl" type="url" placeholder="https://meusite.com.br" required></div>
-          <div><label class="field-label">Descrição</label><textarea class="input-field" id="caDesc" rows="3" placeholder="Descreva seu aplicativo..."></textarea></div>
-          <div><label class="field-label">Package Name *</label><input class="input-field" id="caPkg" placeholder="com.empresa.app" id="caPkg"></div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-            <div><label class="field-label">Versão</label><input class="input-field" id="caVersion" value="1.0.0"></div>
-            <div><label class="field-label">Cor do Tema</label><input type="color" id="caColor" value="#FF006E" style="width:100%;height:42px;border:1px solid rgba(51,65,85,.6);border-radius:.75rem;cursor:pointer;background:rgba(2,6,23,.8);"></div>
-          </div>
-          <div><label class="field-label">Orientação</label>
-            <select class="input-field" id="caOrientation">
-              <option value="portrait">Portrait (vertical)</option>
-              <option value="landscape">Landscape (horizontal)</option>
-              <option value="both">Ambos</option>
-            </select>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:.6rem;">
-            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-weight:600;"><input type="checkbox" id="caOffline" checked style="accent-color:#FF006E;width:16px;height:16px;"> Suporte Offline</label>
-            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-weight:600;"><input type="checkbox" id="caDeep" style="accent-color:#FF006E;width:16px;height:16px;"> Deep Linking</label>
-            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-weight:600;"><input type="checkbox" id="caAnalytics" checked style="accent-color:#FF006E;width:16px;height:16px;"> Analytics</label>
-          </div>
-        </div>
-        <!-- Right column — image upload -->
-        <div style="display:flex;flex-direction:column;gap:1.25rem;">
-          <div>
-            <label class="field-label">Ícone do App</label>
-            <!-- Preview -->
-            <div id="caIconPreview" style="width:100%;aspect-ratio:1;max-width:160px;margin:0 auto 1rem;border-radius:1rem;overflow:hidden;background:linear-gradient(135deg,#1e1b4b,#4c1d95);display:flex;align-items:center;justify-content:center;font-size:3rem;border:2px solid rgba(255,0,110,.2);">
-              📱
-            </div>
-            <!-- Upload zone -->
-            <div class="upload-zone" id="caUploadZone"
-              onclick="document.getElementById('caIconFile').click();"
-              ondragover="event.preventDefault();this.classList.add('drag-over');"
-              ondragleave="this.classList.remove('drag-over');"
-              ondrop="event.preventDefault();this.classList.remove('drag-over');handleCaImageDrop(event.dataTransfer.files[0]);">
-              <div style="font-size:1.5rem;margin-bottom:.4rem;">📸</div>
-              <div style="font-size:.85rem;color:#94a3b8;font-weight:600;">Clique ou arraste aqui</div>
-              <div style="font-size:.75rem;color:#475569;">JPG, PNG, GIF, WEBP — máx 2MB</div>
-            </div>
-            <input type="file" id="caIconFile" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none;" onchange="handleCaImageFile(this.files[0])">
-            <div style="display:flex;align-items:center;gap:.5rem;margin:.75rem 0;">
-              <div style="flex:1;height:1px;background:rgba(51,65,85,.5);"></div>
-              <span style="font-size:.75rem;color:#475569;font-weight:600;">OU</span>
-              <div style="flex:1;height:1px;background:rgba(51,65,85,.5);"></div>
-            </div>
-            <input class="input-field" id="caIconUrl" placeholder="Cole URL da imagem..." oninput="handleCaIconUrl(this.value)" style="font-size:.85rem;">
-            <div id="caIconUrlStatus" style="font-size:.75rem;margin-top:.35rem;color:#64748b;"></div>
-            <!-- Remove button -->
-            <button id="caClearIcon" style="display:none;margin-top:.5rem;width:100%;" class="btn-danger" onclick="clearCaIcon()">✕ Remover Imagem</button>
-          </div>
-        </div>
-      </div>
-      <div class="cyber-divider"></div>
-      <div style="display:flex;gap:1rem;flex-wrap:wrap;">
-        <button class="btn-primary" onclick="submitCreateApp()" style="padding:.75rem 2rem;">⚡ Criar App</button>
-        <button class="btn-outline" onclick="nav('/dashboard')">Cancelar</button>
-      </div>
-    </div>
-  </div>`;
-}
-
-window._caIconData = null;
-
-function handleCaImageFile(file) {
-  if (!file || !validateImage(file)) return;
-  fileToBase64(file).then(b64 => {
-    window._caIconData = b64;
-    setCaPreview(b64); showCaClearBtn(true);
-    const urlInput = document.getElementById('caIconUrl');
-    if (urlInput) urlInput.value = '';
-    const status = document.getElementById('caIconUrlStatus');
-    if (status) status.textContent = '✅ Imagem carregada do dispositivo';
-  }).catch(() => toast('Falha ao ler imagem', 'error'));
-}
-function handleCaImageDrop(file) { handleCaImageFile(file); }
-function handleCaIconUrl(val) {
-  window._caIconData = null;
-  if (val && val.startsWith('http')) {
-    setCaPreview(val);
-    showCaClearBtn(true);
-    const status = document.getElementById('caIconUrlStatus');
-    if (status) status.textContent = '🔗 URL inserida — verificando...';
-  } else if (!val) {
-    setCaPreview(null); showCaClearBtn(false);
-  }
-}
-function setCaPreview(src) {
-  const p = document.getElementById('caIconPreview');
-  if (!p) return;
-  if (src) p.innerHTML = `<img src="${src}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML='📱'">`;
-  else p.innerHTML = '📱';
-}
-function showCaClearBtn(show) {
-  const btn = document.getElementById('caClearIcon');
-  if (btn) btn.style.display = show ? '' : 'none';
-}
-function clearCaIcon() {
-  window._caIconData = null;
-  setCaPreview(null); showCaClearBtn(false);
-  const urlInput = document.getElementById('caIconUrl');
-  if (urlInput) urlInput.value = '';
-  const iconFile = document.getElementById('caIconFile');
-  if (iconFile) iconFile.value = '';
-  const status = document.getElementById('caIconUrlStatus');
-  if (status) status.textContent = '';
-}
-function submitCreateApp() {
-  const name = document.getElementById('caName')?.value?.trim();
-  const url = document.getElementById('caUrl')?.value?.trim();
-  const pkg = document.getElementById('caPkg')?.value?.trim();
-  if (!name) { toast('Nome é obrigatório', 'error'); return; }
-  if (!url) { toast('URL do site é obrigatória', 'error'); return; }
-  if (!pkg) { toast('Package name é obrigatório', 'error'); return; }
-  const iconUrlField = document.getElementById('caIconUrl')?.value?.trim();
-  const iconUrl = window._caIconData || iconUrlField || '';
-  window._caIconData = null;
-  createApp({
-    name, websiteUrl: url,
-    description: document.getElementById('caDesc')?.value||'',
-    packageName: pkg,
-    version: document.getElementById('caVersion')?.value||'1.0.0',
-    themeColor: document.getElementById('caColor')?.value||'#FF006E',
-    orientation: document.getElementById('caOrientation')?.value||'portrait',
-    permissions: ['INTERNET'],
-    offlineSupport: document.getElementById('caOffline')?.checked||false,
-    deepLinking: document.getElementById('caDeep')?.checked||false,
-    analyticsEnabled: document.getElementById('caAnalytics')?.checked||false,
-    iconUrl
-  });
-}
-
-// ====== RENDER APP DETAILS ======
-function renderAppDetails(appId) {
-  const app = apps.find(a=>a.id===appId);
-  if (!app) return `<div style="text-align:center;padding:4rem;">App não encontrado. <button class="btn-outline" onclick="nav('/dashboard')">← Dashboard</button></div>`;
-
-  const appBuilds = builds.filter(b=>b.appId===appId).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
-  const lastBuild = appBuilds[0];
-
-  return `
-  <div style="max-width:1280px;margin:0 auto;padding:2.5rem 1.5rem;">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:2rem;">
-      <button class="btn-outline" onclick="nav('/dashboard')">← Dashboard</button>
-      <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
-        <button class="btn-outline" onclick="openEditModal(${app.id})" style="border-color:rgba(0,217,255,.4);color:#00d9ff;">✏️ Editar App</button>
-        <button class="btn-primary" onclick="nav('/build/${app.id}')">📦 Nova Compilação</button>
-        <button class="btn-danger" onclick="if(confirm('Excluir ${esc(app.name)}?'))deleteApp(${app.id})">🗑️</button>
-      </div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;">
-      <!-- Main info -->
-      <div style="display:flex;flex-direction:column;gap:1.25rem;">
-        <div class="glass glass-pink" style="border-radius:1.25rem;padding:1.75rem;">
-          <div style="display:flex;gap:1.25rem;align-items:center;margin-bottom:1.25rem;">
-            ${appIconHtml(app.iconUrl, 80)}
-            <div>
-              <h2 style="margin:0;font-size:1.4rem;">${esc(app.name)}</h2>
-              <a href="${esc(app.websiteUrl)}" target="_blank" style="color:#FF006E;font-size:.875rem;">${esc(app.websiteUrl)} ↗</a>
-              <div style="display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap;">
-                <span class="badge badge-pink">v${esc(app.version)}</span>
-                ${app.offlineSupport?'<span class="badge badge-green">Offline</span>':''}
-                ${app.deepLinking?'<span class="badge badge-cyan">Deep Link</span>':''}
-                ${app.analyticsEnabled?'<span class="badge badge-yellow">Analytics</span>':''}
-              </div>
-            </div>
-          </div>
-          ${app.description ? `<p style="color:#94a3b8;margin:0 0 1.25rem;">${esc(app.description)}</p>` : ''}
-          <div class="cyber-divider"></div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;font-size:.875rem;">
-            <div><span style="color:#64748b;">📦 Package</span><br><span class="mono" style="font-size:.8rem;">${esc(app.packageName)}</span></div>
-            <div><span style="color:#64748b;">📱 Orientação</span><br>${esc(app.orientation)}</div>
-            <div><span style="color:#64748b;">🎨 Cor do Tema</span><br><div style="display:flex;align-items:center;gap:.4rem;"><div style="width:16px;height:16px;border-radius:4px;background:${app.themeColor||'#FF006E'};"></div>${esc(app.themeColor||'-')}</div></div>
-            <div><span style="color:#64748b;">📅 Criado em</span><br>${formatDate(app.createdAt)}</div>
-          </div>
-        </div>
-
-        <!-- Latest build CTA -->
-        ${lastBuild?.status==='completed' ? `
-          <div class="glass" style="border-radius:1.25rem;padding:1.5rem;border-color:rgba(74,222,128,.2);background:rgba(74,222,128,.04);">
-            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
-              <div><div style="color:#4ade80;font-weight:700;font-size:1rem;">✅ Build Disponível</div><div style="font-size:.8rem;color:#64748b;">${formatDateTime(lastBuild.buildCompletedAt)} • ${formatBytes(lastBuild.fileSize)}</div></div>
-              <button class="btn-cyan" onclick="downloadApk('${esc(app.name)}','${esc(app.version)}','${esc(app.packageName)}',${lastBuild.fileSize||0})">⬇ Baixar APK</button>
-            </div>
-          </div>
-        ` : ''}
-      </div>
-
-      <!-- Build history -->
-      <div class="glass" style="border-radius:1.25rem;padding:1.25rem;">
-        <h3 style="margin:0 0 1rem;font-size:.9rem;text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;">📋 Histórico de Builds</h3>
-        ${appBuilds.length === 0 ? `<p style="color:#475569;font-size:.875rem;">Nenhum build realizado ainda.<br><button class="btn-primary" onclick="nav('/build/${app.id}')" style="margin-top:.75rem;">Compilar Agora</button></p>` :
-          appBuilds.map(b => `
-            <div style="border-bottom:1px solid rgba(51,65,85,.4);padding:.75rem 0;">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem;">
-                <span class="badge ${b.status==='completed'?'badge-green':b.status==='error'?'badge-red':'badge-yellow'}">${b.status}</span>
-                <span style="font-size:.7rem;color:#475569;">${formatDate(b.createdAt)}</span>
-              </div>
-              ${b.fileSize ? `<div style="font-size:.75rem;color:#64748b;">📦 ${formatBytes(b.fileSize)}</div>` : ''}
-              ${b.errorMessage ? `<div style="font-size:.75rem;color:#f87171;margin-top:.2rem;">⚠ ${esc(b.errorMessage)}</div>` : ''}
-              ${b.status==='completed' ? `<button class="btn-cyan" style="margin-top:.5rem;padding:.3rem .7rem;font-size:.75rem;" onclick="downloadApk('${esc(app.name)}','${esc(app.version)}','${esc(app.packageName)}',${b.fileSize||0})">⬇ Baixar APK</button>` : ''}
-            </div>
-          `).join('')}
-        <button class="btn-primary" onclick="nav('/build/${app.id}')" style="width:100%;margin-top:1rem;justify-content:center;">+ Nova Compilação</button>
-      </div>
-    </div>
-  </div>`;
-}
-
-// ====== RENDER BUILD PAGE ======
-function renderBuildPage(appId) {
-  const app = apps.find(a=>a.id===appId);
-  if (!app) return `<div style="text-align:center;padding:4rem;">App não encontrado.</div>`;
-
-  return `
-  <div style="max-width:1100px;margin:0 auto;padding:2.5rem 1.5rem;">
-    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:2rem;">
-      <button class="btn-outline" onclick="nav('/app/${app.id}')">← Voltar</button>
-      <div>
-        <h1 style="margin:0;font-size:1.3rem;">⚙️ Build: ${esc(app.name)}</h1>
-        <div style="font-size:.8rem;color:#64748b;">Package: <span class="mono">${esc(app.packageName)}</span> • v${esc(app.version)}</div>
-      </div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:1.5rem;">
-      <!-- Main build panel -->
-      <div class="glass glass-pink" style="border-radius:1.25rem;padding:1.75rem;">
-        <div style="display:flex;gap:1rem;align-items:center;margin-bottom:1.75rem;">
-          ${appIconHtml(app.iconUrl, 56)}
-          <div>
-            <div style="font-weight:700;">${esc(app.name)}</div>
-            <div style="font-size:.8rem;color:#64748b;">${esc(app.websiteUrl)}</div>
-            <span class="badge badge-pink" style="margin-top:.25rem;">v${esc(app.version)}</span>
-          </div>
-        </div>
-
-        <!-- Steps checklist (shown before build) -->
-        <div id="buildPreChecks">
-          <h3 style="font-size:.875rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem;">Checklist</h3>
-          <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem;">
-            ${[
-              ['URL do site configurada', !!app.websiteUrl],
-              ['Package name definido', !!app.packageName],
-              ['Ícone do app', !!(app.iconUrl && app.iconUrl !== '[base64-image]')],
-              ['Versão definida', !!app.version]
-            ].map(([label, ok])=>`
-              <div style="display:flex;align-items:center;gap:.6rem;font-size:.875rem;">
-                <span style="color:${ok?'#4ade80':'#f87171'}">${ok?'✔':'✖'}</span>
-                <span style="color:${ok?'#e2e8f0':'#94a3b8'}">${label}</span>
-              </div>`).join('')}
-          </div>
-          <button class="btn-primary" id="startBuildBtn" onclick="startBuild(${app.id})" style="width:100%;justify-content:center;font-size:1.05rem;padding:.85rem;">▶ Iniciar Compilação</button>
-        </div>
-
-        <!-- Progress (hidden initially) -->
-        <div id="buildProgress" style="display:none;">
-          <div style="display:flex;justify-content:space-between;margin-bottom:.5rem;">
-            <span style="font-size:.875rem;font-weight:700;" id="buildPhaseLabel">Inicializando...</span>
-            <span style="font-size:.875rem;color:#94a3b8;" id="buildPct">0%</span>
-          </div>
-          <div class="progress-bar-track" style="margin-bottom:1.25rem;">
-            <div class="progress-bar-fill" id="buildProgressBar" style="width:0%"></div>
-          </div>
-          <div id="buildPhases" style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:1.5rem;"></div>
-        </div>
-
-        <!-- Result (hidden initially) -->
-        <div id="buildResult" style="display:none;"></div>
-      </div>
-
-      <!-- Log console -->
-      <div class="glass" style="border-radius:1.25rem;padding:1.25rem;">
-        <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;">
-          <span style="width:8px;height:8px;background:#4ade80;border-radius:50%;display:inline-block;" id="consoleStatusDot"></span>
-          <span style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;">Console de Build</span>
-        </div>
-        <div class="log-output" id="buildLogs"><span class="log-info">[READY] Web2APK Build Engine v4.2 — aguardando...</span></div>
-      </div>
-    </div>
-  </div>`;
-}
-
-const BUILD_PHASES = [
-  { label:'Validando configurações', duration:600 },
-  { label:'Baixando dependências', duration:900 },
-  { label:'Compilando WebView wrapper', duration:1200 },
-  { label:'Empacotando assets', duration:800 },
-  { label:'Gerando AndroidManifest.xml', duration:600 },
-  { label:'Assinando APK', duration:1000 },
-  { label:'Verificando integridade', duration:600 },
-  { label:'Finalizando build', duration:400 }
-];
-
+// ======================== SIMULAÇÃO DE BUILD (sem download falso) ========================
 function startBuild(appId) {
-  const app = apps.find(a=>a.id===appId);
+  const app = apps.find(a => a.id === appId);
   if (!app) return;
 
-  // Hide pre-checks, show progress
   const pre = document.getElementById('buildPreChecks');
   const prog = document.getElementById('buildProgress');
   const result = document.getElementById('buildResult');
-  if (pre) pre.style.display='none';
-  if (prog) prog.style.display='block';
+  if (pre) pre.style.display = 'none';
+  if (prog) prog.style.display = 'block';
 
   const buildId = Date.now();
-  const newBuild = { id:buildId, appId, userId:user?.id||1, status:'building',
-    apkUrl:null, fileSize:null, createdAt:new Date().toISOString(),
-    buildStartedAt:new Date().toISOString() };
+  const newBuild = { id: buildId, appId, userId: user?.id || 1, status: 'building', createdAt: new Date().toISOString(), buildStartedAt: new Date().toISOString() };
   addBuild(newBuild);
 
   const logsDiv = document.getElementById('buildLogs');
   const bar = document.getElementById('buildProgressBar');
   const pct = document.getElementById('buildPct');
-  const phase = document.getElementById('buildPhaseLabel');
-  const phasesDiv = document.getElementById('buildPhases');
+  const phaseLabel = document.getElementById('buildPhaseLabel');
   const dot = document.getElementById('consoleStatusDot');
+  if (dot) dot.style.background = '#facc15';
 
-  if (dot) { dot.style.background='#facc15'; dot.style.animation='pulse-slow 1s infinite'; }
-
-  function log(msg, type='') {
-    if (logsDiv) logsDiv.innerHTML += `\n<span class="${type?'log-'+type:''}">[${new Date().toLocaleTimeString()}] ${msg}</span>`;
+  const log = (msg, type = '') => {
+    if (logsDiv) logsDiv.innerHTML += `\n<span class="${type ? 'text-'+type : ''}">[${new Date().toLocaleTimeString()}] ${msg}</span>`;
     logsDiv.scrollTop = logsDiv.scrollHeight;
-  }
+  };
+  log(`🚀 Build iniciado para ${app.name}`, 'info');
 
-  log('[INIT] Web2APK Build Engine iniciado', 'info');
-  log(`[APP] ${app.name} (${app.packageName}) v${app.version}`, 'info');
-  log(`[URL] ${app.websiteUrl}`, 'info');
-
-  let phaseIdx = 0;
-  let progress = 0;
-  const totalDuration = BUILD_PHASES.reduce((s,p)=>s+p.duration,0);
-  let elapsed = 0;
-
-  const completedPhases = [];
-
-  function runPhase() {
-    if (phaseIdx >= BUILD_PHASES.length) {
-      // Done!
-      progress = 100;
+  const phases = [
+    "Validando URL", "Baixando assets", "Compilando WebView", "Gerando manifesto",
+    "Assinando certificado", "Empacotando APK", "Verificando integridade"
+  ];
+  let step = 0;
+  const totalSteps = phases.length;
+  const interval = setInterval(() => {
+    if (step >= totalSteps) {
+      clearInterval(interval);
+      const completedBuild = { ...newBuild, status: 'completed', fileSize: 28_000_000 + Math.floor(Math.random() * 10_000_000), buildCompletedAt: new Date().toISOString() };
+      addBuild(completedBuild);
+      log("✅ Build concluída com sucesso!", "green-400");
       if (bar) bar.style.width = '100%';
       if (pct) pct.textContent = '100%';
-      if (phase) phase.textContent = 'Build concluída!';
-      if (dot) { dot.style.background='#4ade80'; dot.style.animation='none'; }
-      log('[SUCCESS] APK gerado com sucesso!', 'ok');
-      log(`[SIZE] ${(28 + Math.random()*10).toFixed(1)} MB`, 'ok');
-      log('[SIGN] Assinado com Web2APK Release Key', 'ok');
-
-      const completedBuild = { ...newBuild, status:'completed', apkUrl:'mock',
-        fileSize: Math.floor((28+Math.random()*10)*1e6),
-        buildCompletedAt:new Date().toISOString() };
-      addBuild(completedBuild);
-
+      if (phaseLabel) phaseLabel.textContent = 'Finalizado!';
+      if (dot) dot.style.background = '#4ade80';
       if (result) {
-        result.style.display='block';
+        result.style.display = 'block';
         result.innerHTML = `
-          <div style="background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.3);border-radius:1rem;padding:1.25rem;text-align:center;">
-            <div style="font-size:2rem;margin-bottom:.5rem;">🎉</div>
-            <div style="font-size:1.1rem;font-weight:700;color:#4ade80;margin-bottom:.25rem;">APK Gerado com Sucesso!</div>
-            <div style="font-size:.8rem;color:#64748b;margin-bottom:1rem;">${esc(app.name)} v${esc(app.version)} • ${formatBytes(completedBuild.fileSize)}</div>
-            <button class="btn-cyan" onclick="downloadApk('${esc(app.name)}','${esc(app.version)}','${esc(app.packageName)}',${completedBuild.fileSize})" style="font-size:1rem;padding:.7rem 2rem;">⬇ Baixar APK</button>
-            <div style="margin-top:.75rem;">
-              <button class="btn-outline" onclick="nav('/app/${app.id}')" style="font-size:.8rem;">Ver Detalhes do App</button>
-            </div>
+          <div class="text-center p-4 border border-green-500/30 rounded-xl bg-green-500/5">
+            <div class="text-2xl mb-2">🎉</div>
+            <div class="text-green-400 font-bold">APK Gerado (Simulação)</div>
+            <div class="text-sm text-slate-400 my-2">Tamanho aproximado: ${formatBytes(completedBuild.fileSize)}</div>
+            <button class="btn-primary" onclick="downloadApk('${esc(app.name)}','${esc(app.version)}')">⬇ Baixar APK (somente backend real)</button>
+            <div class="text-xs text-slate-500 mt-3">🔒 APK funcional requer assinatura em servidor. Ative o plano Premium para gerar APKs reais.</div>
           </div>`;
       }
       return;
     }
-
-    const p = BUILD_PHASES[phaseIdx];
-    if (phase) phase.textContent = p.label;
-    log(`[BUILD] ${p.label}...`);
-
-    const startProgress = (elapsed / totalDuration) * 100;
-    const endProgress = ((elapsed + p.duration) / totalDuration) * 100;
-    const steps = 10;
-    let step = 0;
-
-    const stepInterval = setInterval(() => {
-      step++;
-      const stepPct = startProgress + (endProgress - startProgress) * (step/steps);
-      if (bar) bar.style.width = stepPct.toFixed(1)+'%';
-      if (pct) pct.textContent = Math.round(stepPct)+'%';
-      if (step >= steps) {
-        clearInterval(stepInterval);
-        completedPhases.push(p.label);
-        if (phasesDiv) phasesDiv.innerHTML = completedPhases.map(l=>
-          `<div style="display:flex;align-items:center;gap:.4rem;font-size:.8rem;color:#4ade80;"><span>✔</span>${l}</div>`
-        ).join('');
-        elapsed += p.duration;
-        phaseIdx++;
-        setTimeout(runPhase, 80);
-      }
-    }, p.duration / steps);
-  }
-
-  setTimeout(runPhase, 300);
+    const percent = Math.round(((step+1) / totalSteps) * 100);
+    if (bar) bar.style.width = percent + '%';
+    if (pct) pct.textContent = percent + '%';
+    if (phaseLabel) phaseLabel.textContent = phases[step];
+    log(`[${phases[step]}] ...`, 'info');
+    step++;
+  }, 700);
 }
 
-// ====== RENDER PRICING ======
-function renderPricing() {
-  const plans = [
-    { name:'Free', price:'R$ 0', period:'', color:'#94a3b8', features:['2 apps', '5 builds/mês', 'Suporte básico', 'APK com marca Web2APK'], missing:['AdMob integrado','Notificações push','Whitelabel','API Rest'], cta:'Começar Grátis', action:"handleLogin()" },
-    { name:'Premium Pro', price:'R$ 29', period:'/mês', color:'#FF006E', features:['Apps ilimitados','Builds ilimitados','AdMob integrado','Notificações push','Whitelabel','Suporte prioritário'], missing:['API Rest'], cta:'Ativar Premium', action:"handleUpgrade('premium')", popular:true },
-    { name:'Enterprise', price:'R$ 99', period:'/mês', color:'#00d9ff', features:['Tudo do Premium','API Rest completa','SLA 99.9%','Gerente de conta dedicado','White label total','Custom domain'], missing:[], cta:'Contratar Agora', action:"handleUpgrade('enterprise')" }
-  ];
+// ======================== IMAGEM (UPLOAD / PREVIEW) ========================
+const fileToBase64 = (file) => new Promise((res) => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(file); });
+let caIconData = null;
+let quickIconData = null;
+let editIconData = null;
 
-  return `
-  <div style="max-width:1100px;margin:0 auto;padding:3.5rem 1.5rem;text-align:center;">
-    <div style="margin-bottom:2.5rem;">
-      <h1 style="font-size:2rem;margin-bottom:.5rem;">Planos <span style="color:#FF006E;">Cyberpunk</span></h1>
-      <p style="color:#64748b;">Escolha o plano ideal para escalar seus aplicativos</p>
+// Create page handlers
+window.handleCaImage = (file) => {
+  if (!file || !file.type.startsWith('image/')) return toast('Apenas imagens', 'error');
+  if (file.size > 2e6) return toast('Máx 2MB', 'error');
+  fileToBase64(file).then(b64 => { caIconData = b64; document.getElementById('caIconPreview').innerHTML = `<img src="${b64}" class="w-full h-full object-cover rounded-xl">`; });
+};
+window.clearCaIcon = () => { caIconData = null; document.getElementById('caIconPreview').innerHTML = '📱'; document.getElementById('caIconUrl').value = ''; };
+window.submitCreateApp = () => {
+  const name = document.getElementById('caName')?.value.trim();
+  const url = document.getElementById('caUrl')?.value.trim();
+  const pkg = document.getElementById('caPkg')?.value.trim();
+  if (!name || !url || !pkg) return toast('Preencha todos os campos', 'error');
+  createApp({
+    name, websiteUrl: url, description: document.getElementById('caDesc')?.value || '',
+    packageName: pkg, version: document.getElementById('caVersion')?.value || '1.0.0',
+    themeColor: document.getElementById('caColor')?.value || '#FF006E', orientation: document.getElementById('caOrientation')?.value || 'portrait',
+    permissions: ['INTERNET'], offlineSupport: document.getElementById('caOffline')?.checked || false,
+    deepLinking: document.getElementById('caDeep')?.checked || false, analyticsEnabled: document.getElementById('caAnalytics')?.checked || false,
+    iconUrl: caIconData || document.getElementById('caIconUrl')?.value || ''
+  });
+};
+
+// Quick form
+window.handleQuickImage = (file) => {
+  if (!file || !file.type.startsWith('image/')) return;
+  fileToBase64(file).then(b64 => { quickIconData = b64; document.getElementById('quickIconPreview').innerHTML = `<img src="${b64}" class="h-12 rounded-lg">`; });
+};
+window.handleQuickForm = () => {
+  const name = document.getElementById('qName')?.value.trim() || 'Quick App';
+  const url = document.getElementById('qUrl')?.value.trim();
+  if (!url) return toast('URL obrigatória', 'error');
+  if (!user) handleLogin();
+  createApp({
+    name, websiteUrl: url, description: 'Criado rapidamente', packageName: `com.quick.${Date.now()}`, version: '1.0.0',
+    themeColor: '#FF006E', orientation: 'portrait', permissions: ['INTERNET'], offlineSupport: true, deepLinking: false,
+    analyticsEnabled: true, iconUrl: quickIconData || ''
+  });
+  quickIconData = null;
+};
+
+// Edit modal
+window.openEditModal = (id) => { editModalAppId = id; editIconData = null; rerender(); };
+window.saveEditModal = (id) => {
+  const name = document.getElementById('editName')?.value.trim();
+  const url = document.getElementById('editUrl')?.value.trim();
+  if (!name || !url) return toast('Nome e URL obrigatórios', 'error');
+  const icon = editIconData || document.getElementById('editIconUrl')?.value.trim() || apps.find(a=>a.id===id)?.iconUrl || '';
+  updateApp(id, {
+    name, websiteUrl: url, description: document.getElementById('editDesc')?.value || '',
+    packageName: document.getElementById('editPkg')?.value || '', version: document.getElementById('editVersion')?.value || '1.0.0',
+    themeColor: document.getElementById('editColor')?.value || '#FF006E', orientation: document.getElementById('editOrientation')?.value || 'portrait',
+    offlineSupport: document.getElementById('editOffline')?.checked || false,
+    deepLinking: document.getElementById('editDeep')?.checked || false, analyticsEnabled: document.getElementById('editAnalytics')?.checked || false,
+    iconUrl: icon
+  });
+  editModalAppId = null;
+  editIconData = null;
+  rerender();
+};
+window.handleEditImage = (file) => {
+  if (!file || !file.type.startsWith('image/')) return;
+  fileToBase64(file).then(b64 => { editIconData = b64; document.getElementById('editIconPreview').innerHTML = `<img src="${b64}" class="w-16 h-16 rounded-xl object-cover">`; });
+};
+
+// ======================== RENDERIZAÇÃO DAS PÁGINAS ========================
+const renderNavbar = () => `
+  <nav class="sticky top-0 z-50 border-b border-pink-500/20 backdrop-blur-xl bg-slate-950/80">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+      <div onclick="navigate('/')" class="flex items-center gap-3 cursor-pointer">
+        <div class="w-10 h-10 bg-gradient-to-r from-pink-600 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">⚡</div>
+        <div><div class="text-2xl font-black bg-gradient-to-r from-pink-500 to-cyan-400 bg-clip-text text-transparent">ConvertAPK</div><div class="text-[10px] text-cyan-400">CYBER ENGINE</div></div>
+      </div>
+      <div class="flex items-center gap-4">
+        ${user ? `
+          <span class="nav-link hidden sm:block cursor-pointer" onclick="navigate('/dashboard')">Painel</span>
+          <span class="nav-link hidden sm:block cursor-pointer" onclick="navigate('/create-app')">Novo App</span>
+          <div class="flex items-center gap-2 bg-slate-900/60 px-3 py-1 rounded-full border border-pink-500/20">
+            <span class="text-sm font-bold">${esc(user.name)}</span>
+            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-600 to-cyan-400 flex items-center justify-center font-bold">${user.name.charAt(0)}</div>
+          </div>
+          <button class="btn-outline text-sm py-1 px-3" onclick="handleLogout()">Sair</button>
+        ` : `
+          <span class="nav-link cursor-pointer" onclick="navigate('/pricing')">Planos</span>
+          <button class="btn-primary" onclick="handleLogin()">Entrar</button>
+        `}
+      </div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;text-align:left;">
-      ${plans.map(p=>`
-        <div class="glass" style="border-radius:1.5rem;padding:2rem;position:relative;${p.popular?`border-color:${p.color};box-shadow:0 0 28px rgba(255,0,110,.2);`:''}">
-          ${p.popular ? `<div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#FF006E,#a855f7);color:#fff;font-size:.7rem;font-weight:700;letter-spacing:.08em;padding:.3rem 1rem;border-radius:99px;">🔥 MAIS POPULAR</div>` : ''}
-          <div style="font-family:'Orbitron',monospace;color:${p.color};font-size:.9rem;margin-bottom:.5rem;">${p.name}</div>
-          <div style="display:flex;align-items:baseline;gap:.2rem;margin-bottom:1.25rem;">
-            <span style="font-family:'Orbitron',monospace;font-size:2.2rem;font-weight:900;">${p.price}</span>
-            <span style="color:#64748b;font-size:.875rem;">${p.period}</span>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:1.5rem;font-size:.875rem;">
-            ${p.features.map(f=>`<div style="display:flex;align-items:center;gap:.5rem;"><span style="color:#4ade80;">✓</span>${f}</div>`).join('')}
-            ${p.missing.map(f=>`<div style="display:flex;align-items:center;gap:.5rem;color:#475569;"><span>✗</span>${f}</div>`).join('')}
-          </div>
-          <button class="${p.popular?'btn-primary':'btn-outline'}" onclick="${p.action}" style="width:100%;justify-content:center;${p.popular?'':'border-color:'+p.color+';color:'+p.color+';'}">${p.cta}</button>
-        </div>
-      `).join('')}
+  </nav>`;
+
+const renderFooter = () => `
+  <footer class="border-t border-pink-500/10 bg-slate-950/50 py-8 mt-auto">
+    <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-8 text-sm text-slate-400">
+      <div><div class="font-bold text-pink-500">ConvertAPK</div><p>Converta sites em APKs sem código.</p></div>
+      <div><div class="font-bold text-cyan-400">Funcionalidades</div><ul><li>Offline</li><li>Push</li><li>AdMob</li></ul></div>
+      <div><div class="font-bold text-purple-400">Links</div><ul><li class="cursor-pointer hover:text-pink-400" onclick="navigate('/dashboard')">Dashboard</li><li class="cursor-pointer hover:text-pink-400" onclick="navigate('/create-app')">Criar App</li></ul></div>
+      <div><div class="font-bold text-yellow-400">Status</div><div>✅ Build Engine Online</div></div>
+    </div>
+    <div class="text-center text-xs text-slate-600 mt-8">© 2026 Web2APK — PWA instalável</div>
+  </footer>`;
+
+const renderToast = () => currentToast ? `<div class="toast toast-success">${currentToast.msg}</div>` : '';
+
+const renderEditModal = () => {
+  if (!editModalAppId) return '';
+  const app = apps.find(a => a.id === editModalAppId);
+  if (!app) return '';
+  return `
+  <div class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onclick="if(event.target===this) editModalAppId=null; rerender()">
+    <div class="glass glass-pink rounded-2xl p-6 max-w-lg w-full">
+      <div class="flex justify-between items-center mb-4"><h3 class="text-xl">✏️ Editar App</h3><button onclick="editModalAppId=null;rerender()" class="text-slate-400 text-2xl">✕</button></div>
+      <div class="space-y-3">
+        <div><label class="field-label">Ícone</label><div class="flex gap-3"><div id="editIconPreview" class="w-16 h-16 rounded-xl overflow-hidden bg-slate-800">${app.iconUrl ? `<img src="${app.iconUrl}" class="w-full h-full object-cover">` : '<div class="app-icon-default w-full h-full">📱</div>'}</div><div class="flex-1"><div class="upload-zone" onclick="document.getElementById('editIconFile').click()">📸 Clique para trocar</div><input type="file" id="editIconFile" accept="image/*" style="display:none" onchange="handleEditImage(this.files[0])"><input class="input-field mt-2" id="editIconUrl" placeholder="Ou URL da imagem" value="${esc(app.iconUrl?.startsWith('http') ? app.iconUrl : '')}"></div></div></div>
+        <input class="input-field" id="editName" placeholder="Nome" value="${esc(app.name)}">
+        <input class="input-field" id="editUrl" placeholder="URL" value="${esc(app.websiteUrl)}">
+        <textarea class="input-field" id="editDesc" rows="2" placeholder="Descrição">${esc(app.description)}</textarea>
+        <input class="input-field" id="editPkg" value="${esc(app.packageName)}">
+        <input class="input-field" id="editVersion" value="${esc(app.version)}">
+        <input type="color" id="editColor" value="${app.themeColor}" class="w-full h-10 rounded-xl">
+        <div class="flex gap-4 items-center"><label class="flex items-center gap-2"><input type="checkbox" id="editOffline" ${app.offlineSupport ? 'checked' : ''}> Offline</label><label><input type="checkbox" id="editDeep" ${app.deepLinking ? 'checked' : ''}> Deep Link</label><label><input type="checkbox" id="editAnalytics" ${app.analyticsEnabled ? 'checked' : ''}> Analytics</label></div>
+        <div class="flex gap-3 pt-2"><button class="btn-primary flex-1" onclick="saveEditModal(${app.id})">Salvar</button><button class="btn-outline" onclick="editModalAppId=null;rerender()">Cancelar</button></div>
+      </div>
     </div>
   </div>`;
-}
+};
 
-// ====== OPEN EDIT MODAL ======
-function openEditModal(id) {
-  editModalAppId = id;
-  window._editIconData = null;
-  rerender();
-}
+const renderLanding = () => `
+<div class="max-w-7xl mx-auto px-6 py-16 grid md:grid-cols-2 gap-12 items-center">
+  <div><div class="inline-flex gap-2 bg-pink-500/10 border border-pink-500/30 rounded-full px-4 py-1 mb-4"><span class="w-2 h-2 bg-pink-500 rounded-full"></span><span class="text-xs font-bold text-pink-400">PWA INSTALÁVEL</span></div>
+  <h1 class="text-4xl md:text-6xl font-black leading-tight">Transforme seu <span class="bg-gradient-to-r from-pink-500 to-cyan-400 bg-clip-text text-transparent">site em app</span> Android</h1>
+  <p class="text-slate-400 text-lg my-6">Crie APKs profissionais sem código — e instale esta ferramenta na tela inicial do seu celular como um app nativo!</p>
+  <div class="flex gap-4"><button class="btn-primary" onclick="handleLogin()">Criar App Grátis →</button><button class="btn-outline" onclick="navigate('/pricing')">Planos</button></div>
+  <div class="flex gap-8 mt-8"><div><div class="text-3xl font-black text-pink-500">12K+</div><div>APKs gerados</div></div><div><div class="text-3xl font-black text-cyan-400">30s</div><div>build média</div></div></div></div>
+  <div class="glass rounded-2xl p-6"><h3 class="text-xl font-black mb-4">⚡ Criador Expresso</h3><div class="space-y-3"><input class="input-field" id="qName" placeholder="Nome do App"><input class="input-field" id="qUrl" placeholder="https://meusite.com"><div class="upload-zone" onclick="document.getElementById('quickIconInput').click()"><div id="quickIconPreview">📸 Clique para adicionar ícone</div></div><input type="file" id="quickIconInput" accept="image/*" style="display:none" onchange="handleQuickImage(this.files[0])"><button class="btn-primary w-full justify-center" onclick="handleQuickForm()">Gerar APK →</button></div></div>
+</div>
+<div class="text-center py-16"><h2 class="text-3xl font-black">Como funciona em 4 passos</h2><div class="grid md:grid-cols-4 gap-6 mt-10 max-w-6xl mx-auto px-6">${['Cole a URL','Personalize ícone','Compile APK','Baixe e instale'].map((t,i)=>`<div class="glass p-6 rounded-2xl"><div class="text-5xl text-pink-500">0${i+1}</div><h3 class="font-bold mt-2">${t}</h3></div>`).join('')}</div></div>`;
 
-// ====== HELPERS ======
-function esc(str) {
-  if (str === null || str === undefined) return '';
-  return String(str)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;')
-    .replace(/'/g,'&#39;');
-}
+const renderDashboard = () => {
+  const totalBuilds = builds.filter(b=>b.status==='completed').length;
+  return `
+  <div class="max-w-7xl mx-auto px-6 py-10">
+    <div class="flex justify-between items-center mb-8"><h1 class="text-3xl font-black bg-gradient-to-r from-pink-500 to-cyan-400 bg-clip-text text-transparent">Painel do Dev</h1><button class="btn-primary" onclick="navigate('/create-app')">+ Novo App</button></div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10"><div class="glass p-5 rounded-2xl"><div>Total Apps</div><div class="text-4xl font-black">${apps.length}</div></div><div class="glass p-5"><div>Builds Concluídas</div><div class="text-4xl font-black">${totalBuilds}</div></div><div class="glass p-5"><div>Plano</div><div class="text-xl font-bold">${user?.role === 'premium' ? '⭐ Premium' : 'Free'}</div></div></div>
+    <div class="grid md:grid-cols-2 gap-5">${apps.map(app => `
+      <div class="glass glass-pink rounded-2xl p-4 hover:border-pink-500/50 transition cursor-pointer" onclick="navigate('/app/${app.id}')">
+        <div class="flex justify-between items-start"><div class="flex gap-3"><div class="w-12 h-12 rounded-xl overflow-hidden bg-slate-800">${app.iconUrl ? `<img src="${app.iconUrl}" class="w-full h-full object-cover">` : '<div class="app-icon-default w-full h-full">📱</div>'}</div><div><div class="font-bold">${esc(app.name)}</div><div class="text-xs text-slate-400 truncate w-48">${esc(app.websiteUrl)}</div></div></div><button class="text-red-400 text-sm" onclick="event.stopPropagation(); if(confirm('Deletar?')) deleteApp(${app.id})">🗑️</button></div>
+        <div class="flex justify-between mt-3 text-xs"><span>📅 ${formatDate(app.createdAt)}</span><span class="bg-slate-800 px-2 py-0.5 rounded">v${esc(app.version)}</span></div>
+      </div>`).join('')}</div>
+    ${!apps.length ? '<div class="text-center py-20">Nenhum app criado ainda.<br><button class="btn-primary mt-4" onclick="navigate(\'/create-app\')">Criar primeiro app</button></div>' : ''}
+  </div>`;
+};
 
-// ====== MAIN RERENDER ======
+const renderCreateApp = () => `
+<div class="max-w-4xl mx-auto px-6 py-10">
+  <button class="btn-outline mb-6" onclick="navigate('/dashboard')">← Voltar</button>
+  <div class="glass glass-pink rounded-2xl p-8"><h2 class="text-2xl font-black mb-6">Criar novo aplicativo</h2>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="space-y-4"><input class="input-field" id="caName" placeholder="Nome do App *"><input class="input-field" id="caUrl" placeholder="URL do Site *"><textarea class="input-field" id="caDesc" rows="3" placeholder="Descrição"></textarea><input class="input-field" id="caPkg" placeholder="Package Name (ex: com.exemplo.app)"><input class="input-field" id="caVersion" value="1.0.0"><input type="color" id="caColor" value="#FF006E" class="w-full h-10 rounded-xl"></div>
+      <div class="space-y-4"><div><label class="field-label">Ícone do App</label><div id="caIconPreview" class="w-32 h-32 mx-auto rounded-xl bg-slate-800 flex items-center justify-center text-4xl mb-3">📱</div><div class="upload-zone" onclick="document.getElementById('caIconFile').click()">📸 Clique para enviar imagem</div><input type="file" id="caIconFile" accept="image/*" style="display:none" onchange="handleCaImage(this.files[0])"><input class="input-field mt-2" id="caIconUrl" placeholder="Ou URL da imagem"></div><div><button class="btn-danger w-full" onclick="clearCaIcon()">Remover ícone</button></div><select class="input-field" id="caOrientation"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></select><div class="flex gap-4"><label><input type="checkbox" id="caOffline" checked> Offline</label><label><input type="checkbox" id="caDeep"> Deep Link</label><label><input type="checkbox" id="caAnalytics" checked> Analytics</label></div></div>
+    </div>
+    <div class="flex gap-4 mt-8"><button class="btn-primary flex-1" onclick="submitCreateApp()">Criar App</button><button class="btn-outline" onclick="navigate('/dashboard')">Cancelar</button></div>
+  </div>
+</div>`;
+
+const renderAppDetails = (id) => {
+  const app = apps.find(a => a.id === id);
+  if (!app) return '<div class="text-center py-20">App não encontrado</div>';
+  const appBuilds = builds.filter(b => b.appId === id);
+  return `
+  <div class="max-w-7xl mx-auto px-6 py-10">
+    <div class="flex justify-between items-center flex-wrap gap-4 mb-8"><button class="btn-outline" onclick="navigate('/dashboard')">← Dashboard</button><div><button class="btn-primary" onclick="navigate('/build/${id}')">📱 Nova Compilação</button><button class="btn-outline ml-3" onclick="openEditModal(${id})">✏️ Editar</button><button class="btn-danger ml-3" onclick="if(confirm('Excluir?')) deleteApp(${id})">🗑️</button></div></div>
+    <div class="grid lg:grid-cols-3 gap-8"><div class="lg:col-span-2 glass rounded-2xl p-6"><div class="flex gap-4"><div class="w-20 h-20 rounded-xl overflow-hidden bg-slate-800">${app.iconUrl ? `<img src="${app.iconUrl}" class="w-full h-full object-cover">` : '<div class="app-icon-default w-full h-full">📱</div>'}</div><div><h2 class="text-2xl font-black">${esc(app.name)}</h2><a href="${app.websiteUrl}" target="_blank" class="text-pink-400 text-sm">${app.websiteUrl} ↗</a><div class="flex gap-2 mt-2"><span class="badge-pink px-2 py-0.5 rounded-full text-xs">v${app.version}</span>${app.offlineSupport ? '<span class="badge-green px-2 py-0.5 rounded-full text-xs">Offline</span>' : ''}</div></div></div><div class="mt-4"><p>${esc(app.description || 'Sem descrição')}</p><div class="grid grid-cols-2 gap-3 text-sm mt-4"><span>📦 ${app.packageName}</span><span>🎨 Cor: ${app.themeColor}</span><span>📱 ${app.orientation}</span><span>📅 Criado: ${formatDate(app.createdAt)}</span></div></div></div>
+      <div class="glass rounded-2xl p-5"><h3 class="font-bold mb-3">📋 Histórico de builds</h3>${appBuilds.length ? appBuilds.map(b => `<div class="border-b border-slate-800 py-2"><div class="flex justify-between"><span class="text-${b.status==='completed'?'green-400':'yellow-400'}">${b.status}</span><span class="text-xs">${formatDate(b.createdAt)}</span></div>${b.fileSize ? `<div class="text-xs text-slate-400">${formatBytes(b.fileSize)}</div>` : ''}${b.status==='completed' ? `<button class="text-pink-400 text-xs mt-1" onclick="downloadApk('${esc(app.name)}','${esc(app.version)}')">⬇ Baixar APK (simulado)</button>` : ''}</div>`).join('') : '<p class="text-slate-500">Nenhum build ainda. Clique em "Nova Compilação".</p>'}</div>
+    </div>
+  </div>`;
+};
+
+const renderBuildPage = (id) => {
+  const app = apps.find(a => a.id === id);
+  if (!app) return '<div class="text-center py-20">App não encontrado</div>';
+  return `
+  <div class="max-w-6xl mx-auto px-6 py-10">
+    <button class="btn-outline mb-6" onclick="navigate('/app/${id}')">← Voltar</button>
+    <div class="grid md:grid-cols-3 gap-6"><div class="md:col-span-2 glass rounded-2xl p-6"><div id="buildPreChecks"><div class="flex gap-4 items-center mb-6"><div class="w-14 h-14 rounded-xl overflow-hidden">${app.iconUrl ? `<img src="${app.iconUrl}" class="w-full h-full object-cover">` : '<div class="app-icon-default w-full h-full">📱</div>'}</div><div><h2 class="text-xl font-black">${esc(app.name)}</h2><div class="text-sm text-slate-400">${app.websiteUrl}</div></div></div><button class="btn-primary w-full justify-center" onclick="startBuild(${id})">▶ Iniciar Compilação</button></div><div id="buildProgress" style="display:none"><div id="buildPhaseLabel" class="font-bold mb-2"></div><div class="progress-bar-track"><div id="buildProgressBar" class="progress-bar-fill" style="width:0%"></div></div><div class="text-right text-sm mt-1" id="buildPct">0%</div><div id="buildPhases" class="mt-3 space-y-1"></div></div><div id="buildResult" style="display:none"></div></div><div class="glass rounded-2xl p-4"><div class="flex items-center gap-2 mb-3"><span id="consoleStatusDot" class="w-2 h-2 bg-slate-500 rounded-full"></span><span class="text-xs font-bold">CONSOLE</span></div><div id="buildLogs" class="log-output"><span class="text-slate-500">[READY] Engine aguardando...</span></div></div></div>
+  </div>`;
+};
+
+const renderPricing = () => `
+<div class="max-w-6xl mx-auto px-6 py-16 text-center"><h1 class="text-4xl font-black bg-gradient-to-r from-pink-500 to-cyan-400 bg-clip-text text-transparent">Planos Cyberpunk</h1><div class="grid md:grid-cols-3 gap-8 mt-12"><div class="glass p-6 rounded-2xl"><h3>Free</h3><div class="text-3xl font-black">R$ 0</div><ul class="my-4"><li>✓ 2 apps</li><li>✓ Simulação de build</li><li>✗ APK real</li></ul><button class="btn-outline w-full" onclick="handleLogin()">Começar</button></div><div class="glass border-pink-500 shadow-lg p-6 rounded-2xl relative"><div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-pink-500 text-black text-xs px-3 py-1 rounded-full">🔥 Popular</div><h3>Premium Pro</h3><div class="text-3xl font-black">R$ 29/mês</div><ul class="my-4"><li>✓ Apps ilimitados</li><li>✓ Geração real de APK (backend)</li><li>✓ AdMob + notificações</li></ul><button class="btn-primary w-full" onclick="handleUpgrade('premium')">Ativar Premium</button></div><div class="glass p-6 rounded-2xl"><h3>Enterprise</h3><div class="text-3xl font-black">R$ 99</div><ul><li>✓ Tudo do Premium</li><li>✓ API Rest</li></ul><button class="btn-outline w-full" onclick="handleUpgrade('enterprise')">Contratar</button></div></div></div>`;
+
+// ======================== RENDER PRINCIPAL ========================
 function rerender() {
   const root = document.getElementById('app-root');
   if (!root) return;
-
   const route = getRoute();
   let main = '';
-
-  if (!user && route !== '/' && route !== '/pricing') {
-    main = renderLanding();
-  } else if (route === '/') {
-    main = renderLanding();
-  } else if (route === '/dashboard') {
-    main = renderDashboard();
-  } else if (route === '/create-app') {
-    main = renderCreateApp();
-  } else if (route === '/pricing') {
-    main = renderPricing();
-  } else if (/^\/app\/\d+$/.test(route)) {
-    main = renderAppDetails(parseInt(route.split('/')[2]));
-  } else if (/^\/build\/\d+$/.test(route)) {
-    main = renderBuildPage(parseInt(route.split('/')[2]));
-  } else {
-    main = renderLanding();
-  }
-
-  root.innerHTML =
-    renderNavbar() +
-    `<main style="flex:1;">${main}</main>` +
-    renderFooter() +
-    renderToast() +
-    renderEditModal();
+  if (!user && !['/', '/pricing'].includes(route)) main = renderLanding();
+  else if (route === '/') main = renderLanding();
+  else if (route === '/dashboard') main = renderDashboard();
+  else if (route === '/create-app') main = renderCreateApp();
+  else if (route === '/pricing') main = renderPricing();
+  else if (route.startsWith('/app/')) main = renderAppDetails(parseInt(route.split('/')[2]));
+  else if (route.startsWith('/build/')) main = renderBuildPage(parseInt(route.split('/')[2]));
+  else main = renderLanding();
+  root.innerHTML = renderNavbar() + `<main class="flex-1">${main}</main>` + renderFooter() + renderToast() + renderEditModal();
 }
 
-// ====== GLOBAL HELPERS (called from HTML attributes) ======
-window.nav = navigate;
-window.handleLogin = handleLogin;
-window.handleLogout = handleLogout;
-window.handleUpgrade = handleUpgrade;
-window.deleteApp = deleteApp;
-window.openEditModal = openEditModal;
-window.saveEditModal = saveEditModal;
-window.downloadApk = downloadApk;
-window.startBuild = startBuild;
-window.rerender = rerender;
+// Registrar Service Worker para PWA (se existir)
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(e => console.warn('SW não registrado (arquivo ausente)', e));
+}
 
-// Image handlers
-window.handleCaImageFile = handleCaImageFile;
-window.handleCaImageDrop = handleCaImageDrop;
-window.handleCaIconUrl = handleCaIconUrl;
-window.clearCaIcon = clearCaIcon;
-window.submitCreateApp = submitCreateApp;
-window.handleQuickImageFile = handleQuickImageFile;
-window.handleQuickImageDrop = handleQuickImageDrop;
-window.handleQuickForm = handleQuickForm;
-window.handleEditImageFile = handleEditImageFile;
-window.handleEditImageDrop = handleEditImageDrop;
-window.handleEditIconUrlInput = handleEditIconUrlInput;
-
-// ====== INIT ======
-window.addEventListener('hashchange', rerender);
+// Inicializar
 loadStorage();
+window.addEventListener('hashchange', rerender);
 rerender();
 </script>
 </body>
