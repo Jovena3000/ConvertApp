@@ -91,119 +91,15 @@ function installMainPWA() {
   }
 }
 
-// ========== PWA DINÂMICO PARA CADA APP CRIADO (CORRIGIDO) ==========
+// ========== INSTALAR APP CRIADO (VERSÃO SIMPLES E FUNCIONAL) ==========
 function installAppAsPWA(app) {
-  const appId = app.id;
-  const appName = app.name;
-  const appUrl = app.websiteUrl;
-  const appIcon = app.iconUrl || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23FF006E'/%3E%3Ctext x='49' y='67' font-size='50' text-anchor='middle' fill='white'%3E📱%3C/text%3E%3C/svg%3E";
-  const theme = app.themeColor || "#FF006E";
-
-  // Manifesto personalizado
-  const manifest = {
-    name: appName,
-    short_name: appName.substring(0, 12),
-    start_url: "index.html",
-    display: "standalone",
-    theme_color: theme,
-    background_color: "#020617",
-    icons: [{ src: appIcon, sizes: "512x512", type: "image/png", purpose: "any maskable" }]
-  };
-  const manifestBlob = new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" });
-  const manifestURL = URL.createObjectURL(manifestBlob);
-
-  // Service Worker que faz cache da URL do app
-  const swCode = `
-    const CACHE_NAME = 'app-${appId}';
-    const APP_URL = '${appUrl}';
-    self.addEventListener('install', e => e.waitUntil(
-      caches.open(CACHE_NAME).then(c => c.add(APP_URL))
-    ));
-    self.addEventListener('fetch', e => {
-      if (e.request.url === APP_URL || e.request.url === self.location.origin + '/') {
-        e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
-      } else {
-        e.respondWith(fetch(e.request));
-      }
-    });
-  `;
-  const swBlob = new Blob([swCode], { type: "application/javascript" });
-  const swURL = URL.createObjectURL(swBlob);
-
-  // HTML da página que exibe o app em iframe + botão de instalação
-  const html = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <link rel="manifest" href="${manifestURL}">
-  <meta name="theme-color" content="${theme}">
-  <title>${appName}</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #000; height: 100vh; overflow: hidden; font-family: system-ui; }
-    iframe { width: 100%; height: 100%; border: none; }
-    #install-btn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #FF006E;
-      color: white;
-      border: none;
-      border-radius: 60px;
-      padding: 14px 28px;
-      font-size: 16px;
-      font-weight: bold;
-      display: none;
-      cursor: pointer;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-      z-index: 9999;
-      font-family: system-ui;
-    }
-    #install-btn:hover { background: #ff3377; transform: scale(1.02); }
-  </style>
-</head>
-<body>
-  <iframe src="${appUrl}" allow="accelerometer; autoplay; camera; geolocation; microphone; payment; usb" allowfullscreen></iframe>
-  <button id="install-btn">📲 Instalar este aplicativo</button>
-
-  <script>
-    let deferredPrompt;
-    const installBtn = document.getElementById('install-btn');
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      installBtn.style.display = 'flex';
-    });
-
-    installBtn.addEventListener('click', async () => {
-      if (!deferredPrompt) return;
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        installBtn.innerText = '✅ Instalado!';
-        setTimeout(() => installBtn.style.display = 'none', 2000);
-      }
-      deferredPrompt = null;
-    });
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('${swURL}')
-        .then(() => console.log('SW registrado com sucesso'))
-        .catch(err => console.error('Erro ao registrar SW:', err));
-    }
-  <\/script>
-</body>
-</html>`;
-
-  const htmlBlob = new Blob([html], { type: "text/html" });
-  const htmlURL = URL.createObjectURL(htmlBlob);
-  const newWindow = window.open(htmlURL, "_blank");
+  // Abre a URL do app em uma nova aba
+  const newWindow = window.open(app.websiteUrl, '_blank');
   if (!newWindow) {
-    toast("Permita pop-ups para instalar o app.", "error");
+    toast("Permita pop-ups para abrir o app.", "error");
   } else {
-    toast(`✅ Abriu nova aba com "${appName}". Clique no botão vermelho flutuante e instale o app na tela inicial.`, "success");
+    // Exibe tutorial claro para instalação nativa do navegador
+    toast(`✅ "${app.name}" aberto em nova aba. Agora toque no menu (3 pontos) e escolha "Adicionar à tela inicial". O app será instalado com o nome e ícone do site (se houver).`, "success", 8000);
   }
 }
 
@@ -224,8 +120,16 @@ const loadStorage = () => {
 const persist = () => { localStorage.setItem('convertapk_user', JSON.stringify(user)); localStorage.setItem('convertapk_apps', JSON.stringify(apps)); };
 const getRoute = () => window.location.hash.slice(1) || '/';
 const navigate = (route) => { window.location.hash = route; rerender(); };
-const toast = (msg, type='success') => { toastQueue.push({ msg, type }); if (!currentToast) showNextToast(); };
-const showNextToast = () => { if (!toastQueue.length) { currentToast = null; rerender(); return; } currentToast = toastQueue.shift(); rerender(); setTimeout(showNextToast, 3000); };
+const toast = (msg, type='success', duration=3000) => {
+  toastQueue.push({ msg, type, duration });
+  if (!currentToast) showNextToast();
+};
+const showNextToast = () => {
+  if (!toastQueue.length) { currentToast = null; rerender(); return; }
+  currentToast = toastQueue.shift();
+  rerender();
+  setTimeout(showNextToast, currentToast.duration || 3000);
+};
 const esc = (s) => String(s??'').replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
 
 // ========== CRUD APPS ==========
@@ -336,7 +240,7 @@ const renderNavbar = () => `
   </div>
 </nav>`;
 
-const renderFooter = () => `<footer class="border-t border-pink-500/10 bg-slate-950/50 py-8 mt-auto"><div class="text-center text-xs text-slate-600">© 2026 ConvertAPK — Crie e instale apps com um clique (PWA dinâmico)</div></footer>`;
+const renderFooter = () => `<footer class="border-t border-pink-500/10 bg-slate-950/50 py-8 mt-auto"><div class="text-center text-xs text-slate-600">© 2026 ConvertAPK — Crie e instale apps com um clique</div></footer>`;
 const renderToast = () => currentToast ? `<div class="toast toast-${currentToast.type === 'error' ? 'error' : 'success'}">${currentToast.msg}</div>` : '';
 const renderEditModal = () => {
   if (!editModalAppId) return '';
@@ -355,8 +259,8 @@ const renderLanding = () => `
   </div>
   <div class="mt-12 grid md:grid-cols-3 gap-6">
     <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">📱</div><h3>App exato que você criou</h3><p>Com o nome, ícone e URL que você escolheu.</p></div>
-    <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">⚡</div><h3>Instalação em um clique</h3><p>Nova aba → botão vermelho → instalar na tela inicial.</p></div>
-    <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">🔧</div><h3>Sem APK, sem erros</h3><p>Usamos PWA, a tecnologia que o Chrome recomenda.</p></div>
+    <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">⚡</div><h3>Instalação em um clique</h3><p>Abra o app → menu do navegador → "Adicionar à tela inicial".</p></div>
+    <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">🔧</div><h3>Sem APK, sem erros</h3><p>Usamos o recurso nativo do Chrome (PWA).</p></div>
   </div>
 </div>`;
 
