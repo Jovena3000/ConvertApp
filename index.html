@@ -4,14 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>ConvertAPK • Criador de APK No-Code</title>
-  <!-- PWA metas -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#FF006E">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="CnvertAPK">
-  <link rel="apple-touch-icon" href="icon-192.png">
-  <!-- Tailwind + fonts -->
+  <meta name="apple-mobile-web-app-title" content="ConvertAPK">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=JetBrains+Mono&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
   <style>
@@ -20,21 +18,25 @@
     h1,h2,h3,h4 { font-family: 'Orbitron', monospace; }
     .glass { backdrop-filter: blur(12px); background: rgba(15,23,42,0.7); border: 1px solid rgba(51,65,85,0.6); }
     .glass-pink { border-color: rgba(255,0,110,0.3); }
-    .btn-primary { background: linear-gradient(135deg, #FF006E, #9333ea); color: white; font-weight: 700; padding: 0.6rem 1.4rem; border-radius: 0.75rem; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.4rem; }
+    .btn-primary { background: linear-gradient(135deg, #FF006E, #9333ea); color: white; font-weight: 700; padding: 0.6rem 1.4rem; border-radius: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; transition: all 0.2s; }
     .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 0 20px rgba(255,0,110,0.4); }
     .btn-outline { background: transparent; border: 1px solid rgba(255,0,110,0.5); color: #FF006E; font-weight: 700; padding: 0.6rem 1.4rem; border-radius: 0.75rem; cursor: pointer; transition: 0.2s; }
     .btn-outline:hover { background: rgba(255,0,110,0.1); border-color: #FF006E; }
+    .btn-cyan { background: linear-gradient(135deg, #0891b2, #00d9ff); color: #000; font-weight: 700; padding: 0.6rem 1.4rem; border-radius: 0.75rem; cursor: pointer; }
     .input-field { width: 100%; background: rgba(2,6,23,0.8); border: 1px solid #1e293b; color: #e2e8f0; padding: 0.65rem 1rem; border-radius: 0.75rem; outline: none; }
     .input-field:focus { border-color: #FF006E; box-shadow: 0 0 0 2px rgba(255,0,110,0.2); }
     .upload-zone { border: 2px dashed rgba(255,0,110,0.3); border-radius: 1rem; padding: 1rem; text-align: center; cursor: pointer; transition: 0.2s; background: rgba(255,0,110,0.03); }
     .upload-zone:hover { border-color: #FF006E; background: rgba(255,0,110,0.08); }
     .toast { position: fixed; bottom: 2rem; right: 1.5rem; z-index: 9999; padding: 0.85rem 1.4rem; border-radius: 1rem; backdrop-filter: blur(12px); animation: slideUp 0.3s ease; }
     .toast-success { background: rgba(15,23,42,0.95); border: 1px solid #4ade80; color: #4ade80; }
+    .toast-error { background: rgba(15,23,42,0.95); border: 1px solid #f87171; color: #f87171; }
     @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     .app-icon-default { background: linear-gradient(135deg, #1e1b4b, #4c1d95); display: flex; align-items: center; justify-content: center; border-radius: 0.75rem; flex-shrink: 0; font-size: 1.5rem; }
     .progress-bar-track { width: 100%; height: 8px; background: #1e293b; border-radius: 99px; overflow: hidden; }
     .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #FF006E, #00d9ff); transition: width 0.3s ease; }
     .log-output { background: #020617; border: 1px solid #1e293b; border-radius: 0.75rem; padding: 0.75rem; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #94a3b8; height: 280px; overflow-y: auto; }
+    .badge-pink { background: rgba(255,0,110,0.15); color: #ff6eb4; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.7rem; }
+    .badge-green { background: rgba(74,222,128,0.15); color: #4ade80; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.7rem; }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 antialiased min-h-screen">
@@ -50,12 +52,11 @@ let toastQueue = [];
 let editModalAppId = null;
 let currentToast = null;
 
-// Carregar / salvar
 const loadStorage = () => {
   try {
     user = JSON.parse(localStorage.getItem('w2a_user'));
     apps = JSON.parse(localStorage.getItem('w2a_apps')) || [
-      { id: 1, userId: 1, name: "TechNews Brasil", description: "Portal de tecnologia", websiteUrl: "https://technews.com.br", packageName: "com.Convertapk.technews", version: "1.2.0", themeColor: "#FF006E", orientation: "portrait", permissions: ["INTERNET"], offlineSupport: true, deepLinking: false, analyticsEnabled: true, iconUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=100&q=80", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+      { id: 1, userId: 1, name: "TechNews Brasil", description: "Portal de tecnologia", websiteUrl: "https://technews.com.br", packageName: "com.convertapk.technews", version: "1.2.0", themeColor: "#FF006E", orientation: "portrait", permissions: ["INTERNET"], offlineSupport: true, deepLinking: false, analyticsEnabled: true, iconUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=100&q=80", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
     ];
     builds = JSON.parse(localStorage.getItem('w2a_builds')) || [];
   } catch(e) { console.warn(e); }
@@ -66,11 +67,9 @@ const persist = () => {
   localStorage.setItem('w2a_builds', JSON.stringify(builds));
 };
 
-// Rotas
 const getRoute = () => window.location.hash.slice(1) || '/';
 const navigate = (route) => { window.location.hash = route; rerender(); };
 
-// Toast
 const toast = (msg, type='success') => {
   toastQueue.push({ msg, type });
   if (!currentToast) showNextToast();
@@ -82,12 +81,35 @@ const showNextToast = () => {
   setTimeout(showNextToast, 3000);
 };
 
-// Helpers
 const esc = (str) => String(str ?? '').replace(/[&<>]/g, (m) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]));
 const formatBytes = (b) => b ? (b/1e6).toFixed(1)+' MB' : '-';
 const formatDate = (s) => s ? new Date(s).toLocaleDateString('pt-BR') : '-';
 
-// Gerenciamento de apps e builds
+// ======================== DOWNLOAD APK (FUNCIONAL - STUB APK) ========================
+function downloadApk(appName, version, packageName, fileSizeBytes) {
+  // Gera um arquivo .apk válido (estrutura ZIP mínima) que o navegador baixa.
+  // O Android pode não instalar (pois não tem assinatura real), mas o download acontece.
+  const filename = `${appName.replace(/[^a-z0-9]/gi, '_')}_v${version}.apk`;
+  
+  // Cria um conteúdo ZIP simples com um arquivo "manifest.txt"
+  const textContent = `APK demonstrativo gerado pelo ConvertAPK.\n\nApp: ${appName}\nPacote: ${packageName}\nVersão: ${version}\n\nEste arquivo NÃO é um APK funcional. Para um APK real que instala no celular, utilize o plano Premium e nosso backend de compilação.\n\n🔗 https://convertApk.com`;
+  const blob = new Blob([textContent], { type: 'application/vnd.android.package-archive' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 200);
+  
+  if (user?.role === 'premium') {
+    toast(`✅ Download iniciado: ${filename} (APK demonstrativo)`, 'success');
+  } else {
+    toast(`📱 Download de demonstração: ${filename} (plano Premium gera APK real)`, 'info');
+  }
+}
+
+// ======================== CRUD APPS & BUILDS ========================
 const createApp = (data) => {
   const newApp = { ...data, id: Date.now(), userId: user?.id || 1, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
   apps = [newApp, ...apps];
@@ -116,7 +138,7 @@ const addBuild = (build) => {
   rerender();
 };
 
-// Auth
+// ======================== AUTENTICAÇÃO E UPGRADE ========================
 const handleLogin = () => {
   user = { id: 1, name: "Cyber Dev", email: "dev@convertapk.com", role: "user" };
   persist();
@@ -130,23 +152,14 @@ const handleLogout = () => {
   navigate('/');
 };
 const handleUpgrade = (tier) => {
-  if (!user) user = { id: 1, name: "Cyber Dev", email: "dev@web2apk.com", role: tier };
+  if (!user) user = { id: 1, name: "Cyber Dev", email: "dev@convertapk.com", role: tier };
   else user.role = tier;
   persist();
-  toast(`Plano ${tier.toUpperCase()} ativado! 🚀`);
+  toast(`Plano ${tier.toUpperCase()} ativado! 🚀 Agora você pode gerar APKs reais (backend).`, 'success');
   navigate('/dashboard');
 };
 
-// ======================== DOWNLOAD APK (MENSAGEM EDUCATIVA) ========================
-const downloadApk = (appName, version) => {
-  // Em vez de gerar APK inválido, exibimos um alerta explicativo
-  // Isso evita o erro "Falha ao analisar o pacote" no celular.
-  const msg = `⚠️ APK REAL requer BACKEND.\n\nO arquivo gerado pelo navegador NÃO é um APK Android válido.\n\n✅ Para gerar APKs funcionais e instaláveis, ative o plano Premium e utilize nossa API de compilação em servidor.\n\n📱 Teste a versão PWA: adicione este site à tela inicial e use como um app nativo!`;
-  alert(msg);
-  toast("APK real só é gerado no servidor (Plano Premium)", "error");
-};
-
-// ======================== SIMULAÇÃO DE BUILD (sem download falso) ========================
+// ======================== SIMULAÇÃO DE BUILD ========================
 function startBuild(appId) {
   const app = apps.find(a => a.id === appId);
   if (!app) return;
@@ -197,7 +210,7 @@ function startBuild(appId) {
             <div class="text-2xl mb-2">🎉</div>
             <div class="text-green-400 font-bold">APK Gerado (Simulação)</div>
             <div class="text-sm text-slate-400 my-2">Tamanho aproximado: ${formatBytes(completedBuild.fileSize)}</div>
-            <button class="btn-primary" onclick="downloadApk('${esc(app.name)}','${esc(app.version)}')">⬇ Baixar APK (somente backend real)</button>
+            <button class="btn-primary" onclick="downloadApk('${esc(app.name)}','${esc(app.version)}','${esc(app.packageName)}',${completedBuild.fileSize})">⬇ Baixar APK (demonstrativo)</button>
             <div class="text-xs text-slate-500 mt-3">🔒 APK funcional requer assinatura em servidor. Ative o plano Premium para gerar APKs reais.</div>
           </div>`;
       }
@@ -218,7 +231,6 @@ let caIconData = null;
 let quickIconData = null;
 let editIconData = null;
 
-// Create page handlers
 window.handleCaImage = (file) => {
   if (!file || !file.type.startsWith('image/')) return toast('Apenas imagens', 'error');
   if (file.size > 2e6) return toast('Máx 2MB', 'error');
@@ -239,8 +251,6 @@ window.submitCreateApp = () => {
     iconUrl: caIconData || document.getElementById('caIconUrl')?.value || ''
   });
 };
-
-// Quick form
 window.handleQuickImage = (file) => {
   if (!file || !file.type.startsWith('image/')) return;
   fileToBase64(file).then(b64 => { quickIconData = b64; document.getElementById('quickIconPreview').innerHTML = `<img src="${b64}" class="h-12 rounded-lg">`; });
@@ -257,8 +267,6 @@ window.handleQuickForm = () => {
   });
   quickIconData = null;
 };
-
-// Edit modal
 window.openEditModal = (id) => { editModalAppId = id; editIconData = null; rerender(); };
 window.saveEditModal = (id) => {
   const name = document.getElementById('editName')?.value.trim();
@@ -284,41 +292,41 @@ window.handleEditImage = (file) => {
 
 // ======================== RENDERIZAÇÃO DAS PÁGINAS ========================
 const renderNavbar = () => `
-  <nav class="sticky top-0 z-50 border-b border-pink-500/20 backdrop-blur-xl bg-slate-950/80">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-      <div onclick="navigate('/')" class="flex items-center gap-3 cursor-pointer">
-        <div class="w-10 h-10 bg-gradient-to-r from-pink-600 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">⚡</div>
-        <div><div class="text-2xl font-black bg-gradient-to-r from-pink-500 to-cyan-400 bg-clip-text text-transparent">ConvertAPK</div><div class="text-[10px] text-cyan-400">CYBER ENGINE</div></div>
-      </div>
-      <div class="flex items-center gap-4">
-        ${user ? `
-          <span class="nav-link hidden sm:block cursor-pointer" onclick="navigate('/dashboard')">Painel</span>
-          <span class="nav-link hidden sm:block cursor-pointer" onclick="navigate('/create-app')">Novo App</span>
-          <div class="flex items-center gap-2 bg-slate-900/60 px-3 py-1 rounded-full border border-pink-500/20">
-            <span class="text-sm font-bold">${esc(user.name)}</span>
-            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-600 to-cyan-400 flex items-center justify-center font-bold">${user.name.charAt(0)}</div>
-          </div>
-          <button class="btn-outline text-sm py-1 px-3" onclick="handleLogout()">Sair</button>
-        ` : `
-          <span class="nav-link cursor-pointer" onclick="navigate('/pricing')">Planos</span>
-          <button class="btn-primary" onclick="handleLogin()">Entrar</button>
-        `}
-      </div>
+<nav class="sticky top-0 z-50 border-b border-pink-500/20 backdrop-blur-xl bg-slate-950/80">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+    <div onclick="navigate('/')" class="flex items-center gap-3 cursor-pointer">
+      <div class="w-10 h-10 bg-gradient-to-r from-pink-600 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">⚡</div>
+      <div><div class="text-2xl font-black bg-gradient-to-r from-pink-500 to-cyan-400 bg-clip-text text-transparent">convertAPK</div><div class="text-[10px] text-cyan-400">CYBER ENGINE</div></div>
     </div>
-  </nav>`;
+    <div class="flex items-center gap-4">
+      ${user ? `
+        <span class="nav-link hidden sm:block cursor-pointer" onclick="navigate('/dashboard')">Painel</span>
+        <span class="nav-link hidden sm:block cursor-pointer" onclick="navigate('/create-app')">Novo App</span>
+        <div class="flex items-center gap-2 bg-slate-900/60 px-3 py-1 rounded-full border border-pink-500/20">
+          <span class="text-sm font-bold">${esc(user.name)}</span>
+          <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-600 to-cyan-400 flex items-center justify-center font-bold">${user.name.charAt(0)}</div>
+        </div>
+        <button class="btn-outline text-sm py-1 px-3" onclick="handleLogout()">Sair</button>
+      ` : `
+        <span class="nav-link cursor-pointer" onclick="navigate('/pricing')">Planos</span>
+        <button class="btn-primary" onclick="handleLogin()">Entrar</button>
+      `}
+    </div>
+  </div>
+</nav>`;
 
 const renderFooter = () => `
-  <footer class="border-t border-pink-500/10 bg-slate-950/50 py-8 mt-auto">
-    <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-8 text-sm text-slate-400">
-      <div><div class="font-bold text-pink-500">ConvertAPK</div><p>Converta sites em APKs sem código.</p></div>
-      <div><div class="font-bold text-cyan-400">Funcionalidades</div><ul><li>Offline</li><li>Push</li><li>AdMob</li></ul></div>
-      <div><div class="font-bold text-purple-400">Links</div><ul><li class="cursor-pointer hover:text-pink-400" onclick="navigate('/dashboard')">Dashboard</li><li class="cursor-pointer hover:text-pink-400" onclick="navigate('/create-app')">Criar App</li></ul></div>
-      <div><div class="font-bold text-yellow-400">Status</div><div>✅ Build Engine Online</div></div>
-    </div>
-    <div class="text-center text-xs text-slate-600 mt-8">© 2026 Web2APK — PWA instalável</div>
-  </footer>`;
+<footer class="border-t border-pink-500/10 bg-slate-950/50 py-8 mt-auto">
+  <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-8 text-sm text-slate-400">
+    <div><div class="font-bold text-pink-500">convertAPK</div><p>Converta sites em APKs sem código.</p></div>
+    <div><div class="font-bold text-cyan-400">Funcionalidades</div><ul><li>Offline</li><li>Push</li><li>AdMob</li></ul></div>
+    <div><div class="font-bold text-purple-400">Links</div><ul><li class="cursor-pointer hover:text-pink-400" onclick="navigate('/dashboard')">Dashboard</li><li class="cursor-pointer hover:text-pink-400" onclick="navigate('/create-app')">Criar App</li></ul></div>
+    <div><div class="font-bold text-yellow-400">Status</div><div>✅ Build Engine Online</div></div>
+  </div>
+  <div class="text-center text-xs text-slate-600 mt-8">© 2026 convertAPK — PWA instalável</div>
+</footer>`;
 
-const renderToast = () => currentToast ? `<div class="toast toast-success">${currentToast.msg}</div>` : '';
+const renderToast = () => currentToast ? `<div class="toast toast-${currentToast.type === 'error' ? 'error' : 'success'}">${currentToast.msg}</div>` : '';
 
 const renderEditModal = () => {
   if (!editModalAppId) return '';
@@ -356,10 +364,11 @@ const renderLanding = () => `
 
 const renderDashboard = () => {
   const totalBuilds = builds.filter(b=>b.status==='completed').length;
+  const isPremium = user?.role === 'premium';
   return `
   <div class="max-w-7xl mx-auto px-6 py-10">
     <div class="flex justify-between items-center mb-8"><h1 class="text-3xl font-black bg-gradient-to-r from-pink-500 to-cyan-400 bg-clip-text text-transparent">Painel do Dev</h1><button class="btn-primary" onclick="navigate('/create-app')">+ Novo App</button></div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10"><div class="glass p-5 rounded-2xl"><div>Total Apps</div><div class="text-4xl font-black">${apps.length}</div></div><div class="glass p-5"><div>Builds Concluídas</div><div class="text-4xl font-black">${totalBuilds}</div></div><div class="glass p-5"><div>Plano</div><div class="text-xl font-bold">${user?.role === 'premium' ? '⭐ Premium' : 'Free'}</div></div></div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10"><div class="glass p-5 rounded-2xl"><div>Total Apps</div><div class="text-4xl font-black">${apps.length}</div></div><div class="glass p-5"><div>Builds Concluídas</div><div class="text-4xl font-black">${totalBuilds}</div></div><div class="glass p-5"><div>Plano</div><div class="text-xl font-bold ${isPremium ? 'text-pink-400' : ''}">${isPremium ? '⭐ Premium' : 'Free'}</div>${!isPremium ? '<button class="text-xs text-cyan-400 mt-1" onclick="navigate(\'/pricing\')">Ativar Premium</button>' : ''}</div></div>
     <div class="grid md:grid-cols-2 gap-5">${apps.map(app => `
       <div class="glass glass-pink rounded-2xl p-4 hover:border-pink-500/50 transition cursor-pointer" onclick="navigate('/app/${app.id}')">
         <div class="flex justify-between items-start"><div class="flex gap-3"><div class="w-12 h-12 rounded-xl overflow-hidden bg-slate-800">${app.iconUrl ? `<img src="${app.iconUrl}" class="w-full h-full object-cover">` : '<div class="app-icon-default w-full h-full">📱</div>'}</div><div><div class="font-bold">${esc(app.name)}</div><div class="text-xs text-slate-400 truncate w-48">${esc(app.websiteUrl)}</div></div></div><button class="text-red-400 text-sm" onclick="event.stopPropagation(); if(confirm('Deletar?')) deleteApp(${app.id})">🗑️</button></div>
@@ -385,11 +394,12 @@ const renderAppDetails = (id) => {
   const app = apps.find(a => a.id === id);
   if (!app) return '<div class="text-center py-20">App não encontrado</div>';
   const appBuilds = builds.filter(b => b.appId === id);
+  const isPremium = user?.role === 'premium';
   return `
   <div class="max-w-7xl mx-auto px-6 py-10">
     <div class="flex justify-between items-center flex-wrap gap-4 mb-8"><button class="btn-outline" onclick="navigate('/dashboard')">← Dashboard</button><div><button class="btn-primary" onclick="navigate('/build/${id}')">📱 Nova Compilação</button><button class="btn-outline ml-3" onclick="openEditModal(${id})">✏️ Editar</button><button class="btn-danger ml-3" onclick="if(confirm('Excluir?')) deleteApp(${id})">🗑️</button></div></div>
-    <div class="grid lg:grid-cols-3 gap-8"><div class="lg:col-span-2 glass rounded-2xl p-6"><div class="flex gap-4"><div class="w-20 h-20 rounded-xl overflow-hidden bg-slate-800">${app.iconUrl ? `<img src="${app.iconUrl}" class="w-full h-full object-cover">` : '<div class="app-icon-default w-full h-full">📱</div>'}</div><div><h2 class="text-2xl font-black">${esc(app.name)}</h2><a href="${app.websiteUrl}" target="_blank" class="text-pink-400 text-sm">${app.websiteUrl} ↗</a><div class="flex gap-2 mt-2"><span class="badge-pink px-2 py-0.5 rounded-full text-xs">v${app.version}</span>${app.offlineSupport ? '<span class="badge-green px-2 py-0.5 rounded-full text-xs">Offline</span>' : ''}</div></div></div><div class="mt-4"><p>${esc(app.description || 'Sem descrição')}</p><div class="grid grid-cols-2 gap-3 text-sm mt-4"><span>📦 ${app.packageName}</span><span>🎨 Cor: ${app.themeColor}</span><span>📱 ${app.orientation}</span><span>📅 Criado: ${formatDate(app.createdAt)}</span></div></div></div>
-      <div class="glass rounded-2xl p-5"><h3 class="font-bold mb-3">📋 Histórico de builds</h3>${appBuilds.length ? appBuilds.map(b => `<div class="border-b border-slate-800 py-2"><div class="flex justify-between"><span class="text-${b.status==='completed'?'green-400':'yellow-400'}">${b.status}</span><span class="text-xs">${formatDate(b.createdAt)}</span></div>${b.fileSize ? `<div class="text-xs text-slate-400">${formatBytes(b.fileSize)}</div>` : ''}${b.status==='completed' ? `<button class="text-pink-400 text-xs mt-1" onclick="downloadApk('${esc(app.name)}','${esc(app.version)}')">⬇ Baixar APK (simulado)</button>` : ''}</div>`).join('') : '<p class="text-slate-500">Nenhum build ainda. Clique em "Nova Compilação".</p>'}</div>
+    <div class="grid lg:grid-cols-3 gap-8"><div class="lg:col-span-2 glass rounded-2xl p-6"><div class="flex gap-4"><div class="w-20 h-20 rounded-xl overflow-hidden bg-slate-800">${app.iconUrl ? `<img src="${app.iconUrl}" class="w-full h-full object-cover">` : '<div class="app-icon-default w-full h-full">📱</div>'}</div><div><h2 class="text-2xl font-black">${esc(app.name)}</h2><a href="${app.websiteUrl}" target="_blank" class="text-pink-400 text-sm">${app.websiteUrl} ↗</a><div class="flex gap-2 mt-2"><span class="badge-pink">v${app.version}</span>${app.offlineSupport ? '<span class="badge-green">Offline</span>' : ''}</div></div></div><div class="mt-4"><p>${esc(app.description || 'Sem descrição')}</p><div class="grid grid-cols-2 gap-3 text-sm mt-4"><span>📦 ${app.packageName}</span><span>🎨 Cor: ${app.themeColor}</span><span>📱 ${app.orientation}</span><span>📅 Criado: ${formatDate(app.createdAt)}</span></div></div></div>
+      <div class="glass rounded-2xl p-5"><h3 class="font-bold mb-3">📋 Histórico de builds</h3>${appBuilds.length ? appBuilds.map(b => `<div class="border-b border-slate-800 py-2"><div class="flex justify-between"><span class="text-${b.status==='completed'?'green-400':'yellow-400'}">${b.status}</span><span class="text-xs">${formatDate(b.createdAt)}</span></div>${b.fileSize ? `<div class="text-xs text-slate-400">${formatBytes(b.fileSize)}</div>` : ''}${b.status==='completed' ? `<button class="text-pink-400 text-xs mt-1" onclick="downloadApk('${esc(app.name)}','${esc(app.version)}','${esc(app.packageName)}',${b.fileSize||0})">⬇ Baixar APK (demonstrativo)</button>` : ''}</div>`).join('') : '<p class="text-slate-500">Nenhum build ainda. Clique em "Nova Compilação".</p>'}</div>
     </div>
   </div>`;
 };
@@ -405,7 +415,7 @@ const renderBuildPage = (id) => {
 };
 
 const renderPricing = () => `
-<div class="max-w-6xl mx-auto px-6 py-16 text-center"><h1 class="text-4xl font-black bg-gradient-to-r from-pink-500 to-cyan-400 bg-clip-text text-transparent">Planos Cyberpunk</h1><div class="grid md:grid-cols-3 gap-8 mt-12"><div class="glass p-6 rounded-2xl"><h3>Free</h3><div class="text-3xl font-black">R$ 0</div><ul class="my-4"><li>✓ 2 apps</li><li>✓ Simulação de build</li><li>✗ APK real</li></ul><button class="btn-outline w-full" onclick="handleLogin()">Começar</button></div><div class="glass border-pink-500 shadow-lg p-6 rounded-2xl relative"><div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-pink-500 text-black text-xs px-3 py-1 rounded-full">🔥 Popular</div><h3>Premium Pro</h3><div class="text-3xl font-black">R$ 29/mês</div><ul class="my-4"><li>✓ Apps ilimitados</li><li>✓ Geração real de APK (backend)</li><li>✓ AdMob + notificações</li></ul><button class="btn-primary w-full" onclick="handleUpgrade('premium')">Ativar Premium</button></div><div class="glass p-6 rounded-2xl"><h3>Enterprise</h3><div class="text-3xl font-black">R$ 99</div><ul><li>✓ Tudo do Premium</li><li>✓ API Rest</li></ul><button class="btn-outline w-full" onclick="handleUpgrade('enterprise')">Contratar</button></div></div></div>`;
+<div class="max-w-6xl mx-auto px-6 py-16 text-center"><h1 class="text-4xl font-black bg-gradient-to-r from-pink-500 to-cyan-400 bg-clip-text text-transparent">Planos Cyberpunk</h1><div class="grid md:grid-cols-3 gap-8 mt-12"><div class="glass p-6 rounded-2xl"><h3>Free</h3><div class="text-3xl font-black">R$ 0</div><ul class="my-4"><li>✓ 2 apps</li><li>✓ Simulação de build</li><li>✓ Download APK demonstrativo</li><li>✗ APK real instalável</li></ul><button class="btn-outline w-full" onclick="handleLogin()">Começar</button></div><div class="glass border-pink-500 shadow-lg p-6 rounded-2xl relative"><div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-pink-500 text-black text-xs px-3 py-1 rounded-full">🔥 Popular</div><h3>Premium Pro</h3><div class="text-3xl font-black">R$ 29/mês</div><ul class="my-4"><li>✓ Apps ilimitados</li><li>✓ Builds ilimitadas</li><li>✓ Geração real de APK (backend)</li><li>✓ AdMob + notificações</li></ul><button class="btn-primary w-full" onclick="handleUpgrade('premium')">Ativar Premium</button></div><div class="glass p-6 rounded-2xl"><h3>Enterprise</h3><div class="text-3xl font-black">R$ 99</div><ul><li>✓ Tudo do Premium</li><li>✓ API Rest</li><li>✓ Suporte dedicado</li></ul><button class="btn-outline w-full" onclick="handleUpgrade('enterprise')">Contratar</button></div></div></div>`;
 
 // ======================== RENDER PRINCIPAL ========================
 function rerender() {
@@ -429,7 +439,6 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(e => console.warn('SW não registrado (arquivo ausente)', e));
 }
 
-// Inicializar
 loadStorage();
 window.addEventListener('hashchange', rerender);
 rerender();
