@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>ConvertAPK • Gere APKs reais no navegador</title>
+  <title>ConvertAPK • Criador de Apps para Android</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#FF006E">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,11 +12,9 @@
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=JetBrains+Mono&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
-  <!-- JSZip para criar ZIP válido (base do APK) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
     * { scroll-behavior: smooth; }
-    body { background-color: #020617; font-family: 'Rajdhani', sans-serif; }
+    body { background: #020617; font-family: 'Rajdhani', sans-serif; }
     h1,h2,h3,h4 { font-family: 'Orbitron', monospace; }
     .glass { backdrop-filter: blur(12px); background: rgba(15,23,42,0.7); border: 1px solid rgba(51,65,85,0.6); }
     .glass-pink { border-color: rgba(255,0,110,0.3); }
@@ -33,14 +31,9 @@
     .toast-error { background: rgba(15,23,42,0.95); border: 1px solid #f87171; color: #f87171; }
     @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     .app-icon-default { background: linear-gradient(135deg, #1e1b4b, #4c1d95); display: flex; align-items: center; justify-content: center; border-radius: 0.75rem; flex-shrink: 0; font-size: 1.5rem; }
-    .progress-bar-track { width: 100%; height: 8px; background: #1e293b; border-radius: 99px; overflow: hidden; }
-    .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #FF006E, #00d9ff); transition: width 0.3s ease; }
-    .log-output { background: #020617; border: 1px solid #1e293b; border-radius: 0.75rem; padding: 0.75rem; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #94a3b8; height: 280px; overflow-y: auto; }
     .badge-pink { background: rgba(255,0,110,0.15); color: #ff6eb4; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.7rem; }
-    .badge-green { background: rgba(74,222,128,0.15); color: #4ade80; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.7rem; }
     .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
     .modal-content { max-width: 500px; width: 90%; background: #0f172a; border: 1px solid #FF006E; border-radius: 1.5rem; padding: 1.5rem; color: white; }
-    .btn-cyan { background: linear-gradient(135deg, #0891b2, #00d9ff); color: #000; font-weight: 700; padding: 0.4rem 1rem; border-radius: 0.5rem; border: none; cursor: pointer; }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 antialiased min-h-screen">
@@ -51,53 +44,40 @@
 // ======================== ESTADO GLOBAL ========================
 let user = null;
 let apps = [];
-let builds = [];
 let toastQueue = [];
 let editModalAppId = null;
 let currentToast = null;
+let deferredPrompt = null; // para instalação do PWA
 
-// ======================== FUNÇÃO QUE GERA APK REAL ========================
-async function generateRealApk(app) {
-  const zip = new JSZip();
-  
-  // 1. AndroidManifest.xml (formato binário AXML – simularemos com texto, mas Android aceita XML textual em assets, porém o sistema exige binário. Vamos usar o truque de colocar no root como XML, funciona em muitos dispositivos)
-  // Para garantir, vamos gerar um AndroidManifest.xml compilado? Não temos compilador. Mas podemos usar aapt ausente. Alternativa: usar um template APK pré‑assinado e só substituir a URL? Muito complexo.
-  // Solução definitiva: criar um APK válido usando ZIP structure com arquivos corretos. O Android aceita XML puro se colocado dentro de /res/xml? Não.
-  // Após pesquisa, a melhor maneira 100% funcional é usar um stub APK base64 já pronto e modificar seus textos. Vamos fazer isso: embutir um APK mínimo (cerca de 50KB) que contém uma WebView configurável e substituir a URL, ícone, nome via edição binária? Muito frágil.
-  // Abordagem real: gerar APK válido no front‑end É IMPOSSÍVEL pois exige as ferramentas SDK (aapt, dx, apksigner). O que podemos fazer é baixar um APK remoto (hospedado por nós) que é gerado sob demanda via um serviço gratuito? Não temos.
-  // Portanto, a saída honesta: o navegador não consegue gerar APK Android verdadeiro. Mas o que eu vou fazer é gerar um arquivo .apk que o Android reconhece como "pacote inválido" e mostrar instrução clara.
-  // Como você pediu "crie o download como o do navegador chrome em apk" – o Chrome não gera APK, ele instala PWA. A única forma de "baixar APK" é ter um arquivo pré‑construído hospedado em servidor.
-  // Vou implementar a melhor solução possível: montar um ZIP com estrutura correta (para enganar o verificador de pacotes) e dar o download. O Android ainda pode rejeitar, mas muitos usuários conseguirão instalar se desabilitarem a verificação.
-  // Como alternativa, forneço um botão para "Baixar APK Demo" (que não instala) e um tutorial claro para instalar o PWA.
-  
-  // Então, vou modificar a função de download para baixar um arquivo .apk real (stub) que contém um aplicativo WebView mínimo apontando para a URL configurada.
-  // Usaremos um APK base (vazio) codificado em base64 e faremos replace da URL e do nome. Como é uma string, podemos substituir.
-  // Após diversos testes, descobri que é possível editar um APK pré‑assinado e trocar strings sem quebrar a assinatura, desde que não mude o tamanho. Vamos usar essa técnica.
-  
-  // Vou embutir um APK mínimo (cerca de 300KB) em base64, com placeholders {{URL}} e {{NAME}} e {{PACKAGE}} e {{ICON_BASE64}}. Farei a substituição.
-  // Esse APK será gerado por mim (compilado com Android Studio) e incorporado aqui.
-  
-  // Devido à complexidade e ao limite de caracteres, forneço uma solução híbrida: o usuário clica em "Gerar APK Real" e recebe um arquivo .apk que contém um link para baixar o APK real de um servidor nosso (simulando). Mas como isso é apenas front‑end, vou mostrar um modal informando que o APK real exige servidor e fornecer um link de demonstração.
-  
-  // Para não frustrar, vou criar um APK simulado que exibe uma mensagem "Este APK foi gerado pelo ConvertAPK. Para obter um APK funcional, contrate o plano Premium." O Android permitirá instalar porque o APK é válido (assinado com chave de teste).
-  
-  // Vou gerar um APK verdadeiro (assinado) usando uma biblioteca JS? Não existe. Então a resposta honesta: é tecnicamente impossível gerar APK Android real no navegador sem backend.
-  
-  // Portanto, vou manter o download de um arquivo .apk de demonstração e exibir instruções para instalar o PWA (que é a solução recomendada).
-  
-  // Abaixo, a função original que gera um stub .apk, mas mostra um alerta educativo.
-  
-  const filename = `${app.name.replace(/[^a-z0-9]/gi, '_')}_v${app.version}.apk`;
-  const content = `APK demonstrativo gerado pelo ConvertAPK.\n\nApp: ${app.name}\nURL: ${app.websiteUrl}\nPacote: ${app.packageName}\n\nPara um APK real e instalável, ative o plano Premium e utilize nosso sistema de compilação na nuvem.\n\n✅ Enquanto isso, você pode instalar este site como um aplicativo PWA: clique em "Instalar App" no menu.`;
-  const blob = new Blob([content], { type: 'application/vnd.android.package-archive' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 200);
-  toast(`Download do APK demonstrativo iniciado: ${filename}. Este arquivo NÃO é um APK funcional. Para instalar o app real, use o botão "Instalar App".`);
+// Capturar evento de instalação do PWA
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+});
+
+function installPWA() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+  } else {
+    // Exibe tutorial manual
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML = `
+      <div class="modal-content">
+        <h3 class="text-xl font-bold mb-3">📱 Instalar como App</h3>
+        <p class="text-sm text-slate-300 mb-3">Seu navegador não ofereceu instalação automática. Siga esses passos:</p>
+        <ul class="list-disc list-inside text-sm space-y-2 text-slate-400">
+          <li><strong>Chrome/Edge (Android):</strong> Menu → "Adicionar à tela inicial"</li>
+          <li><strong>Samsung Internet:</strong> Menu → "Adicionar página à tela inicial"</li>
+          <li><strong>iOS (Safari):</strong> Compartilhar → "Adicionar à Tela de Início"</li>
+        </ul>
+        <button class="btn-primary w-full mt-4" onclick="this.closest('.modal').remove()">Entendi</button>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+  }
 }
 
 // ======================== LOAD / PERSIST ========================
@@ -107,13 +87,11 @@ const loadStorage = () => {
     apps = JSON.parse(localStorage.getItem('convertapk_apps')) || [
       { id: 1, userId: 1, name: "TechNews Brasil", description: "Portal de tecnologia", websiteUrl: "https://technews.com.br", packageName: "com.convertapk.technews", version: "1.2.0", themeColor: "#FF006E", orientation: "portrait", permissions: ["INTERNET"], offlineSupport: true, deepLinking: false, analyticsEnabled: true, iconUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=100&q=80", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
     ];
-    builds = JSON.parse(localStorage.getItem('convertapk_builds')) || [];
   } catch(e) { console.warn(e); }
 };
 const persist = () => {
   localStorage.setItem('convertapk_user', JSON.stringify(user));
   localStorage.setItem('convertapk_apps', JSON.stringify(apps));
-  localStorage.setItem('convertapk_builds', JSON.stringify(builds));
 };
 
 const getRoute = () => window.location.hash.slice(1) || '/';
@@ -131,10 +109,8 @@ const showNextToast = () => {
 };
 
 const esc = (str) => String(str ?? '').replace(/[&<>]/g, (m) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]));
-const formatBytes = (b) => b ? (b/1e6).toFixed(1)+' MB' : '-';
-const formatDate = (s) => s ? new Date(s).toLocaleDateString('pt-BR') : '-';
 
-// ======================== CRUD APPS & BUILDS ========================
+// ======================== CRUD APPS ========================
 const createApp = (data) => {
   const newApp = { ...data, id: Date.now(), userId: user?.id || 1, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
   apps = [newApp, ...apps];
@@ -150,17 +126,9 @@ const updateApp = (id, data) => {
 };
 const deleteApp = (id) => {
   apps = apps.filter(a => a.id !== id);
-  builds = builds.filter(b => b.appId !== id);
   persist();
   toast("App removido");
   navigate('/dashboard');
-};
-const addBuild = (build) => {
-  const idx = builds.findIndex(b => b.id === build.id);
-  if (idx >= 0) builds[idx] = build;
-  else builds = [build, ...builds];
-  persist();
-  rerender();
 };
 
 // ======================== AUTENTICAÇÃO ========================
@@ -184,7 +152,26 @@ const handleUpgrade = (tier) => {
   navigate('/dashboard');
 };
 
-// ======================== SIMULAÇÃO DE BUILD (agora gera APK real) ========================
+// ======================== DOWNLOAD DE APK DEMONSTRATIVO ========================
+function downloadDemonstrationApk(app) {
+  const filename = `${app.name.replace(/[^a-z0-9]/gi, '_')}_v${app.version}.apk`;
+  const content = `APK DEMONSTRATIVO - NÃO FUNCIONAL\n\n` +
+    `App: ${app.name}\nURL: ${app.websiteUrl}\nPacote: ${app.packageName}\n\n` +
+    `⚠️ Este arquivo NÃO é um APK Android verdadeiro.\n\n` +
+    `✅ Para ter este aplicativo funcionando no seu celular, clique no botão "Instalar App" – ele adicionará o ConvertAPK à tela inicial como um aplicativo nativo (PWA), sem erros de análise.\n\n` +
+    `🔧 Para gerar APKs reais e distribuíveis, contrate o plano Premium (backend com Android SDK).`;
+  const blob = new Blob([content], { type: 'application/vnd.android.package-archive' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 200);
+  toast(`Download do APK demonstrativo: ${filename}. Instale o app via PWA (botão "Instalar App") para ter a experiência real.`, 'info');
+}
+
+// ======================== SIMULAÇÃO DE BUILD (apenas visual, sem APK falso) ========================
 function startBuild(appId) {
   const app = apps.find(a => a.id === appId);
   if (!app) return;
@@ -194,10 +181,6 @@ function startBuild(appId) {
   const result = document.getElementById('buildResult');
   if (pre) pre.style.display = 'none';
   if (prog) prog.style.display = 'block';
-
-  const buildId = Date.now();
-  const newBuild = { id: buildId, appId, userId: user?.id || 1, status: 'building', createdAt: new Date().toISOString(), buildStartedAt: new Date().toISOString() };
-  addBuild(newBuild);
 
   const logsDiv = document.getElementById('buildLogs');
   const bar = document.getElementById('buildProgressBar');
@@ -210,54 +193,33 @@ function startBuild(appId) {
     if (logsDiv) logsDiv.innerHTML += `\n<span class="${type ? 'text-'+type : ''}">[${new Date().toLocaleTimeString()}] ${msg}</span>`;
     logsDiv.scrollTop = logsDiv.scrollHeight;
   };
-  log(`🚀 Build iniciado para ${app.name}`, 'info');
-  log(`📦 Package: ${app.packageName}`);
-  log(`🌐 URL: ${app.websiteUrl}`);
-  log(`🎨 Ícone: ${app.iconUrl ? 'carregado' : 'padrão'}`);
+  log(`🚀 Build simulado para ${app.name}`, 'info');
 
   const phases = [
-    "Preparando estrutura do APK",
-    "Gerando AndroidManifest.xml",
-    "Adicionando WebView e assets",
-    "Compilando recursos",
-    "Assinando APK (chave de teste)",
-    "Empacotando arquivo final"
+    "Preparando ambiente", "Coletando configurações", "Simulando compilação",
+    "Empacotando APK demonstrativo", "Finalizando"
   ];
   let step = 0;
   const totalSteps = phases.length;
-  const interval = setInterval(async () => {
+  const interval = setInterval(() => {
     if (step >= totalSteps) {
       clearInterval(interval);
-      // Gerar APK REAL
-      log("✅ Gerando APK... por favor aguarde", "green-400");
-      try {
-        await generateRealApk(app);
-        const fileSizeEst = 3800000; // ~3.8 MB
-        const completedBuild = { ...newBuild, status: 'completed', fileSize: fileSizeEst, buildCompletedAt: new Date().toISOString() };
-        addBuild(completedBuild);
-        log("✅ APK gerado com sucesso! O download deve iniciar automaticamente.", "green-400");
-        if (bar) bar.style.width = '100%';
-        if (pct) pct.textContent = '100%';
-        if (phaseLabel) phaseLabel.textContent = 'APK pronto!';
-        if (dot) dot.style.background = '#4ade80';
-        if (result) {
-          result.style.display = 'block';
-          result.innerHTML = `
-            <div class="text-center p-4 border border-green-500/30 rounded-xl bg-green-500/5">
-              <div class="text-2xl mb-2">🎉</div>
-              <div class="text-green-400 font-bold">APK Gerado com Sucesso!</div>
-              <div class="text-sm text-slate-400 my-2">Tamanho aproximado: ${formatBytes(completedBuild.fileSize)}</div>
-              <button class="btn-primary" onclick="generateRealApk(apps.find(a=>a.id===${app.id}))">📲 Baixar APK</button>
-              <p class="text-xs text-slate-500 mt-3">Este APK foi gerado localmente e pode ser instalado no seu Android. Ative "Instalar de fontes desconhecidas" se necessário.</p>
-            </div>`;
-        }
-      } catch (err) {
-        log(`❌ Erro na geração: ${err.message}`, "error");
-        if (dot) dot.style.background = '#f87171';
-        if (result) {
-          result.style.display = 'block';
-          result.innerHTML = `<div class="text-center p-4 border border-red-500/30 rounded-xl bg-red-500/5 text-red-400">Falha ao gerar APK: ${err.message}</div>`;
-        }
+      log("✅ Build concluída! (simulação)", "green-400");
+      if (bar) bar.style.width = '100%';
+      if (pct) pct.textContent = '100%';
+      if (phaseLabel) phaseLabel.textContent = 'Pronto!';
+      if (dot) dot.style.background = '#4ade80';
+      if (result) {
+        result.style.display = 'block';
+        result.innerHTML = `
+          <div class="text-center p-4 border border-green-500/30 rounded-xl bg-green-500/5">
+            <div class="text-2xl mb-2">🎉</div>
+            <div class="text-green-400 font-bold">Simulação concluída!</div>
+            <div class="text-sm text-slate-400 my-2">O APK real requer backend.</div>
+            <button class="btn-primary" onclick="installPWA()">📲 Instalar ConvertAPK como App</button>
+            <button class="btn-outline mt-2" onclick="downloadDemonstrationApk(apps.find(a=>a.id===${app.id}))">⬇ Baixar APK demonstrativo</button>
+            <p class="text-xs text-slate-500 mt-3">✅ Para ter este app específico no celular, instale o ConvertAPK via PWA e use-o diretamente – ele já é um aplicativo funcional.</p>
+          </div>`;
       }
       return;
     }
@@ -267,9 +229,7 @@ function startBuild(appId) {
     if (phaseLabel) phaseLabel.textContent = phases[step];
     log(`[${phases[step]}] ...`, 'info');
     step++;
-    // Simular delay
-    await new Promise(r => setTimeout(r, 600));
-  }, 600);
+  }, 500);
 }
 
 // ======================== IMAGEM (UPLOAD / PREVIEW) ========================
@@ -337,28 +297,13 @@ window.handleEditImage = (file) => {
   fileToBase64(file).then(b64 => { editIconData = b64; document.getElementById('editIconPreview').innerHTML = `<img src="${b64}" class="w-16 h-16 rounded-xl object-cover">`; });
 };
 
-// ======================== PWA INSTALL ========================
-let deferredPrompt = null;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-});
-function installPWA() {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
-  } else {
-    alert("Para instalar este site como app, use o menu do navegador: 'Adicionar à tela inicial'.");
-  }
-}
-
-// ======================== RENDERIZAÇÃO DAS PÁGINAS (resumida para caber no limite) ========================
+// ======================== RENDERIZAÇÃO DAS PÁGINAS ========================
 const renderNavbar = () => `
 <nav class="sticky top-0 z-50 border-b border-pink-500/20 backdrop-blur-xl bg-slate-950/80">
   <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
     <div onclick="navigate('/')" class="flex items-center gap-3 cursor-pointer">
       <div class="w-10 h-10 bg-gradient-to-r from-pink-600 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">⚡</div>
-      <div><div class="text-2xl font-black bg-gradient-to-r from-pink-500 to-cyan-400 bg-clip-text text-transparent">ConvertAPK</div><div class="text-[10px] text-cyan-400">GERADOR DE APK</div></div>
+      <div><div class="text-2xl font-black bg-gradient-to-r from-pink-500 to-cyan-400 bg-clip-text text-transparent">ConvertAPK</div><div class="text-[10px] text-cyan-400">PWA + APK Demo</div></div>
     </div>
     <div class="flex items-center gap-4">
       ${user ? `
@@ -372,23 +317,67 @@ const renderNavbar = () => `
   </div>
 </nav>`;
 
-const renderFooter = () => `<footer class="border-t border-pink-500/10 bg-slate-950/50 py-8 mt-auto"><div class="max-w-7xl mx-auto px-6 text-center text-xs text-slate-600">© 2026 ConvertAPK — Gere APKs reais no navegador</div></footer>`;
+const renderFooter = () => `<footer class="border-t border-pink-500/10 bg-slate-950/50 py-8 mt-auto"><div class="text-center text-xs text-slate-600">© 2026 ConvertAPK — Gerador de Apps (PWA + APK demonstrativo)</div></footer>`;
 const renderToast = () => currentToast ? `<div class="toast toast-${currentToast.type === 'error' ? 'error' : 'success'}">${currentToast.msg}</div>` : '';
-const renderEditModal = () => !editModalAppId ? '' : `<div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onclick="if(event.target===this) editModalAppId=null;rerender()"><div class="glass rounded-2xl p-6 max-w-md w-full">...</div></div>`;
-const renderLanding = () => `<div class="max-w-7xl mx-auto px-6 py-16 text-center"><h1 class="text-5xl font-black bg-gradient-to-r from-pink-500 to-cyan-400 bg-clip-text text-transparent">ConvertAPK</h1><p class="text-xl mt-4">Gere APKs Android reais diretamente no navegador, a partir de qualquer site.</p><button class="btn-primary mt-8" onclick="handleLogin()">Começar Agora →</button></div>`;
-const renderDashboard = () => `<div class="max-w-7xl mx-auto px-6 py-10"><div class="flex justify-between"><h1 class="text-3xl font-black">Meus Apps</h1><button class="btn-primary" onclick="navigate('/create-app')">+ Novo App</button></div><div class="grid md:grid-cols-2 gap-5 mt-8">${apps.map(app => `<div class="glass rounded-2xl p-4 cursor-pointer" onclick="navigate('/app/${app.id}')"><div class="flex gap-3"><div class="w-12 h-12 rounded-xl overflow-hidden">${app.iconUrl ? `<img src="${app.iconUrl}" class="w-full h-full object-cover">` : '<div class="app-icon-default w-full h-full">📱</div>'}</div><div><div class="font-bold">${esc(app.name)}</div><div class="text-xs text-slate-400">${esc(app.websiteUrl)}</div></div></div><div class="flex justify-between mt-3 text-xs"><span>v${app.version}</span><button class="text-pink-400" onclick="event.stopPropagation();navigate('/build/${app.id}')">Gerar APK</button></div></div>`).join('')}</div></div>`;
-const renderCreateApp = () => `<div class="max-w-3xl mx-auto px-6 py-10"><button class="btn-outline mb-4" onclick="navigate('/dashboard')">← Voltar</button><div class="glass rounded-2xl p-6"><h2 class="text-2xl font-black mb-4">Criar novo aplicativo</h2><input class="input-field mb-3" id="caName" placeholder="Nome do App *"><input class="input-field mb-3" id="caUrl" placeholder="URL do Site *"><textarea class="input-field mb-3" id="caDesc" placeholder="Descrição"></textarea><input class="input-field mb-3" id="caPkg" placeholder="Package name (ex: com.exemplo.app)" value="com.convertapk.${Date.now()}"><input class="input-field mb-3" id="caVersion" value="1.0.0"><input type="color" id="caColor" value="#FF006E" class="mb-3 w-full h-10 rounded-xl"><div class="upload-zone mb-3" onclick="document.getElementById('caIconFile').click()">📸 Clique para enviar ícone</div><input type="file" id="caIconFile" accept="image/*" style="display:none" onchange="handleCaImage(this.files[0])"><div id="caIconPreview" class="w-16 h-16 mb-3"></div><button class="btn-primary w-full" onclick="submitCreateApp()">Criar App e Gerar APK</button></div></div>`;
+const renderEditModal = () => !editModalAppId ? '' : `<div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onclick="if(event.target===this) editModalAppId=null;rerender()"><div class="glass rounded-2xl p-6 max-w-md w-full"><h3 class="text-xl mb-4">Editar App</h3><input class="input-field mb-2" id="editName" placeholder="Nome" value="${esc(apps.find(a=>a.id===editModalAppId)?.name)}"><input class="input-field mb-2" id="editUrl" placeholder="URL" value="${esc(apps.find(a=>a.id===editModalAppId)?.websiteUrl)}"><textarea class="input-field mb-2" id="editDesc" rows="2">${esc(apps.find(a=>a.id===editModalAppId)?.description||'')}</textarea><div class="flex gap-2"><button class="btn-primary flex-1" onclick="saveEditModal(${editModalAppId})">Salvar</button><button class="btn-outline" onclick="editModalAppId=null;rerender()">Cancelar</button></div></div></div>`;
+
+const renderLanding = () => `
+<div class="max-w-7xl mx-auto px-6 py-16 text-center">
+  <h1 class="text-5xl font-black bg-gradient-to-r from-pink-500 to-cyan-400 bg-clip-text text-transparent">ConvertAPK</h1>
+  <p class="text-xl mt-4">Crie e instale apps Android a partir de qualquer site, <strong>sem código e sem erros</strong>.</p>
+  <div class="flex justify-center gap-4 mt-8">
+    <button class="btn-primary" onclick="handleLogin()">Começar Agora →</button>
+    <button class="btn-outline" onclick="installPWA()">📲 Instalar App</button>
+  </div>
+  <div class="mt-12 grid md:grid-cols-3 gap-6">
+    <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">📱</div><h3>PWA 100% funcional</h3><p>Adicione à tela inicial e use como app nativo.</p></div>
+    <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">⚡</div><h3>Geração de APK real?</h3><p>O APK verdadeiro exige backend. Use o PWA enquanto isso.</p></div>
+    <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">🔧</div><h3>Plano Premium</h3><p>APKs assinados e prontos para distribuição.</p></div>
+  </div>
+</div>`;
+
+const renderDashboard = () => `
+<div class="max-w-7xl mx-auto px-6 py-10">
+  <div class="flex justify-between items-center mb-8"><h1 class="text-3xl font-black">Meus Apps</h1><button class="btn-primary" onclick="navigate('/create-app')">+ Novo App</button></div>
+  <div class="grid md:grid-cols-2 gap-6">${apps.map(app => `
+    <div class="glass rounded-2xl p-4 cursor-pointer hover:border-pink-500/50 transition" onclick="navigate('/app/${app.id}')">
+      <div class="flex gap-3"><div class="w-12 h-12 rounded-xl overflow-hidden">${app.iconUrl ? `<img src="${app.iconUrl}" class="w-full h-full object-cover">` : '<div class="app-icon-default w-full h-full">📱</div>'}</div><div><div class="font-bold">${esc(app.name)}</div><div class="text-xs text-slate-400 truncate">${esc(app.websiteUrl)}</div></div></div>
+      <div class="flex justify-between mt-3"><span class="badge-pink">v${app.version}</span><button class="text-pink-400 text-sm" onclick="event.stopPropagation();navigate('/build/${app.id}')">Gerar APK</button></div>
+    </div>`).join('')}</div>
+  ${apps.length === 0 ? '<div class="text-center py-20">Nenhum app ainda. Crie o primeiro!</div>' : ''}
+</div>`;
+
+const renderCreateApp = () => `
+<div class="max-w-3xl mx-auto px-6 py-10">
+  <button class="btn-outline mb-4" onclick="navigate('/dashboard')">← Voltar</button>
+  <div class="glass rounded-2xl p-6"><h2 class="text-2xl font-black mb-4">Criar novo app</h2>
+    <input class="input-field mb-3" id="caName" placeholder="Nome do App *">
+    <input class="input-field mb-3" id="caUrl" placeholder="URL do Site *">
+    <textarea class="input-field mb-3" id="caDesc" placeholder="Descrição"></textarea>
+    <input class="input-field mb-3" id="caPkg" placeholder="Package name (ex: com.exemplo.app)" value="com.convertapk.${Date.now()}">
+    <input class="input-field mb-3" id="caVersion" value="1.0.0">
+    <input type="color" id="caColor" value="#FF006E" class="mb-3 w-full h-10 rounded-xl">
+    <div class="upload-zone mb-3" onclick="document.getElementById('caIconFile').click()">📸 Clique para enviar ícone</div>
+    <input type="file" id="caIconFile" accept="image/*" style="display:none" onchange="handleCaImage(this.files[0])">
+    <div id="caIconPreview" class="w-16 h-16 mb-3"></div>
+    <div class="flex gap-4 mb-4"><label><input type="checkbox" id="caOffline" checked> Offline</label><label><input type="checkbox" id="caDeep"> Deep Link</label><label><input type="checkbox" id="caAnalytics" checked> Analytics</label></div>
+    <button class="btn-primary w-full" onclick="submitCreateApp()">Criar App</button>
+  </div>
+</div>`;
+
 const renderAppDetails = (id) => {
   const app = apps.find(a=>a.id===id);
-  if(!app) return '<div>App não encontrado</div>';
-  return `<div class="max-w-4xl mx-auto px-6 py-10"><button class="btn-outline mb-4" onclick="navigate('/dashboard')">← Voltar</button><div class="glass rounded-2xl p-6"><div class="flex gap-4"><div class="w-20 h-20 rounded-xl overflow-hidden">${app.iconUrl ? `<img src="${app.iconUrl}" class="w-full h-full object-cover">` : '<div class="app-icon-default w-full h-full">📱</div>'}</div><div><h2 class="text-2xl font-black">${esc(app.name)}</h2><p>${esc(app.websiteUrl)}</p><button class="btn-primary mt-2" onclick="navigate('/build/${app.id}')">Gerar APK</button></div></div></div></div>`;
+  if(!app) return '<div class="text-center py-20">App não encontrado</div>';
+  return `<div class="max-w-4xl mx-auto px-6 py-10"><button class="btn-outline mb-4" onclick="navigate('/dashboard')">← Voltar</button><div class="glass rounded-2xl p-6"><div class="flex gap-4"><div class="w-20 h-20 rounded-xl overflow-hidden">${app.iconUrl ? `<img src="${app.iconUrl}" class="w-full h-full object-cover">` : '<div class="app-icon-default w-full h-full">📱</div>'}</div><div><h2 class="text-2xl font-black">${esc(app.name)}</h2><p>${esc(app.websiteUrl)}</p><button class="btn-primary mt-2" onclick="navigate('/build/${app.id}')">Gerar APK</button><button class="btn-outline mt-2 ml-2" onclick="installPWA()">Instalar ConvertAPK no celular</button></div></div></div></div>`;
 };
+
 const renderBuildPage = (id) => {
   const app = apps.find(a=>a.id===id);
   if(!app) return '<div>App não encontrado</div>';
-  return `<div class="max-w-6xl mx-auto px-6 py-10"><button class="btn-outline mb-4" onclick="navigate('/app/${id}')">← Voltar</button><div class="grid md:grid-cols-3 gap-6"><div class="md:col-span-2 glass rounded-2xl p-6"><div id="buildPreChecks"><div class="flex gap-4 items-center mb-6"><div class="w-14 h-14 rounded-xl overflow-hidden">${app.iconUrl ? `<img src="${app.iconUrl}" class="w-full h-full object-cover">` : '<div class="app-icon-default w-full h-full">📱</div>'}</div><div><h2 class="text-xl font-black">${esc(app.name)}</h2></div></div><button class="btn-primary w-full" onclick="startBuild(${id})">▶ Iniciar Compilação</button></div><div id="buildProgress" style="display:none"><div id="buildPhaseLabel" class="font-bold mb-2"></div><div class="progress-bar-track"><div id="buildProgressBar" class="progress-bar-fill" style="width:0%"></div></div><div class="text-right text-sm mt-1" id="buildPct">0%</div></div><div id="buildResult" style="display:none"></div></div><div class="glass rounded-2xl p-4"><div class="flex items-center gap-2 mb-3"><span id="consoleStatusDot" class="w-2 h-2 bg-slate-500 rounded-full"></span><span class="text-xs font-bold">CONSOLE</span></div><div id="buildLogs" class="log-output"><span class="text-slate-500">[READY] Engine aguardando...</span></div></div></div></div>`;
+  return `<div class="max-w-6xl mx-auto px-6 py-10"><button class="btn-outline mb-4" onclick="navigate('/app/${id}')">← Voltar</button><div class="grid md:grid-cols-3 gap-6"><div class="md:col-span-2 glass rounded-2xl p-6"><div id="buildPreChecks"><div class="flex gap-4 items-center mb-6"><div class="w-14 h-14 rounded-xl overflow-hidden">${app.iconUrl ? `<img src="${app.iconUrl}" class="w-full h-full object-cover">` : '<div class="app-icon-default w-full h-full">📱</div>'}</div><div><h2 class="text-xl font-black">${esc(app.name)}</h2></div></div><button class="btn-primary w-full" onclick="startBuild(${id})">▶ Iniciar Simulação de Build</button></div><div id="buildProgress" style="display:none"><div id="buildPhaseLabel" class="font-bold mb-2"></div><div class="progress-bar-track"><div id="buildProgressBar" class="progress-bar-fill" style="width:0%"></div></div><div class="text-right text-sm mt-1" id="buildPct">0%</div></div><div id="buildResult" style="display:none"></div></div><div class="glass rounded-2xl p-4"><div class="flex items-center gap-2 mb-3"><span id="consoleStatusDot" class="w-2 h-2 bg-slate-500 rounded-full"></span><span class="text-xs font-bold">CONSOLE</span></div><div id="buildLogs" class="log-output h-80"><span class="text-slate-500">[READY] Ambiente pronto.</span></div></div></div></div>`;
 };
-const renderPricing = () => `<div class="max-w-4xl mx-auto px-6 py-16 text-center"><h1 class="text-4xl font-black">Planos</h1><div class="grid md:grid-cols-2 gap-6 mt-8"><div class="glass p-6 rounded-2xl"><h3>Grátis</h3><p>Gera APKs ilimitados comuns</p><button class="btn-outline mt-4" onclick="handleLogin()">Começar</button></div><div class="glass border-pink-500 p-6 rounded-2xl"><h3>Premium</h3><p>APKs otimizados + suporte</p><button class="btn-primary mt-4" onclick="handleUpgrade('premium')">Ativar</button></div></div></div>`;
+
+const renderPricing = () => `<div class="max-w-4xl mx-auto px-6 py-16 text-center"><h1 class="text-4xl font-black">Planos</h1><div class="grid md:grid-cols-2 gap-6 mt-8"><div class="glass p-6 rounded-2xl"><h3>Grátis</h3><p>PWA completo + simulação de build</p><button class="btn-primary mt-4" onclick="installPWA()">Instalar App Grátis</button></div><div class="glass border-pink-500 p-6 rounded-2xl"><h3>Premium</h3><p>Geração real de APK (backend) + suporte</p><button class="btn-outline mt-4" onclick="handleUpgrade('premium')">Contratar</button></div></div></div>`;
 
 function rerender() {
   const root = document.getElementById('app-root');
@@ -406,8 +395,8 @@ function rerender() {
   root.innerHTML = renderNavbar() + `<main class="flex-1">${main}</main>` + renderFooter() + renderToast() + renderEditModal();
 }
 
-// Registrar Service Worker
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(e=>console.log);
+// Registrar Service Worker (se existir)
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(e=>console.log('SW não encontrado, PWA pode não funcionar'));
 
 loadStorage();
 window.addEventListener('hashchange', rerender);
