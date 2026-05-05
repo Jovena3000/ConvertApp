@@ -94,7 +94,7 @@ function installMainPWA() {
   }
 }
 
-// ========== FUNÇÃO PARA GERAR APK REAL VIA API pwa2apk.com ==========
+// ========== FUNÇÃO PARA GERAR APK REAL VIA CLOUDFLARE WORKER ==========
 async function baixarApkReal(app) {
   toast(`🔄 Gerando APK para ${app.name}... Aguarde.`, 'info', 5000);
   
@@ -110,10 +110,11 @@ async function baixarApkReal(app) {
       formData.append('icon', app.iconUrl);
     }
     
-    // USA O SEU WORKER (não mais a API direta!)
-    const apiUrl = 'https://convertapp.dominio3000.workers.dev/'; // SUBSTITUA PELA URL DO SEU PAGES
+    // ⚠️⚠️⚠️ SUBSTITUA ESTA URL PELA URL REAL DO SEU WORKER ⚠️⚠️⚠️
+    // A URL correta foi fornecida no log do deploy: https://convertapp.dominio3000.workers.dev
+    const WORKER_URL = 'https://convertapp.dominio3000.workers.dev';
     
-    const resposta = await fetch(apiUrl, {
+    const resposta = await fetch(WORKER_URL, {
       method: 'POST',
       body: formData
     });
@@ -293,7 +294,7 @@ const renderNavbar = () => `
   </div>
 </nav>`;
 
-const renderFooter = () => `<footer class="border-t border-pink-500/10 bg-slate-950/50 py-8 mt-auto"><div class="text-center text-xs text-slate-600">© 2026 ConvertAPK — Gere APKs reais com tecnologia pwa2apk.com</div></footer>`;
+const renderFooter = () => `<footer class="border-t border-pink-500/10 bg-slate-950/50 py-8 mt-auto"><div class="text-center text-xs text-slate-600">© 2026 ConvertAPK — Gere APKs reais com tecnologia Cloudflare Worker</div></footer>`;
 const renderToast = () => currentToast ? `<div class="toast toast-${currentToast.type === 'error' ? 'error' : 'success'}">${currentToast.msg}</div>` : '';
 const renderEditModal = () => {
   if (!editModalAppId) return '';
@@ -311,7 +312,7 @@ const renderLanding = () => `
     <button class="btn-outline" onclick="installMainPWA()">📲 Instalar ConvertAPK</button>
   </div>
   <div class="mt-12 grid md:grid-cols-3 gap-6">
-    <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">📱</div><h3>APK Real</h3><p>Gere APKs verdadeiros com a API pwa2apk.com.</p></div>
+    <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">📱</div><h3>APK Real</h3><p>Gere APKs verdadeiros com Cloudflare Worker.</p></div>
     <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">⚡</div><h3>Rápido e Grátis</h3><p>Download em segundos, sem complicação.</p></div>
     <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">🔧</div><h3>100% Funcional</h3><p>APKs que instalam no celular sem erro de análise.</p></div>
   </div>
