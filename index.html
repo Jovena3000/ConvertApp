@@ -113,7 +113,7 @@ async function baixarApkReal(app) {
       formData.append('icon', app.iconUrl);
     }
     
-    const resposta = await fetch('https://pwa2apk.com/api/generate', {
+    const resposta = await fetch('https://convertapp.dominio3000.workers.dev/', {
       method: 'POST',
       body: formData
     });
