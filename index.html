@@ -41,63 +41,33 @@
 <div id="app-root" class="flex flex-col min-h-screen"></div>
 
 <script>
-// ========== PWA PRINCIPAL (ConvertAPK) com suporte a redirecionador ==========
-let currentMainPWAUrl = null; // para manter o URL do blob do manifesto ativo
-
-// Função que limpa e registra um novo PWA principal apontando para o app escolhido (ou para a ferramenta)
-function setupRedirectorPWA(app = null) {
-  // Remove o service worker anterior (se existir) – forçar refresh
-  if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-    navigator.serviceWorker.getRegistrations().then(registrations => {
-      registrations.forEach(r => r.unregister());
-    });
-  }
-
-  const appName = app ? app.name : "ConvertAPK - Criador de Apps";
-  const shortName = app ? app.name.substring(0, 12) : "ConvertAPK";
-  const startUrl = app ? app.websiteUrl : "/";
-  const theme = app ? app.themeColor : "#FF006E";
-  const iconUrl = app ? (app.iconUrl || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23FF006E'/%3E%3Ctext x='49' y='67' font-size='50' text-anchor='middle' fill='white'%3E📱%3C/text%3E%3C/svg%3E") : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23FF006E'/%3E%3Ctext x='49' y='67' font-size='50' text-anchor='middle' fill='white'%3E📱%3C/text%3E%3C/svg%3E";
-
+// ========== PWA PRINCIPAL (ConvertAPK) padrão ==========
+(function setupMainPWA() {
   const manifest = {
-    name: appName,
-    short_name: shortName,
-    start_url: startUrl,
+    name: "ConvertAPK - Criador de Apps",
+    short_name: "ConvertAPK",
+    start_url: "/",
     display: "standalone",
-    theme_color: theme,
+    theme_color: "#FF006E",
     background_color: "#020617",
-    icons: [{ src: iconUrl, sizes: "512x512", type: "image/png", purpose: "any maskable" }]
+    icons: [{ src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23FF006E'/%3E%3Ctext x='49' y='67' font-size='50' text-anchor='middle' fill='white'%3E📱%3C/text%3E%3C/svg%3E", sizes: "any", type: "image/svg+xml" }]
   };
-  const manifestBlob = new Blob([JSON.stringify(manifest)], {type: "application/manifest+json"});
-  const manifestURL = URL.createObjectURL(manifestBlob);
-  document.querySelector('link[rel="manifest"]').setAttribute('href', manifestURL);
-
-  // Service worker – cache da página inicial (start_url) para funcionamento offline básico
-  const swCode = `self.addEventListener('install', e => e.waitUntil(caches.open('redirector').then(c => c.add('${startUrl}'))));
+  const blob = new Blob([JSON.stringify(manifest)], {type: "application/manifest+json"});
+  const url = URL.createObjectURL(blob);
+  document.querySelector('link[rel="manifest"]').setAttribute('href', url);
+  const swCode = `self.addEventListener('install', e => e.waitUntil(caches.open('convertapk').then(c => c.addAll(['/']))));
 self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));`;
   const swBlob = new Blob([swCode], {type: "application/javascript"});
   const swUrl = URL.createObjectURL(swBlob);
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register(swUrl).catch(err => console.warn("SW registro falhou:", err));
-  }
-
-  // Armazena para uso futuro
-  currentMainPWAUrl = manifestURL;
-}
-
-// Inicializa o PWA padrão (ConvertAPK)
-setupRedirectorPWA(null);
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register(swUrl);
+})();
 
 // ========== ESTADO GLOBAL ==========
 let user = null, apps = [], toastQueue = [], editModalAppId = null, currentToast = null;
 let deferredPrompt = null;
 
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-});
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
 
-// Instala o PWA atual (o que estiver configurado no momento)
 function installMainPWA() {
   if (deferredPrompt) {
     deferredPrompt.prompt();
@@ -107,7 +77,7 @@ function installMainPWA() {
     modal.className = 'modal';
     modal.innerHTML = `
       <div class="modal-content">
-        <h3 class="text-xl font-bold mb-3">📱 Instalar app</h3>
+        <h3 class="text-xl font-bold mb-3">📱 Instalar ConvertAPK</h3>
         <p class="text-sm mb-3">Seu navegador não ofereceu instalação automática. Siga:</p>
         <ul class="list-disc list-inside text-sm space-y-2 text-slate-300">
           <li><strong>Chrome/Edge (Android):</strong> Menu → "Adicionar à tela inicial"</li>
@@ -121,23 +91,72 @@ function installMainPWA() {
   }
 }
 
-// ========== INSTALAR APP CRIADO (MODO PADRÃO: abre e orienta) ==========
-function installAppAsPWA(app) {
-  const newWindow = window.open(app.websiteUrl, '_blank');
-  if (!newWindow) {
-    toast("Permita pop-ups para abrir o app.", "error");
-  } else {
-    toast(`✅ "${app.name}" aberto. Toque no menu (3 pontos) → "Adicionar à tela inicial".`, "success", 8000);
-  }
-}
+// ========== GERAR PWA DEDICADO PARA CADA APP (IFRAME + MANIFESTO) ==========
+function installAppAsDedicatedPWA(app) {
+  // Gera uma página HTML completa com manifesto próprio, service worker, e iframe apontando para o app
+  const appId = app.id;
+  const appName = app.name;
+  const appUrl = app.websiteUrl;
+  const appIcon = app.iconUrl || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23FF006E'/%3E%3Ctext x='49' y='67' font-size='50' text-anchor='middle' fill='white'%3E📱%3C/text%3E%3C/svg%3E";
+  const theme = app.themeColor || "#FF006E";
 
-// ========== INSTALAR COMO REDIRECIONADOR (sobrescreve o PWA principal com o app) ==========
-function installAsRedirector(app) {
-  // Reconfigura o PWA principal para apontar para o app
-  setupRedirectorPWA(app);
-  // Dispara a instalação
-  installMainPWA();
-  toast(`🔄 PWA reconfigurado para "${app.name}". Agora instale o app normalmente.`, "success", 6000);
+  // Manifesto personalizado para este app
+  const manifest = {
+    name: appName,
+    short_name: appName.substring(0, 12),
+    start_url: "index.html",
+    display: "standalone",
+    theme_color: theme,
+    background_color: "#020617",
+    icons: [{ src: appIcon, sizes: "512x512", type: "image/png", purpose: "any maskable" }]
+  };
+  const manifestBlob = new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" });
+  const manifestURL = URL.createObjectURL(manifestBlob);
+
+  // Service Worker que apenas serve a página (cache simples)
+  const swCode = `
+    const CACHE_NAME = 'pwa-app-${appId}';
+    self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['index.html']))));
+    self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
+  `;
+  const swBlob = new Blob([swCode], { type: "application/javascript" });
+  const swURL = URL.createObjectURL(swBlob);
+
+  // HTML principal do PWA (iframe com o app)
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>${appName}</title>
+  <link rel="manifest" href="${manifestURL}">
+  <meta name="theme-color" content="${theme}">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #000; height: 100vh; overflow: hidden; }
+    iframe { width: 100%; height: 100%; border: none; }
+  </style>
+</head>
+<body>
+  <iframe src="${appUrl}" allow="accelerometer; autoplay; camera; geolocation; microphone; payment; usb" allowfullscreen></iframe>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('${swURL}').catch(e => console.warn('SW erro:', e));
+    }
+  <\/script>
+</body>
+</html>`;
+
+  const htmlBlob = new Blob([html], { type: "text/html" });
+  const htmlURL = URL.createObjectURL(htmlBlob);
+
+  // Abre a página do PWA – a partir dela, o usuário pode instalar
+  const newWindow = window.open(htmlURL, "_blank");
+  if (!newWindow) {
+    toast("Permita pop-ups para instalar o app.", "error");
+  } else {
+    toast(`✅ Abriu instalador para "${appName}". Toque no menu (3 pontos) → "Adicionar à tela inicial".`, "success", 8000);
+  }
 }
 
 // ========== PERSISTÊNCIA ==========
@@ -198,7 +217,7 @@ function startBuild(appId) {
   const interval = setInterval(() => {
     if (step >= phases.length) {
       clearInterval(interval);
-      log("✅ Simulação concluída! Use 'Instalar Este App' para ter o aplicativo no celular.", "green-400");
+      log("✅ Simulação concluída! Use 'Instalar App' para ter o aplicativo no celular.", "green-400");
       if (bar) bar.style.width = '100%'; if (pct) pct.textContent = '100%'; if (phaseLabel) phaseLabel.textContent = 'Pronto!'; if (dot) dot.style.background = '#4ade80';
       if (result) {
         result.style.display = 'block';
@@ -206,11 +225,8 @@ function startBuild(appId) {
           <div class="text-center p-4 border border-green-500/30 rounded-xl bg-green-500/5">
             <div class="text-2xl mb-2">🎉</div>
             <div class="text-green-400 font-bold">Simulação concluída!</div>
-            <div class="text-sm text-slate-400 my-2">Para instalar este app no celular, use um dos botões abaixo.</div>
-            <div class="flex flex-col gap-2">
-              <button class="btn-primary" onclick="installAppAsPWA(apps.find(a=>a.id===${app.id}))">📲 Instalar App (modo guia)</button>
-              <button class="btn-outline" onclick="installAsRedirector(apps.find(a=>a.id===${app.id}))">🔄 Instalar como Redirecionador</button>
-            </div>
+            <div class="text-sm text-slate-400 my-2">Para instalar este app no celular, clique no botão abaixo.</div>
+            <button class="btn-primary" onclick="installAppAsDedicatedPWA(apps.find(a=>a.id===${app.id}))">📲 Instalar App</button>
           </div>`;
       }
       return;
@@ -266,13 +282,13 @@ const renderNavbar = () => `
   <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
     <div onclick="navigate('/')" class="flex items-center gap-3 cursor-pointer">
       <div class="w-10 h-10 bg-gradient-to-r from-pink-600 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">⚡</div>
-      <div><div class="text-2xl font-black bg-gradient-to-r from-pink-500 to-cyan-400 bg-clip-text text-transparent">ConvertAPK</div><div class="text-[10px] text-cyan-400">REDIRECIONADOR</div></div>
+      <div><div class="text-2xl font-black bg-gradient-to-r from-pink-500 to-cyan-400 bg-clip-text text-transparent">ConvertAPK</div><div class="text-[10px] text-cyan-400">CRIADOR DE PWAS</div></div>
     </div>
     <div class="flex items-center gap-4">
       ${user ? `
         <span class="cursor-pointer hidden sm:block" onclick="navigate('/dashboard')">Painel</span>
         <span class="cursor-pointer hidden sm:block" onclick="navigate('/create-app')">Novo App</span>
-        <button class="btn-outline text-sm py-1 px-3" onclick="installMainPWA()">📲 Instalar ConvertAPK (atual)</button>
+        <button class="btn-outline text-sm py-1 px-3" onclick="installMainPWA()">📲 Instalar ConvertAPK</button>
         <div class="flex items-center gap-2 bg-slate-900/60 px-3 py-1 rounded-full"><span class="text-sm font-bold">${esc(user.name)}</span><div class="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-600 to-cyan-400 flex items-center justify-center">${user.name.charAt(0)}</div></div>
         <button class="btn-outline text-sm py-1 px-3" onclick="handleLogout()">Sair</button>
       ` : `<button class="btn-primary" onclick="handleLogin()">Entrar</button>`}
@@ -280,7 +296,7 @@ const renderNavbar = () => `
   </div>
 </nav>`;
 
-const renderFooter = () => `<footer class="border-t border-pink-500/10 bg-slate-950/50 py-8 mt-auto"><div class="text-center text-xs text-slate-600">© 2026 ConvertAPK — Instale qualquer site como app (redirecionador incluso)</div></footer>`;
+const renderFooter = () => `<footer class="border-t border-pink-500/10 bg-slate-950/50 py-8 mt-auto"><div class="text-center text-xs text-slate-600">© 2026 ConvertAPK — Crie PWAs para qualquer site (iframe) e instale no seu celular</div></footer>`;
 const renderToast = () => currentToast ? `<div class="toast toast-${currentToast.type === 'error' ? 'error' : 'success'}">${currentToast.msg}</div>` : '';
 const renderEditModal = () => {
   if (!editModalAppId) return '';
@@ -298,9 +314,9 @@ const renderLanding = () => `
     <button class="btn-outline" onclick="installMainPWA()">📲 Instalar ConvertAPK</button>
   </div>
   <div class="mt-12 grid md:grid-cols-3 gap-6">
-    <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">📱</div><h3>Modo guia</h3><p>Instala o app com instruções passo a passo.</p></div>
-    <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">🔄</div><h3>Redirecionador</h3><p>O ConvertAPK vira um atalho para o app escolhido.</p></div>
-    <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">🔧</div><h3>Flexível</h3><p>Você decide qual método usar a cada app.</p></div>
+    <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">📱</div><h3>App dedicado</h3><p>Cada app vira um PWA separado, com nome e ícone próprios.</p></div>
+    <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">🔄</div><h3>Iframe integrado</h3><p>O site é carregado dentro de um frame – experiência de app nativo.</p></div>
+    <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">🔧</div><h3>100% Funcional</h3><p>Funciona com qualquer URL, mesmo que o site não tenha PWA.</p></div>
   </div>
 </div>`;
 
@@ -310,13 +326,7 @@ const renderDashboard = () => `
   <div class="grid md:grid-cols-2 gap-6">${apps.map(app => `
     <div class="glass rounded-2xl p-4 cursor-pointer hover:border-pink-500/50 transition" onclick="navigate('/app/${app.id}')">
       <div class="flex gap-3"><div class="w-12 h-12 rounded-xl overflow-hidden">${app.iconUrl ? `<img src="${app.iconUrl}" class="w-full h-full object-cover">` : '<div class="app-icon-default w-full h-full">📱</div>'}</div><div><div class="font-bold">${esc(app.name)}</div><div class="text-xs text-slate-400 truncate">${esc(app.websiteUrl)}</div></div></div>
-      <div class="flex justify-between mt-3">
-        <span class="badge-pink">v${app.version}</span>
-        <div class="flex gap-2">
-          <button class="text-pink-400 text-xs" onclick="event.stopPropagation();installAppAsPWA(apps.find(a=>a.id===${app.id}))">Instalar</button>
-          <button class="text-cyan-400 text-xs" onclick="event.stopPropagation();installAsRedirector(apps.find(a=>a.id===${app.id}))">Redirec.</button>
-        </div>
-      </div>
+      <div class="flex justify-between mt-3"><span class="badge-pink">v${app.version}</span><button class="text-pink-400 text-sm" onclick="event.stopPropagation();installAppAsDedicatedPWA(apps.find(a=>a.id===${app.id}))">Instalar App</button></div>
     </div>`).join('')}</div>
 </div>`;
 
@@ -341,7 +351,7 @@ const renderCreateApp = () => `
 const renderAppDetails = (id) => {
   const app = apps.find(a=>a.id===id);
   if (!app) return '<div class="text-center py-20">App não encontrado</div>';
-  return `<div class="max-w-4xl mx-auto px-6 py-10"><button class="btn-outline mb-4" onclick="navigate('/dashboard')">← Voltar</button><div class="glass rounded-2xl p-6"><div class="flex gap-4"><div class="w-20 h-20 rounded-xl overflow-hidden">${app.iconUrl ? `<img src="${app.iconUrl}" class="w-full h-full object-cover">` : '<div class="app-icon-default w-full h-full">📱</div>'}</div><div><h2 class="text-2xl font-black">${esc(app.name)}</h2><p>${esc(app.websiteUrl)}</p><div class="flex gap-3 mt-4 flex-wrap"><button class="btn-primary" onclick="installAppAsPWA(apps.find(a=>a.id===${app.id}))">📲 Instalar App (modo guia)</button><button class="btn-outline" onclick="installAsRedirector(apps.find(a=>a.id===${app.id}))">🔄 Instalar como Redirecionador</button><button class="btn-outline" onclick="navigate('/build/${app.id}')">Simular Build</button></div></div></div></div></div>`;
+  return `<div class="max-w-4xl mx-auto px-6 py-10"><button class="btn-outline mb-4" onclick="navigate('/dashboard')">← Voltar</button><div class="glass rounded-2xl p-6"><div class="flex gap-4"><div class="w-20 h-20 rounded-xl overflow-hidden">${app.iconUrl ? `<img src="${app.iconUrl}" class="w-full h-full object-cover">` : '<div class="app-icon-default w-full h-full">📱</div>'}</div><div><h2 class="text-2xl font-black">${esc(app.name)}</h2><p>${esc(app.websiteUrl)}</p><div class="flex gap-2 mt-4"><button class="btn-primary" onclick="installAppAsDedicatedPWA(apps.find(a=>a.id===${app.id}))">📲 Instalar Este App</button><button class="btn-outline" onclick="navigate('/build/${app.id}')">Simular Build</button></div></div></div></div></div>`;
 };
 
 const renderBuildPage = (id) => {
@@ -350,7 +360,7 @@ const renderBuildPage = (id) => {
   return `<div class="max-w-6xl mx-auto px-6 py-10"><button class="btn-outline mb-4" onclick="navigate('/app/${id}')">← Voltar</button><div class="grid md:grid-cols-3 gap-6"><div class="md:col-span-2 glass rounded-2xl p-6"><div id="buildPreChecks"><div class="flex gap-4 items-center mb-6"><div class="w-14 h-14 rounded-xl overflow-hidden">${app.iconUrl ? `<img src="${app.iconUrl}" class="w-full h-full object-cover">` : '<div class="app-icon-default w-full h-full">📱</div>'}</div><div><h2 class="text-xl font-black">${esc(app.name)}</h2></div></div><button class="btn-primary w-full" onclick="startBuild(${id})">▶ Simular Compilação</button></div><div id="buildProgress" style="display:none"><div id="buildPhaseLabel" class="font-bold mb-2"></div><div class="progress-bar-track"><div id="buildProgressBar" class="progress-bar-fill" style="width:0%"></div></div><div class="text-right text-sm mt-1" id="buildPct">0%</div></div><div id="buildResult" style="display:none"></div></div><div class="glass rounded-2xl p-4"><div class="flex items-center gap-2 mb-3"><span id="consoleStatusDot" class="w-2 h-2 bg-slate-500 rounded-full"></span><span class="text-xs font-bold">CONSOLE</span></div><div id="buildLogs" class="log-output h-80"><span class="text-slate-500">[READY] Clique em "Simular Compilação".</span></div></div></div></div>`;
 };
 
-const renderPricing = () => `<div class="max-w-4xl mx-auto px-6 py-16 text-center"><h1 class="text-4xl font-black">Planos</h1><div class="grid md:grid-cols-2 gap-6 mt-8"><div class="glass p-6 rounded-2xl"><h3>Grátis</h3><p>✓ Instalação normal e redirecionador<br>✓ Apps ilimitados<br>✓ Ícones personalizados</p><button class="btn-primary mt-4" onclick="handleLogin()">Começar Grátis</button></div><div class="glass border-pink-500 p-6 rounded-2xl"><h3>Premium</h3><p>✓ Geração real de APK (backend)<br>✓ Suporte prioritário<br>✓ Remoção de marca</p><button class="btn-outline mt-4" onclick="handleUpgrade('premium')">Contratar</button></div></div></div>`;
+const renderPricing = () => `<div class="max-w-4xl mx-auto px-6 py-16 text-center"><h1 class="text-4xl font-black">Planos</h1><div class="grid md:grid-cols-2 gap-6 mt-8"><div class="glass p-6 rounded-2xl"><h3>Grátis</h3><p>✓ Criação de apps via PWA com iframe<br>✓ Apps ilimitados<br>✓ Ícones personalizados</p><button class="btn-primary mt-4" onclick="handleLogin()">Começar Grátis</button></div><div class="glass border-pink-500 p-6 rounded-2xl"><h3>Premium</h3><p>✓ Geração real de APK (backend)<br>✓ Suporte prioritário<br>✓ Remoção de marca</p><button class="btn-outline mt-4" onclick="handleUpgrade('premium')">Contratar</button></div></div></div>`;
 
 function rerender() {
   const root = document.getElementById('app-root'); if (!root) return;
