@@ -96,11 +96,9 @@ function installMainPWA() {
 
 // ========== FUNÇÃO PARA GERAR APK REAL VIA API pwa2apk.com ==========
 async function baixarApkReal(app) {
-  // Mostra toast de carregamento
-  toast(`🔄 Gerando APK para ${app.name}... Aguarde alguns segundos.`, 'info', 5000);
+  toast(`🔄 Gerando APK para ${app.name}... Aguarde.`, 'info', 5000);
   
-  // Desabilita botões temporariamente (opcional, via classe)
-  const btns = document.querySelectorAll('.apk-generate-btn');
+  const btns = document.querySelectorAll('.apk-generate-btn, .btn-success');
   btns.forEach(btn => btn.disabled = true);
   
   try {
@@ -108,22 +106,27 @@ async function baixarApkReal(app) {
     formData.append('name', app.name);
     formData.append('url', app.websiteUrl);
     
-    // Se houver ícone, envia também (a API aceita URL de imagem)
     if (app.iconUrl && app.iconUrl.startsWith('http')) {
       formData.append('icon', app.iconUrl);
     }
     
-    const resposta = await fetch('https://convertapp.dominio3000.workers.dev/', {
+    // USA O SEU WORKER (não mais a API direta!)
+    const apiUrl = 'https://convertapp.dominio3000.workers.dev/'; // SUBSTITUA PELA URL DO SEU PAGES
+    
+    const resposta = await fetch(apiUrl, {
       method: 'POST',
       body: formData
     });
     
     if (!resposta.ok) {
-      const erroText = await resposta.text();
-      throw new Error(erroText || `HTTP ${resposta.status}`);
+      let erroMsg = `HTTP ${resposta.status}`;
+      try {
+        const texto = await resposta.text();
+        if (texto) erroMsg = texto;
+      } catch(e) {}
+      throw new Error(erroMsg);
     }
     
-    // Obtém o blob do APK
     const blob = await resposta.blob();
     const downloadUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -134,10 +137,10 @@ async function baixarApkReal(app) {
     document.body.removeChild(a);
     URL.revokeObjectURL(downloadUrl);
     
-    toast(`✅ APK do "${app.name}" gerado e baixado com sucesso!`, 'success');
+    toast(`✅ APK do "${app.name}" gerado e baixado!`, 'success');
   } catch (erro) {
-    console.error('Erro na geração do APK:', erro);
-    toast(`❌ Falha ao gerar APK: ${erro.message}. Verifique a URL e tente novamente.`, 'error');
+    console.error('Erro detalhado:', erro);
+    toast(`❌ Falha: ${erro.message}`, 'error');
   } finally {
     btns.forEach(btn => btn.disabled = false);
   }
