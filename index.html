@@ -94,9 +94,9 @@ function installMainPWA() {
   }
 }
 
-// ========== FUNÇÃO PARA GERAR APK REAL VIA CLOUDFLARE WORKER ==========
+// ========== FUNÇÃO PARA GERAR APK REAL VIA API pwa2apk.com ==========
 async function baixarApkReal(app) {
-  toast(`🔄 Gerando APK para ${app.name}... Aguarde.`, 'info', 5000);
+  toast(`🔄 Gerando APK para ${app.name}...`, 'info', 5000);
   
   const btns = document.querySelectorAll('.apk-generate-btn, .btn-success');
   btns.forEach(btn => btn.disabled = true);
@@ -110,8 +110,7 @@ async function baixarApkReal(app) {
       formData.append('icon', app.iconUrl);
     }
     
-    // ⚠️⚠️⚠️ SUBSTITUA ESTA URL PELA URL REAL DO SEU WORKER ⚠️⚠️⚠️
-    // A URL correta foi fornecida no log do deploy: https://convertapp.dominio3000.workers.dev
+    // ⚠️ USE A URL CORRETA DO SEU WORKER ⚠️
     const WORKER_URL = 'https://convertapp.dominio3000.workers.dev';
     
     const resposta = await fetch(WORKER_URL, {
@@ -138,9 +137,9 @@ async function baixarApkReal(app) {
     document.body.removeChild(a);
     URL.revokeObjectURL(downloadUrl);
     
-    toast(`✅ APK do "${app.name}" gerado e baixado!`, 'success');
+    toast(`✅ APK do "${app.name}" gerado!`, 'success');
   } catch (erro) {
-    console.error('Erro detalhado:', erro);
+    console.error('Erro:', erro);
     toast(`❌ Falha: ${erro.message}`, 'error');
   } finally {
     btns.forEach(btn => btn.disabled = false);
@@ -294,7 +293,7 @@ const renderNavbar = () => `
   </div>
 </nav>`;
 
-const renderFooter = () => `<footer class="border-t border-pink-500/10 bg-slate-950/50 py-8 mt-auto"><div class="text-center text-xs text-slate-600">© 2026 ConvertAPK — Gere APKs reais com tecnologia Cloudflare Worker</div></footer>`;
+const renderFooter = () => `<footer class="border-t border-pink-500/10 bg-slate-950/50 py-8 mt-auto"><div class="text-center text-xs text-slate-600">© 2026 ConvertAPK — Gere APKs reais com tecnologia pwa2apk.com</div></footer>`;
 const renderToast = () => currentToast ? `<div class="toast toast-${currentToast.type === 'error' ? 'error' : 'success'}">${currentToast.msg}</div>` : '';
 const renderEditModal = () => {
   if (!editModalAppId) return '';
@@ -312,7 +311,7 @@ const renderLanding = () => `
     <button class="btn-outline" onclick="installMainPWA()">📲 Instalar ConvertAPK</button>
   </div>
   <div class="mt-12 grid md:grid-cols-3 gap-6">
-    <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">📱</div><h3>APK Real</h3><p>Gere APKs verdadeiros com Cloudflare Worker.</p></div>
+    <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">📱</div><h3>APK Real</h3><p>Gere APKs verdadeiros com a API pwa2apk.com.</p></div>
     <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">⚡</div><h3>Rápido e Grátis</h3><p>Download em segundos, sem complicação.</p></div>
     <div class="glass p-6 rounded-2xl"><div class="text-4xl mb-2">🔧</div><h3>100% Funcional</h3><p>APKs que instalam no celular sem erro de análise.</p></div>
   </div>
