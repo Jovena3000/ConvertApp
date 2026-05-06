@@ -368,37 +368,6 @@ window.openAppTab = function(url, appName) {
   }
 };
 
-// Método 3: Baixar manifest.json gerado para o app
-window.downloadManifest = function(app) {
-  var iconUrl = (app.iconUrl && app.iconUrl !== '[base64-image]')
-    ? app.iconUrl
-    : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='" + encodeURIComponent(app.themeColor || '#FF006E') + "'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle' fill='white'%3E%F0%9F%93%B1%3C/text%3E%3C/svg%3E";
-
-  var manifest = {
-    name: app.name,
-    short_name: app.name.substring(0, 12),
-    description: app.description || '',
-    start_url: '/',
-    scope: '/',
-    display: 'standalone',
-    orientation: app.orientation || 'portrait',
-    theme_color: app.themeColor || '#FF006E',
-    background_color: '#ffffff',
-    icons: [
-      { src: iconUrl, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
-      { src: iconUrl, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
-    ]
-  };
-
-  var blob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' });
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url; a.download = 'manifest.json';
-  document.body.appendChild(a); a.click();
-  setTimeout(function() { document.body.removeChild(a); URL.revokeObjectURL(url); }, 300);
-  toast('manifest.json baixado! Adicione ao servidor do app e o Chrome instalará automaticamente.', 'success');
-};
-
 // ── Build simulator ───────────────────────────────────────────────────
 window.startBuild = function(appId) {
   var app = apps.find(function(a) { return a.id === appId; });
@@ -632,25 +601,71 @@ function renderInstallModal() {
     + ' Desktop: ícone ⊕ na barra de endereços'
     + '</div></div>'
 
-    // ── MÉTODO 3: Manifest.json ───────────────────────────────────
-    + '<div class="glass" style="border-radius:1.25rem;padding:1.25rem;border-color:rgba(74,222,128,.25);background:rgba(74,222,128,.04);">'
-    + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;">'
+    // ── MÉTODO 3: AppsGeyser + serviços alternativos gratuitos ──────
+    + '<div class="glass" style="border-radius:1.25rem;padding:1.25rem;border-color:rgba(74,222,128,.3);background:rgba(74,222,128,.05);">'
+    + '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;">'
+    + '<span style="font-size:1.1rem;">🤖</span>'
+    + '<span style="font-weight:700;color:#4ade80;">MÉTODO 3 — Geradores de APK Gratuitos</span>'
+    + '<span class="badge b-green">SEM CÓDIGO</span></div>'
+    + '<p style="font-size:.79rem;color:#94a3b8;margin-bottom:.9rem;">'
+    + 'Serviços online que geram um <strong style="color:#e2e8f0;">APK real e assinado</strong> a partir da URL do site — sem instalar nada, sem código. Basta colar a URL e baixar o APK.'
+    + '</p>'
+
+    // AppsGeyser — principal
+    + '<div style="background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.25);border-radius:.85rem;padding:.9rem;margin-bottom:.65rem;">'
+    + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.75rem;flex-wrap:wrap;">'
     + '<div style="flex:1;">'
-    + '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;">'
-    + '<span style="font-size:1.1rem;">📄</span>'
-    + '<span style="font-weight:700;color:#4ade80;">MÉTODO 3 — manifest.json</span>'
-    + '<span class="badge b-green">PARA DEVS</span></div>'
-    + '<p style="font-size:.8rem;color:#94a3b8;margin-bottom:.6rem;">Baixa o manifest.json gerado automaticamente para o app. Adicione ao servidor do site e o Chrome oferecerá instalação nativa.</p>'
-    + '<div style="font-size:.75rem;color:#64748b;display:flex;flex-direction:column;gap:.25rem;">'
-    + '<div>✅ Instalação 100% nativa pelo Chrome</div>'
-    + '<div>✅ Controle total sobre o app</div>'
-    + '<div>⚠️ Precisa de acesso ao servidor do site</div>'
+    + '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem;">'
+    + '<span style="font-weight:700;font-size:.88rem;color:#4ade80;">AppsGeyser</span>'
+    + '<span class="badge b-green" style="font-size:.62rem;">GRÁTIS · MAIS POPULAR</span></div>'
+    + '<p style="font-size:.75rem;color:#94a3b8;margin-bottom:.4rem;">Cole a URL → escolha o template WebView → clica em "Create" → APK gerado na nuvem para download. Não precisa de conta.</p>'
+    + '<div style="font-size:.72rem;color:#64748b;display:flex;flex-direction:column;gap:.2rem;">'
+    + '<div>✅ APK real para instalar no Android</div>'
+    + '<div>✅ Sem conta obrigatória no plano gratuito</div>'
+    + '<div>✅ Funciona com qualquer URL (https://)</div>'
     + '</div></div>'
-    + '<button class="btn btn-green" onclick="downloadManifest(apps.find(function(a){return a.id===' + app.id + '}))" style="flex-shrink:0;white-space:nowrap;color:#000;">⬇ Baixar manifest</button>'
+    + '<button class="btn btn-green" onclick="window.open(\'https://appsgeyser.com/apk-maker/?url=\'+encodeURIComponent(\'' + esc(app.websiteUrl) + '\'),\'_blank\')" style="flex-shrink:0;color:#000;white-space:nowrap;padding:.45rem .9rem;font-size:.78rem;">Abrir AppsGeyser ↗</button>'
+    + '</div></div>'
+
+    // WebSite2APK
+    + '<div style="background:rgba(56,189,248,.05);border:1px solid rgba(56,189,248,.2);border-radius:.85rem;padding:.9rem;margin-bottom:.65rem;">'
+    + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.75rem;flex-wrap:wrap;">'
+    + '<div style="flex:1;">'
+    + '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem;">'
+    + '<span style="font-weight:700;font-size:.88rem;color:#38bdf8;">WebSite2APK</span>'
+    + '<span class="badge b-cyan" style="font-size:.62rem;">GRÁTIS · APK + AAB</span></div>'
+    + '<p style="font-size:.75rem;color:#94a3b8;margin-bottom:.4rem;">Gera APK e AAB (App Bundle para Play Store). Interface simples: cole a URL, configure nome e ícone, baixe o pacote.</p>'
+    + '<div style="font-size:.72rem;color:#64748b;display:flex;flex-direction:column;gap:.2rem;">'
+    + '<div>✅ Gera APK e AAB para Play Store</div>'
+    + '<div>✅ Personalize nome, ícone e cor</div>'
+    + '<div>✅ Sem necessidade de Android Studio</div>'
+    + '</div></div>'
+    + '<button class="btn btn-cyan" onclick="window.open(\'https://websitetoapk.com/\',\'_blank\')" style="flex-shrink:0;color:#000;white-space:nowrap;padding:.45rem .9rem;font-size:.78rem;">Abrir WebSite2APK ↗</button>'
+    + '</div></div>'
+
+    // AppYet
+    + '<div style="background:rgba(168,85,247,.05);border:1px solid rgba(168,85,247,.2);border-radius:.85rem;padding:.9rem;">'
+    + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.75rem;flex-wrap:wrap;">'
+    + '<div style="flex:1;">'
+    + '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem;">'
+    + '<span style="font-weight:700;font-size:.88rem;color:#a78bfa;">AppYet</span>'
+    + '<span class="badge b-purple" style="font-size:.62rem;">GRÁTIS · 100% NATIVO</span></div>'
+    + '<p style="font-size:.75rem;color:#94a3b8;margin-bottom:.4rem;">Cria apps Android 100% nativos a partir de URL, RSS ou YouTube. Suporta notificações push, abas e múltiplas seções. APK gerado em minutos.</p>'
+    + '<div style="font-size:.72rem;color:#64748b;display:flex;flex-direction:column;gap:.2rem;">'
+    + '<div>✅ App 100% nativo (não WebView simples)</div>'
+    + '<div>✅ Suporta RSS, YouTube, HTML5</div>'
+    + '<div>✅ Push notifications incluídas</div>'
+    + '</div></div>'
+    + '<button class="btn btn-pwa" onclick="window.open(\'https://appyet.com/\',\'_blank\')" style="flex-shrink:0;white-space:nowrap;padding:.45rem .9rem;font-size:.78rem;">Abrir AppYet ↗</button>'
+    + '</div></div>'
+
+    // Dica de uso
+    + '<div style="margin-top:.85rem;background:rgba(0,0,0,.3);border-radius:.65rem;padding:.65rem .85rem;font-size:.75rem;color:#94a3b8;">'
+    + '<strong style="color:#4ade80;">💡 Como usar:</strong>'
+    + ' Copie a URL <span style="font-family:\'JetBrains Mono\',monospace;color:#00d9ff;font-size:.72rem;">' + esc(app.websiteUrl) + '</span>'
+    + ' → abra um dos serviços acima → cole a URL → configure nome e ícone → clique em "Criar/Generate" → baixe o APK.'
     + '</div>'
-    + '<div style="margin-top:.9rem;background:rgba(0,0,0,.3);border-radius:.65rem;padding:.65rem .85rem;font-size:.75rem;color:#94a3b8;font-family:\'JetBrains Mono\',monospace;">'
-    + '&lt;link rel="manifest" href="/manifest.json"&gt; — adicione no &lt;head&gt; do seu site'
-    + '</div></div>'
+    + '</div>'
 
     + '</div></div>';
 }
@@ -728,7 +743,7 @@ function renderNavbar() {
 
 function renderFooter() {
   return '<footer style="border-top:1px solid rgba(255,0,110,.1);background:rgba(2,6,23,.5);padding:2rem 1.5rem;text-align:center;margin-top:auto;">'
-    + '<div style="font-size:.72rem;color:#334155;">© 2026 ConvertAPK — Converta sites em apps usando PWABuilder, Chrome WebAPK e manifest.json</div>'
+    + '<div style="font-size:.72rem;color:#334155;">© 2026 ConvertAPK — Converta sites em apps via PWABuilder, Chrome WebAPK, AppsGeyser e AppYet</div>'
     + '</footer>';
 }
 
@@ -800,13 +815,13 @@ function renderLanding() {
     + '<span class="badge b-cyan" style="font-size:.7rem;">Mais rápido</span>'
     + '</div>'
 
-    // Card Manifest
+    // Card Geradores APK
     + '<div class="glass" style="border-radius:1.25rem;padding:1.5rem;border-color:rgba(74,222,128,.25);background:rgba(74,222,128,.04);">'
     + '<div style="font-family:\'Orbitron\',monospace;font-size:1.5rem;color:#4ade80;margin-bottom:.75rem;">03</div>'
-    + '<div style="font-size:1.5rem;margin-bottom:.5rem;">📄</div>'
-    + '<h3 style="font-size:.9rem;margin:.25rem 0 .5rem;">manifest.json</h3>'
-    + '<p style="font-size:.78rem;color:#64748b;margin-bottom:.75rem;">Baixe o manifest.json gerado e adicione ao seu servidor. Chrome oferecerá instalação nativa automaticamente.</p>'
-    + '<span class="badge b-green" style="font-size:.7rem;">Para devs</span>'
+    + '<div style="font-size:1.5rem;margin-bottom:.5rem;">🤖</div>'
+    + '<h3 style="font-size:.9rem;margin:.25rem 0 .5rem;">Geradores de APK</h3>'
+    + '<p style="font-size:.78rem;color:#64748b;margin-bottom:.75rem;">AppsGeyser, WebSite2APK ou AppYet — cole a URL e receba um APK real assinado, sem código e sem instalar nada.</p>'
+    + '<span class="badge b-green" style="font-size:.7rem;">Sem código</span>'
     + '</div>'
 
     + '</div></div>';
@@ -880,7 +895,7 @@ function renderCreateApp() {
     + '<button class="btn btn-danger" onclick="clearCaIcon()" style="font-size:.8rem;justify-content:center;">✕ Limpar Ícone</button>'
     + '<div class="glass glass-cyan" style="border-radius:.75rem;padding:.9rem;font-size:.77rem;color:#94a3b8;margin-top:auto;">'
     + '<div style="color:#00d9ff;font-weight:700;margin-bottom:.3rem;">💡 O que acontece depois?</div>'
-    + 'Ao criar, você verá 3 opções: <strong style="color:#fff;">PWABuilder</strong> (APK real), <strong style="color:#fff;">Chrome</strong> (instalação direta) ou <strong style="color:#fff;">manifest.json</strong> para seu servidor.'
+    + 'Ao criar, você verá 3 opções: <strong style="color:#fff;">PWABuilder</strong> (APK real), <strong style="color:#fff;">Chrome</strong> (instalação direta) ou <strong style="color:#fff;">AppsGeyser/AppYet</strong> (geradores de APK gratuitos).'
     + '</div></div></div>'
     + '<div class="divider"></div>'
     + '<div style="display:flex;gap:.75rem;flex-wrap:wrap;">'
@@ -934,10 +949,13 @@ function renderAppDetails(appId) {
     + '<button class="btn btn-cyan" onclick="openAppTab(\'' + esc(app.websiteUrl) + '\',\'' + esc(app.name) + '\')" style="width:100%;justify-content:center;font-size:.78rem;padding:.4rem .75rem;color:#000;">Abrir Site ↗</button>'
     + '</div>'
     + '<div style="background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.2);border-radius:.85rem;padding:.9rem;">'
-    + '<div style="font-weight:700;font-size:.85rem;color:#4ade80;margin-bottom:.3rem;">📄 manifest.json</div>'
-    + '<div style="font-size:.75rem;color:#94a3b8;margin-bottom:.6rem;">Baixe e adicione ao servidor para instalação nativa</div>'
-    + '<button class="btn btn-green" onclick="downloadManifest(apps.find(function(a){return a.id===' + app.id + '}))" style="width:100%;justify-content:center;font-size:.78rem;padding:.4rem .75rem;color:#000;">⬇ Baixar</button>'
-    + '</div></div></div></div>';
+    + '<div style="font-weight:700;font-size:.85rem;color:#4ade80;margin-bottom:.3rem;">🤖 Geradores de APK gratuitos</div>'
+    + '<div style="font-size:.75rem;color:#94a3b8;margin-bottom:.6rem;">AppsGeyser, WebSite2APK ou AppYet — cole a URL, baixe o APK</div>'
+    + '<div style="display:flex;gap:.4rem;flex-wrap:wrap;">'
+    + '<button class="btn btn-green" onclick="window.open(\'https://appsgeyser.com/apk-maker/?url=\'+encodeURIComponent(\'' + esc(app.websiteUrl) + '\'),\'_blank\')" style="flex:1;justify-content:center;font-size:.7rem;padding:.32rem .45rem;color:#000;">AppsGeyser</button>'
+    + '<button class="btn btn-cyan" onclick="window.open(\'https://websitetoapk.com/\',\'_blank\')" style="flex:1;justify-content:center;font-size:.7rem;padding:.32rem .45rem;color:#000;">Web2APK</button>'
+    + '<button class="btn btn-pwa" onclick="window.open(\'https://appyet.com/\',\'_blank\')" style="flex:1;justify-content:center;font-size:.7rem;padding:.32rem .45rem;">AppYet</button>'
+    + '</div></div></div></div></div>';
 }
 
 function renderBuildPage(appId) {
@@ -981,7 +999,7 @@ function renderPricing() {
     + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;text-align:left;">'
     + [
         { name: 'Grátis', price: 'R$ 0', per: '', color: '#94a3b8',
-          features: ['Apps ilimitados', 'PWABuilder (APK real)', 'Instalação via Chrome', 'manifest.json automático', 'Ícones personalizados'],
+          features: ['Apps ilimitados', 'PWABuilder (APK real)', 'Instalação via Chrome', 'AppsGeyser / AppYet / Web2APK', 'Ícones personalizados'],
           missing: ['Notificações push avançadas', 'Whitelabel'], cta: 'Começar Grátis', action: 'handleLogin()', popular: false },
         { name: 'Premium', price: 'R$ 29', per: '/mês', color: '#FF006E',
           features: ['Tudo do Grátis', 'Notificações push', 'Whitelabel total', 'Suporte prioritário', 'Analytics avançado'],
