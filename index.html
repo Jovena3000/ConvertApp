@@ -1,974 +1,791 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>Web2APK Pro | Criador de APK/AAB/PWA Profissional</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.development.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.development.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <style>
-    * { font-family: 'Inter', system-ui, sans-serif; }
-    body { background: radial-gradient(circle at 10% 20%, #0a0a1f 0%, #050510 100%); min-height: 100vh; }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #0a0a1f; }
-    ::-webkit-scrollbar-thumb { background: #ec4899; border-radius: 8px; }
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    .animate-fade-in-up { animation: fadeInUp 0.4s ease-out; }
-    @keyframes pulse-glow { 0%,100% { box-shadow: 0 0 5px rgba(236,72,153,0.3); } 50% { box-shadow: 0 0 20px rgba(236,72,153,0.6); } }
-    .preview-card { transition: all 0.3s ease; }
-    .preview-card:hover { transform: translateY(-4px); }
-  </style>
-</head>
-<body class="text-slate-200">
-  <div id="root"></div>
-  
-  <script type="text/babel">
-    const { useState, useEffect, useRef, useCallback } = React;
-
-    // ==================== TEMPLATES COMPLETOS ====================
-    
-    // Template Splash Screen
-    const generateSplashHTML = (appName, themeColor, bgColor = "#0a0a1f") => `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>${appName}</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: ${bgColor};
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    }
-    .splash-container {
-      text-align: center;
-      animation: fadeIn 0.5s ease-out;
-    }
-    .loader {
-      width: 48px;
-      height: 48px;
-      border: 3px solid rgba(255,255,255,0.1);
-      border-top: 3px solid ${themeColor};
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 20px auto;
-    }
-    .app-icon {
-      width: 80px;
-      height: 80px;
-      background: linear-gradient(135deg, ${themeColor}, #06D9FF);
-      border-radius: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 20px;
-      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
-    }
-    .app-name {
-      font-size: 24px;
-      font-weight: 800;
-      background: linear-gradient(135deg, #fff, ${themeColor});
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 8px;
-    }
-    .subtitle {
-      color: #94a3b8;
-      font-size: 12px;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#07090f">
+<title>AppForge Pro — Gerador APK/PWA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --bg0:#07090f;--bg1:#0d1018;--bg2:#131822;--bg3:#1a2133;--bg4:#212b3d;
+  --cyan:#00e5ff;--cyan2:#00bcd4;--cyanglow:rgba(0,229,255,.18);
+  --green:#00e676;--amber:#ffb627;--red:#ff5252;--violet:#7c4dff;
+  --t1:#e8f0fe;--t2:#8faabb;--t3:#4a5e72;
+  --bdr:rgba(0,229,255,.1);--bdr2:rgba(0,229,255,.22);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{font-family:'Exo 2',sans-serif;background:var(--bg0);color:var(--t1);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+.bg-grid{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(var(--bdr) 1px,transparent 1px),linear-gradient(90deg,var(--bdr) 1px,transparent 1px);background-size:44px 44px;mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,black 30%,transparent 100%)}
+.bg-glow{position:fixed;pointer-events:none;z-index:0;border-radius:50%;filter:blur(80px);opacity:.1}
+.g1{width:400px;height:400px;top:-120px;left:-100px;background:var(--cyan)}
+.g2{width:320px;height:320px;bottom:-80px;right:-80px;background:var(--violet)}
+.shell{position:relative;z-index:1;max-width:500px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;background:rgba(7,9,15,.92);backdrop-filter:blur(24px);border-bottom:1px solid var(--bdr);position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:9px}
+.logo-mark{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--cyan),var(--cyan2));display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 0 18px var(--cyanglow)}
+.logo-nm{font-size:17px;font-weight:900;letter-spacing:-.3px;background:linear-gradient(90deg,var(--t1) 50%,var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo-ver{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan);background:rgba(0,229,255,.08);padding:2px 6px;border-radius:4px;border:1px solid var(--bdr2);letter-spacing:.5px}
+.hbtns{display:flex;gap:6px}
+.hbtn{width:32px;height:32px;border-radius:8px;border:1px solid var(--bdr);background:var(--bg2);color:var(--t2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-size:14px}
+.hbtn:hover{border-color:var(--bdr2);color:var(--cyan)}
+.stepper{display:flex;align-items:center;padding:14px 18px 0}
+.snode{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0}
+.scirc{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid var(--bdr);background:var(--bg2);color:var(--t3);transition:all .35s}
+.scirc.active{border-color:var(--cyan);background:rgba(0,229,255,.08);color:var(--cyan);box-shadow:0 0 14px var(--cyanglow)}
+.scirc.done{border-color:var(--green);background:rgba(0,230,118,.08);color:var(--green)}
+.slbl{font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--t3);transition:color .3s}
+.slbl.active{color:var(--cyan)}.slbl.done{color:var(--green)}
+.srail{flex:1;height:2px;background:var(--bg3);margin:0 5px;position:relative;top:-12px;border-radius:1px;transition:background .4s}
+.srail.done{background:var(--green)}
+main{flex:1;padding:14px 18px;display:flex;flex-direction:column;gap:12px}
+.hero{text-align:center;padding:8px 0 4px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(0,229,255,.07);border:1px solid var(--bdr2);border-radius:100px;font-size:10px;font-weight:700;color:var(--cyan);letter-spacing:.8px;text-transform:uppercase;margin-bottom:12px}
+.dot{width:5px;height:5px;background:var(--green);border-radius:50%;box-shadow:0 0 6px var(--green);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{font-size:22px;font-weight:900;line-height:1.15;letter-spacing:-.5px;margin-bottom:8px}
+.hero h1 em{font-style:italic;color:var(--cyan)}
+.hero p{color:var(--t2);font-size:12px;line-height:1.6}
+.card{background:var(--bg1);border:1px solid var(--bdr);border-radius:16px;padding:16px;transition:border-color .2s}
+.card:hover{border-color:var(--bdr2)}
+.card-hdr{display:flex;align-items:center;gap:9px;margin-bottom:14px}
+.card-ico{width:32px;height:32px;border-radius:8px;background:rgba(0,229,255,.07);border:1px solid var(--bdr2);display:flex;align-items:center;justify-content:center;font-size:15px}
+.card-ttl{font-size:13px;font-weight:800}.card-sub{font-size:10px;color:var(--t3);margin-top:1px}
+.tabs{display:flex;background:var(--bg0);border-radius:8px;padding:3px;gap:2px;margin-bottom:14px;border:1px solid var(--bdr)}
+.tab{flex:1;padding:7px;text-align:center;font-size:11px;font-weight:700;color:var(--t3);cursor:pointer;border-radius:6px;transition:all .2s;letter-spacing:.3px}
+.tab.on{background:var(--bg3);color:var(--cyan);box-shadow:0 0 12px rgba(0,229,255,.1)}
+.igrp{margin-bottom:12px}
+.ilbl{display:block;font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--t2);margin-bottom:6px}
+.iwrap{position:relative}
+.ifield{width:100%;padding:11px 13px 11px 38px;background:var(--bg0);border:1px solid var(--bdr);border-radius:12px;color:var(--t1);font-size:13px;font-family:inherit;outline:none;transition:all .2s}
+.ifield:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,229,255,.07)}
+.ifield::placeholder{color:var(--t3)}
+.ifield.mono{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.3px}
+.iico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:14px;pointer-events:none}
+.irow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ihint{font-size:10px;color:var(--t3);margin-top:4px}
+.color-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:10px}
+.csq{aspect-ratio:1;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:all .2s;position:relative}
+.csq:hover{transform:scale(1.1)}
+.csq.sel{border-color:#fff;box-shadow:0 0 0 2px var(--bg0),0 0 0 4px var(--cyan)}
+.csq.sel::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.color-row{display:flex;align-items:center;gap:8px}
+.cswatch{width:36px;height:36px;border:none;border-radius:8px;cursor:pointer;background:none;padding:0;flex-shrink:0}
+.cswatch::-webkit-color-swatch-wrapper{padding:0}
+.cswatch::-webkit-color-swatch{border:2px solid var(--bdr2);border-radius:8px}
+.hex-val{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);background:var(--bg0);padding:7px 10px;border-radius:8px;border:1px solid var(--bdr);flex:1;letter-spacing:.8px}
+.upzone{border:2px dashed var(--bdr);border-radius:12px;padding:20px 16px;text-align:center;cursor:pointer;transition:all .25s;background:var(--bg0)}
+.upzone:hover,.upzone.drag{border-color:var(--cyan);background:rgba(0,229,255,.04)}
+.upzone.ok{border-color:var(--green);background:rgba(0,230,118,.03);border-style:solid}
+.upico{font-size:28px;display:block;margin-bottom:8px}
+.upttl{font-size:12px;font-weight:600;color:var(--t2)}.upsub{font-size:10px;color:var(--t3);margin-top:2px}
+.prev-img{width:60px;height:60px;border-radius:8px;object-fit:cover;margin:0 auto 8px;border:2px solid var(--green);box-shadow:0 0 16px rgba(0,230,118,.2)}
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.feat-item{display:flex;align-items:center;justify-content:space-between;padding:9px 11px;background:var(--bg0);border:1px solid var(--bdr);border-radius:8px;cursor:pointer;transition:all .2s}
+.feat-item:hover{border-color:var(--bdr2);background:var(--bg2)}
+.feat-item.on{border-color:rgba(0,229,255,.3);background:rgba(0,229,255,.05)}
+.feat-lbl{font-size:11px;font-weight:600}
+.toggle{width:28px;height:15px;border-radius:8px;background:var(--bg3);position:relative;transition:background .2s;flex-shrink:0}
+.toggle.on{background:var(--cyan)}
+.toggle::after{content:'';position:absolute;width:11px;height:11px;border-radius:50%;background:#fff;top:2px;left:2px;transition:left .2s}
+.toggle.on::after{left:15px}
+.iselect{width:100%;padding:10px 12px;background:var(--bg0);border:1px solid var(--bdr);border-radius:12px;color:var(--t1);font-size:12px;font-family:inherit;outline:none;cursor:pointer;transition:border-color .2s}
+.iselect:focus{border-color:var(--cyan)}
+.iselect option{background:var(--bg1)}
+.prev-wrap{background:linear-gradient(160deg,var(--bg2),var(--bg1));border:1px solid var(--bdr);border-radius:16px;padding:16px}
+.phone{width:165px;height:340px;margin:0 auto;background:var(--bg0);border-radius:26px;padding:5px;box-shadow:0 20px 50px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.05)}
+.phone-scr{width:100%;height:100%;background:var(--bg1);border-radius:21px;overflow:hidden;display:flex;flex-direction:column}
+.ph-notch{width:60px;height:15px;background:var(--bg0);border-radius:0 0 8px 8px;margin:0 auto}
+.ph-st{display:flex;justify-content:space-between;padding:2px 12px;font-size:7px;color:var(--t3);font-family:'JetBrains Mono',monospace}
+.ph-bar{padding:7px 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--bdr)}
+.ph-ico{width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;overflow:hidden;flex-shrink:0}
+.ph-ico img{width:100%;height:100%;object-fit:cover}
+.ph-nm{font-size:9px;font-weight:800;letter-spacing:-.1px}
+.ph-body{flex:1;display:flex;align-items:center;justify-content:center;background:var(--bg0);position:relative;overflow:hidden}
+.ph-body::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 16px,rgba(0,229,255,.012) 16px,rgba(0,229,255,.012) 17px),repeating-linear-gradient(90deg,transparent,transparent 16px,rgba(0,229,255,.012) 16px,rgba(0,229,255,.012) 17px)}
+.ph-globe{font-size:24px;opacity:.25;display:block;margin-bottom:5px;text-align:center}
+.ph-url{font-size:7px;color:var(--t3);font-family:'JetBrains Mono',monospace;word-break:break-all;padding:0 8px;text-align:center}
+.ph-hbar{width:60px;height:3px;background:rgba(255,255,255,.12);border-radius:2px;margin:5px auto}
+.console-wrap{background:var(--bg0);border:1px solid var(--bdr);border-radius:12px;overflow:hidden}
+.console-hdr{padding:8px 12px;background:var(--bg2);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:7px}
+.cdot{width:8px;height:8px;border-radius:50%}
+.console-body{padding:10px 12px;height:150px;overflow-y:auto;font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.7}
+.console-body::-webkit-scrollbar{width:3px}
+.console-body::-webkit-scrollbar-thumb{background:var(--bg3)}
+.lok{color:var(--green)}.lerr{color:var(--red)}.linf{color:var(--cyan)}.lwrn{color:var(--amber)}.ldim{color:var(--t3)}
+.prog-section{display:none;padding:8px 0;animation:fadeUp .4s}
+.prog-section.on{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.ring-wrap{width:110px;height:110px;margin:0 auto 16px;position:relative}
+.ring-wrap svg{transform:rotate(-90deg)}
+.rbg{fill:none;stroke:var(--bg3);stroke-width:5}
+.rfill{fill:none;stroke:url(#rg);stroke-width:5;stroke-linecap:round;stroke-dasharray:283;stroke-dashoffset:283;transition:stroke-dashoffset .4s ease}
+.ring-txt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-pct{font-size:22px;font-weight:900;color:var(--cyan)}
+.ring-lbl2{font-size:9px;color:var(--t3);font-family:'JetBrains Mono',monospace;letter-spacing:.5px}
+.prog-ttl{text-align:center;font-size:15px;font-weight:800;margin-bottom:3px}
+.prog-sub{text-align:center;font-size:11px;color:var(--t3);margin-bottom:14px}
+.psteps{display:flex;flex-direction:column;gap:8px}
+.pstep{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg0);border:1px solid var(--bdr);border-radius:12px;transition:all .3s}
+.pstep.active{border-color:var(--cyan);background:rgba(0,229,255,.03)}
+.pstep.done{border-color:var(--green);background:rgba(0,230,118,.03)}
+.ps-ico{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;background:var(--bg2)}
+.pstep.active .ps-ico{background:rgba(0,229,255,.1);animation:spin 1s linear infinite}
+.pstep.done .ps-ico{background:rgba(0,230,118,.1)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ps-ttl{font-size:11px;font-weight:700}.ps-desc{font-size:9px;color:var(--t3);margin-top:1px;font-family:'JetBrains Mono',monospace}
+.succ-section{display:none;animation:fadeUp .5s}
+.succ-section.on{display:block}
+.succ-anim{width:88px;height:88px;margin:0 auto 14px;position:relative}
+.succ-ring{width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,var(--green),#00c853);display:flex;align-items:center;justify-content:center;font-size:38px;color:var(--bg0);font-weight:900;box-shadow:0 0 40px rgba(0,230,118,.3);animation:pop .5s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+.succ-ttl{text-align:center;font-size:20px;font-weight:900;letter-spacing:-.3px;margin-bottom:4px}
+.succ-sub{text-align:center;color:var(--t2);font-size:12px;margin-bottom:14px}
+.info-table{background:var(--bg0);border:1px solid var(--bdr);border-radius:12px;padding:2px 0;margin-bottom:14px}
+.irow-t{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-bottom:1px solid var(--bdr);font-size:11px}
+.irow-t:last-child{border-bottom:none}
+.ilbl-t{color:var(--t3);font-weight:600}
+.ival-t{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t1);text-align:right;max-width:55%;word-break:break-all}
+.ival-t.ok{color:var(--green)}
+.qr-wrap{width:140px;height:140px;margin:0 auto 6px;background:#fff;border-radius:12px;padding:8px;box-shadow:0 0 24px rgba(0,229,255,.1)}
+#qrDiv{width:100%;height:100%}
+.qrhint{text-align:center;font-size:10px;color:var(--t3);margin-bottom:14px}
+.note-box{border-radius:12px;padding:12px;margin-bottom:14px;font-size:11px;line-height:1.65}
+.note-amber{background:rgba(255,182,39,.05);border:1px solid rgba(255,182,39,.2)}
+.note-ttl{font-weight:800;margin-bottom:7px;display:flex;align-items:center;gap:5px}
+.note-amber .note-ttl{color:var(--amber)}
+.note-box p{color:var(--t2)}
+.note-box code{font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:9px;background:rgba(0,229,255,.08);padding:1px 4px;border-radius:3px}
+.btn{width:100%;padding:13px 18px;border:none;border-radius:12px;font-size:13px;font-weight:800;font-family:inherit;letter-spacing:.3px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px;position:relative;overflow:hidden}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-cyan{background:linear-gradient(135deg,var(--cyan),var(--cyan2));color:var(--bg0);box-shadow:0 4px 18px rgba(0,229,255,.25)}
+.btn-cyan:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 7px 25px rgba(0,229,255,.35)}
+.btn-ghost{background:var(--bg2);color:var(--t1);border:1px solid var(--bdr)}
+.btn-ghost:hover:not(:disabled){border-color:var(--bdr2);background:var(--bg3)}
+.btn-green{background:linear-gradient(135deg,var(--green),#00c853);color:var(--bg0);box-shadow:0 4px 18px rgba(0,230,118,.2)}
+.btn-green:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 7px 25px rgba(0,230,118,.3)}
+.shine{position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);transition:left .5s}
+.btn:hover .shine{left:100%}
+.toast-wrap{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:7px;width:calc(100% - 36px);max-width:420px;pointer-events:none}
+.toast{background:var(--bg2);border:1px solid var(--bdr);border-radius:12px;padding:11px 14px;display:flex;align-items:center;gap:9px;box-shadow:0 8px 30px rgba(0,0,0,.4);animation:tIn .3s ease;pointer-events:all}
+@keyframes tIn{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+.toast-ico{font-size:16px;flex-shrink:0}
+.toast-ttl{font-size:12px;font-weight:700}
+.toast-msg{font-size:10px;color:var(--t3);margin-top:1px}
+footer{padding:14px;text-align:center;border-top:1px solid var(--bdr);font-size:10px;color:var(--t3)}
+footer span{color:var(--cyan)}
+.hidden{display:none!important}
+.divider{height:1px;background:var(--bdr);margin:12px 0}
+.mt8{margin-top:8px}.mt10{margin-top:10px}
+@media(min-width:768px){.shell{max-width:540px}}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg0)}
+::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px}
+</style>
 </head>
 <body>
-  <div class="splash-container">
-    <div class="app-icon">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-        <rect x="5" y="2" width="14" height="20" rx="2"/>
-        <line x1="12" y1="18" x2="12.01" y2="18"/>
-      </svg>
-    </div>
-    <div class="app-name">${appName}</div>
-    <div class="subtitle">Carregando...</div>
-    <div class="loader"></div>
+<div class="bg-grid"></div>
+<div class="bg-glow g1"></div>
+<div class="bg-glow g2"></div>
+<div class="shell">
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">⚡</div>
+    <div class="logo-nm">AppForge</div>
+    <span class="logo-ver">PRO v3</span>
   </div>
-  <script>
-    setTimeout(() => {
-      window.location.href = 'loading.html';
-    }, 2000);
-  <\/script>
-</body>
-</html>`;
+  <div class="hbtns">
+    <button class="hbtn" onclick="switchTab('preview')" title="Preview">📱</button>
+    <button class="hbtn" onclick="showAbout()" title="Ajuda">❓</button>
+  </div>
+</header>
 
-    // Template Loading Screen
-    const generateLoadingHTML = (themeColor) => `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Carregando...</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: linear-gradient(135deg, #0a0a1f, #050510);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      font-family: 'Inter', system-ui, sans-serif;
-    }
-    .loading-container {
-      text-align: center;
-    }
-    .spinner {
-      width: 50px;
-      height: 50px;
-      border: 3px solid rgba(255,255,255,0.1);
-      border-top: 3px solid ${themeColor};
-      border-right: 3px solid ${themeColor};
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 20px;
-    }
-    .loading-text {
-      color: #94a3b8;
-      font-size: 14px;
-      letter-spacing: 2px;
-    }
-    .dots {
-      display: inline-flex;
-      gap: 4px;
-    }
-    .dots span {
-      width: 4px;
-      height: 4px;
-      background: ${themeColor};
-      border-radius: 50%;
-      animation: bounce 1.4s infinite ease-in-out both;
-    }
-    .dots span:nth-child(1) { animation-delay: -0.32s; }
-    .dots span:nth-child(2) { animation-delay: -0.16s; }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    @keyframes bounce {
-      0%, 80%, 100% { transform: scale(0); }
-      40% { transform: scale(1); }
-    }
-  </style>
-</head>
-<body>
-  <div class="loading-container">
-    <div class="spinner"></div>
-    <div class="loading-text">
-      CARREGANDO
-      <div class="dots">
-        <span>.</span><span>.</span><span>.</span>
+<div class="stepper">
+  <div class="snode"><div class="scirc active" id="sn1">1</div><span class="slbl active" id="sl1">Config</span></div>
+  <div class="srail" id="sr1"></div>
+  <div class="snode"><div class="scirc" id="sn2">2</div><span class="slbl" id="sl2">Build</span></div>
+  <div class="srail" id="sr2"></div>
+  <div class="snode"><div class="scirc" id="sn3">3</div><span class="slbl" id="sl3">Download</span></div>
+</div>
+
+<main>
+<div class="hero">
+  <div class="badge"><span class="dot"></span>Sistema Online</div>
+  <h1>Sites em <em>Apps Android</em><br>com projeto real</h1>
+  <p>ZIP com PWA instalável + projeto completo Android Studio pronto para compilar APK</p>
+</div>
+
+<section id="formSec">
+  <div class="tabs">
+    <div class="tab on" id="tab-basic" onclick="switchTab('basic')">📱 Básico</div>
+    <div class="tab" id="tab-advanced" onclick="switchTab('advanced')">⚙️ Avançado</div>
+    <div class="tab" id="tab-preview" onclick="switchTab('preview')">👁️ Preview</div>
+  </div>
+
+  <!-- BÁSICO -->
+  <div id="pane-basic">
+    <div class="card">
+      <div class="card-hdr"><div class="card-ico">🔗</div><div><div class="card-ttl">Informações do App</div><div class="card-sub">URL, nome e identidade</div></div></div>
+      <div class="igrp">
+        <label class="ilbl">🌐 URL do site</label>
+        <div class="iwrap"><span class="iico">🔗</span><input type="url" class="ifield" id="urlIn" placeholder="https://meusite.com" oninput="onUrl()"></div>
+        <div class="ihint">💡 URL completa com https://</div>
+      </div>
+      <div class="irow">
+        <div class="igrp" style="margin-bottom:0">
+          <label class="ilbl">📱 Nome do app</label>
+          <div class="iwrap"><span class="iico">✏️</span><input type="text" class="ifield" id="nameIn" placeholder="Meu App" maxlength="30" oninput="onName()"></div>
+        </div>
+        <div class="igrp" style="margin-bottom:0">
+          <label class="ilbl">🏷️ Versão</label>
+          <div class="iwrap"><span class="iico">#</span><input type="text" class="ifield mono" id="verIn" value="1.0.0" maxlength="10"></div>
+        </div>
+      </div>
+      <div class="igrp mt10" style="margin-bottom:0">
+        <label class="ilbl">📦 Package Name</label>
+        <div class="iwrap"><span class="iico">📦</span><input type="text" class="ifield mono" id="pkgIn" placeholder="com.meuapp.site" oninput="onPkg()"></div>
+        <div class="ihint" id="pkgHint">⚡ Gerado automaticamente do nome</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><div class="card-ico">🎨</div><div><div class="card-ttl">Ícone do App</div><div class="card-sub">Gerado em 6 tamanhos (48→512 px)</div></div></div>
+      <div class="upzone" id="dz" onclick="document.getElementById('fileIn').click()">
+        <div id="upUI"><span class="upico">📤</span><div class="upttl">Toque para enviar ícone</div><div class="upsub">PNG, JPG • máx 5 MB • 512×512 ideal</div></div>
+        <input type="file" id="fileIn" accept="image/*" onchange="onFile(event,'icon')">
+      </div>
+      <div class="divider"></div>
+      <label class="ilbl">🖼️ Splash Screen (opcional)</label>
+      <div class="upzone" id="dz2" onclick="document.getElementById('splashIn').click()" style="padding:14px">
+        <div id="splashUI"><span class="upico" style="font-size:22px">🎭</span><div class="upttl">Splash screen personalizada</div><div class="upsub">PNG • 1080×1920 ideal</div></div>
+        <input type="file" id="splashIn" accept="image/*" onchange="onFile(event,'splash')">
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><div class="card-ico">🎨</div><div><div class="card-ttl">Cor do Tema</div><div class="card-sub">Status bar, splash e manifest</div></div></div>
+      <div class="color-grid" id="colorGrid">
+        <div class="csq sel" style="background:#00e5ff" data-c="#00e5ff" onclick="pickColor(this)"></div>
+        <div class="csq" style="background:#6366f1" data-c="#6366f1" onclick="pickColor(this)"></div>
+        <div class="csq" style="background:#10b981" data-c="#10b981" onclick="pickColor(this)"></div>
+        <div class="csq" style="background:#f59e0b" data-c="#f59e0b" onclick="pickColor(this)"></div>
+        <div class="csq" style="background:#ef4444" data-c="#ef4444" onclick="pickColor(this)"></div>
+        <div class="csq" style="background:#8b5cf6" data-c="#8b5cf6" onclick="pickColor(this)"></div>
+        <div class="csq" style="background:#ec4899" data-c="#ec4899" onclick="pickColor(this)"></div>
+        <div class="csq" style="background:#14b8a6" data-c="#14b8a6" onclick="pickColor(this)"></div>
+        <div class="csq" style="background:#f97316" data-c="#f97316" onclick="pickColor(this)"></div>
+        <div class="csq" style="background:#3b82f6" data-c="#3b82f6" onclick="pickColor(this)"></div>
+        <div class="csq" style="background:#00e676" data-c="#00e676" onclick="pickColor(this)"></div>
+        <div class="csq" style="background:#ff5252" data-c="#ff5252" onclick="pickColor(this)"></div>
+      </div>
+      <div class="color-row">
+        <input type="color" class="cswatch" id="cInput" value="#00e5ff" onchange="pickCustom(this.value)">
+        <div class="hex-val" id="hexVal">#00E5FF</div>
       </div>
     </div>
   </div>
-</body>
-</html>`;
 
-    // Template Error/Offline Page
-    const generateErrorHTML = (themeColor) => `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sem Conexão</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: linear-gradient(135deg, #0a0a1f, #050510);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      font-family: 'Inter', system-ui, sans-serif;
-    }
-    .error-container {
-      text-align: center;
-      padding: 20px;
-    }
-    .error-icon {
-      width: 80px;
-      height: 80px;
-      background: rgba(236,72,153,0.1);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 20px;
-      border: 2px solid ${themeColor};
-    }
-    .error-title {
-      font-size: 20px;
-      font-weight: 700;
-      color: ${themeColor};
-      margin-bottom: 10px;
-    }
-    .error-message {
-      color: #94a3b8;
-      font-size: 14px;
-      margin-bottom: 25px;
-    }
-    .retry-btn {
-      background: ${themeColor};
-      border: none;
-      padding: 12px 30px;
-      border-radius: 30px;
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    .retry-btn:hover {
-      transform: scale(1.05);
-    }
-  </style>
-</head>
-<body>
-  <div class="error-container">
-    <div class="error-icon">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="${themeColor}" stroke-width="2">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="12" y1="8" x2="12" y2="12"/>
-        <circle cx="12" cy="16" r="0.5" fill="${themeColor}" stroke="none"/>
-      </svg>
+  <!-- AVANÇADO -->
+  <div id="pane-advanced" class="hidden">
+    <div class="card">
+      <div class="card-hdr"><div class="card-ico">🔐</div><div><div class="card-ttl">Permissões Android</div><div class="card-sub">AndroidManifest.xml</div></div></div>
+      <div class="feat-grid">
+        <div class="feat-item on" data-key="internet" onclick="toggleFeat(this)"><span class="feat-lbl">🌐 Internet</span><div class="toggle on"></div></div>
+        <div class="feat-item" data-key="camera" onclick="toggleFeat(this)"><span class="feat-lbl">📷 Câmera</span><div class="toggle"></div></div>
+        <div class="feat-item" data-key="mic" onclick="toggleFeat(this)"><span class="feat-lbl">🎤 Microfone</span><div class="toggle"></div></div>
+        <div class="feat-item" data-key="geo" onclick="toggleFeat(this)"><span class="feat-lbl">📍 Localização</span><div class="toggle"></div></div>
+        <div class="feat-item" data-key="notif" onclick="toggleFeat(this)"><span class="feat-lbl">🔔 Push Notif.</span><div class="toggle"></div></div>
+        <div class="feat-item" data-key="storage" onclick="toggleFeat(this)"><span class="feat-lbl">💾 Storage</span><div class="toggle"></div></div>
+        <div class="feat-item" data-key="vibrate" onclick="toggleFeat(this)"><span class="feat-lbl">📳 Vibrar</span><div class="toggle"></div></div>
+        <div class="feat-item" data-key="bluetooth" onclick="toggleFeat(this)"><span class="feat-lbl">🔵 Bluetooth</span><div class="toggle"></div></div>
+      </div>
     </div>
-    <div class="error-title">Sem conexão com a internet</div>
-    <div class="error-message">Verifique sua conexão e tente novamente</div>
-    <button class="retry-btn" onclick="window.location.reload()">Tentar novamente</button>
+    <div class="card">
+      <div class="card-hdr"><div class="card-ico">📐</div><div><div class="card-ttl">Comportamento</div><div class="card-sub">Layout e navegação WebView</div></div></div>
+      <div class="igrp">
+        <label class="ilbl">📐 Orientação da tela</label>
+        <select class="iselect" id="orientSel">
+          <option value="portrait">📱 Retrato (padrão)</option>
+          <option value="landscape">🖥️ Paisagem</option>
+          <option value="fullSensor">🔄 Automático (sensor)</option>
+          <option value="unspecified">⚪ Sem restrição</option>
+        </select>
+      </div>
+      <div class="feat-grid">
+        <div class="feat-item" data-key="fullscreen" onclick="toggleFeat(this)"><span class="feat-lbl">📺 Tela cheia</span><div class="toggle"></div></div>
+        <div class="feat-item" data-key="zoom" onclick="toggleFeat(this)"><span class="feat-lbl">🔍 Zoom</span><div class="toggle"></div></div>
+        <div class="feat-item on" data-key="backNav" onclick="toggleFeat(this)"><span class="feat-lbl">◀ Botão voltar</span><div class="toggle on"></div></div>
+        <div class="feat-item on" data-key="jsEnabled" onclick="toggleFeat(this)"><span class="feat-lbl">⚡ JavaScript</span><div class="toggle on"></div></div>
+        <div class="feat-item on" data-key="domStorage" onclick="toggleFeat(this)"><span class="feat-lbl">💽 DOM Storage</span><div class="toggle on"></div></div>
+        <div class="feat-item" data-key="clearText" onclick="toggleFeat(this)"><span class="feat-lbl">🔓 HTTP claro</span><div class="toggle"></div></div>
+      </div>
+      <div class="igrp mt10" style="margin-bottom:0">
+        <label class="ilbl">🎨 Cor de fundo (splash)</label>
+        <div class="color-row">
+          <input type="color" class="cswatch" id="bgInput" value="#07090f" oninput="S.bgColor=this.value;document.getElementById('bgHex').textContent=this.value.toUpperCase()">
+          <div class="hex-val" id="bgHex">#07090F</div>
+        </div>
+      </div>
+    </div>
   </div>
-</body>
-</html>`;
 
-    // Template config.json
-    const generateConfigJSON = (appName, websiteUrl, themeColor, packageName, version, features) => JSON.stringify({
-      appName,
-      websiteUrl,
-      themeColor,
-      packageName,
-      version,
-      fullscreen: features.fullscreen || false,
-      orientation: features.orientation || "portrait",
-      pullToRefresh: features.pullToRefresh || true,
-      allowCamera: features.allowCamera || false,
-      allowMicrophone: features.allowMicrophone || false,
-      allowGeolocation: features.allowGeolocation || false,
-      allowNotifications: features.allowNotifications || false,
-      admobEnabled: features.admobEnabled || false,
-      admobId: features.admobId || "",
-      analyticsEnabled: features.analyticsEnabled || false,
-      buildDate: new Date().toISOString()
-    }, null, 2);
+  <!-- PREVIEW -->
+  <div id="pane-preview" class="hidden">
+    <div class="prev-wrap">
+      <div class="card-hdr" style="margin-bottom:12px"><div class="card-ico">👁️</div><div><div class="card-ttl">Pré-visualização</div><div class="card-sub">Simulação do Android</div></div></div>
+      <div class="phone">
+        <div class="phone-scr">
+          <div class="ph-notch"></div>
+          <div class="ph-st"><span>9:41</span><span>▲▲▲ ▇</span></div>
+          <div class="ph-bar" id="phBar">
+            <div class="ph-ico" id="phIco" style="background:linear-gradient(135deg,#00e5ff,#00bcd4)">⚡</div>
+            <div class="ph-nm" id="phNm">AppForge</div>
+          </div>
+          <div class="ph-body"><div><span class="ph-globe">🌐</span><div class="ph-url" id="phUrl">meusite.com</div></div></div>
+          <div class="ph-hbar"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card mt8">
+      <div class="card-hdr"><div class="card-ico">🖥️</div><div><div class="card-ttl">Console de Build</div><div class="card-sub">Log em tempo real</div></div></div>
+      <div class="console-wrap">
+        <div class="console-hdr">
+          <div class="cdot" style="background:#ff5252"></div>
+          <div class="cdot" style="background:#ffb627"></div>
+          <div class="cdot" style="background:#00e676"></div>
+          <span style="font-size:9px;color:var(--t3);margin-left:4px;font-family:'JetBrains Mono',monospace">appforge ~ build</span>
+        </div>
+        <div class="console-body" id="consoleBdy"><div class="ldim">$ aguardando comando...</div></div>
+      </div>
+    </div>
+  </div>
 
-    // Template AndroidManifest.xml
-    const generateManifestXML = (packageName, appName, themeColor, features) => `<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="${packageName}"
-    android:versionCode="1"
-    android:versionName="1.0">
-    
-    <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="34" />
-    <uses-permission android:name="android.permission.INTERNET" />
-    ${features.allowCamera ? '<uses-permission android:name="android.permission.CAMERA" />' : ''}
-    ${features.allowMicrophone ? '<uses-permission android:name="android.permission.RECORD_AUDIO" />' : ''}
-    ${features.allowGeolocation ? '<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />' : ''}
-    ${features.allowNotifications ? '<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />' : ''}
-    
-    <application
-        android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="${appName}"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar"
-        android:usesCleartextTraffic="true">
-        
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-    </application>
-</manifest>`;
+  <button class="btn btn-cyan mt8" id="genBtn" onclick="startGen()">
+    <span class="shine"></span><span>⚡</span><span>Gerar Pacote Completo</span>
+  </button>
+</section>
 
-    // Template build.gradle
-    const generateBuildGradle = (packageName, appName, version) => `// Top-level build file
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:8.1.0'
-    }
+<!-- PROGRESS -->
+<section class="prog-section" id="progSec">
+  <div class="ring-wrap">
+    <svg width="110" height="110" viewBox="0 0 100 100">
+      <defs><linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#00e5ff"/><stop offset="100%" style="stop-color:#00e676"/></linearGradient></defs>
+      <circle class="rbg" cx="50" cy="50" r="45"/>
+      <circle class="rfill" id="rfill" cx="50" cy="50" r="45"/>
+    </svg>
+    <div class="ring-txt"><div class="ring-pct" id="pctTxt">0%</div><div class="ring-lbl2">BUILD</div></div>
+  </div>
+  <div class="prog-ttl">Montando o pacote…</div>
+  <div class="prog-sub">Gerando todos os arquivos do projeto</div>
+  <div class="psteps">
+    <div class="pstep active" id="ps1"><div class="ps-ico">⚙️</div><div><div class="ps-ttl">Validando configurações</div><div class="ps-desc">URL · nome · package name</div></div></div>
+    <div class="pstep" id="ps2"><div class="ps-ico">🖼️</div><div><div class="ps-ttl">Gerando ícones</div><div class="ps-desc">48/72/96/144/192/512 px via Canvas</div></div></div>
+    <div class="pstep" id="ps3"><div class="ps-ico">📱</div><div><div class="ps-ttl">Criando projeto Android</div><div class="ps-desc">Manifest · Gradle · Java · Resources</div></div></div>
+    <div class="pstep" id="ps4"><div class="ps-ico">🌐</div><div><div class="ps-ttl">Gerando PWA</div><div class="ps-desc">manifest.json · sw.js · splash · offline</div></div></div>
+    <div class="pstep" id="ps5"><div class="ps-ico">📦</div><div><div class="ps-ttl">Empacotando ZIP</div><div class="ps-desc">DEFLATE nível 9 · verificando integridade</div></div></div>
+  </div>
+  <button class="btn btn-ghost mt8" onclick="cancelGen()"><span>✕</span><span>Cancelar</span></button>
+</section>
+
+<!-- SUCCESS -->
+<section class="succ-section" id="succSec">
+  <div class="succ-anim"><div class="succ-ring">✓</div></div>
+  <div class="succ-ttl">Pacote Gerado!</div>
+  <div class="succ-sub">ZIP completo com PWA + projeto Android Studio</div>
+  <div class="info-table">
+    <div class="irow-t"><span class="ilbl-t">📱 Nome</span><span class="ival-t" id="rName">—</span></div>
+    <div class="irow-t"><span class="ilbl-t">🔗 URL</span><span class="ival-t" id="rUrl">—</span></div>
+    <div class="irow-t"><span class="ilbl-t">📦 Package</span><span class="ival-t" id="rPkg">—</span></div>
+    <div class="irow-t"><span class="ilbl-t">🏷️ Versão</span><span class="ival-t" id="rVer">1.0.0</span></div>
+    <div class="irow-t"><span class="ilbl-t">🖼️ Ícones</span><span class="ival-t ok">6 tamanhos PNG</span></div>
+    <div class="irow-t"><span class="ilbl-t">📁 Arquivos</span><span class="ival-t ok" id="rFiles">—</span></div>
+    <div class="irow-t"><span class="ilbl-t">💾 Tamanho</span><span class="ival-t" id="rSize">—</span></div>
+    <div class="irow-t"><span class="ilbl-t">✅ Conteúdo</span><span class="ival-t ok">PWA + Android Studio</span></div>
+  </div>
+  <div class="qr-wrap"><div id="qrDiv"></div></div>
+  <div class="qrhint">📷 Escaneie para abrir a URL no celular</div>
+  <div class="note-box note-amber">
+    <div class="note-ttl">⚡ Como instalar no Android</div>
+    <p>
+      <strong>Método 1 — PWA (imediato):</strong> Hospede a pasta <code>📱 PWA/</code> em HTTPS gratuito (Netlify/Vercel), abra no Chrome Android → menu → <em>"Adicionar à tela inicial"</em>.<br><br>
+      <strong>Método 2 — APK real:</strong> Abra <code>📦 AndroidStudio/</code> no Android Studio → <em>Build → Generate Signed APK</em>. Instale o .apk diretamente.<br><br>
+      <strong>Método 3 — Sem Android Studio:</strong> Hospede a pasta PWA, acesse <code>pwabuilder.com</code>, cole a URL e baixe o APK assinado grátis.
+    </p>
+  </div>
+  <button class="btn btn-green" onclick="doDownload()"><span class="shine"></span><span>⬇️</span><span>Baixar ZIP Completo</span></button>
+  <button class="btn btn-ghost mt8" onclick="doReset()"><span>🔄</span><span>Criar Novo App</span></button>
+</section>
+</main>
+<footer>AppForge Pro © 2026 — <span>PWA + Android Studio Project + APK-ready ZIP</span></footer>
+</div>
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────
+const S={url:'',name:'',pkg:'',ver:'1.0.0',color:'#00e5ff',bgColor:'#07090f',icon:null,splash:null,zip:null,zipSize:0,fileCount:0,_pkgManual:false,
+  feats:{internet:true,camera:false,mic:false,geo:false,notif:false,storage:false,vibrate:false,bluetooth:false,fullscreen:false,zoom:false,backNav:true,jsEnabled:true,domStorage:true,clearText:false}
+};
+let genTimer=null;
+
+// ── TABS ───────────────────────────────────────────────
+function switchTab(t){
+  ['basic','advanced','preview'].forEach(x=>{
+    document.getElementById('pane-'+x).classList.toggle('hidden',x!==t);
+    document.getElementById('tab-'+x).classList.toggle('on',x===t);
+  });
 }
 
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
+// ── INPUTS ─────────────────────────────────────────────
+function onUrl(){
+  const el=document.getElementById('urlIn');
+  if(el.value&&!el.value.match(/^https?:\/\//))el.value='https://'+el.value;
+  S.url=el.value.trim();syncPreview();
+}
+function onName(){
+  S.name=document.getElementById('nameIn').value.trim();
+  if(!S._pkgManual){
+    const c=S.name.toLowerCase().replace(/[^a-z0-9]/g,'').substring(0,15)||'app';
+    S.pkg='com.appforge.'+c;
+    document.getElementById('pkgIn').value=S.pkg;
+  }
+  syncPreview();
+}
+function onPkg(){
+  S._pkgManual=true;S.pkg=document.getElementById('pkgIn').value.trim();
+  const v=/^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*){1,}$/.test(S.pkg);
+  const h=document.getElementById('pkgHint');
+  h.textContent=v?'✅ Package name válido':'⚠️ Use: com.empresa.app (letras minúsculas e pontos)';
+  h.style.color=v?'var(--green)':'var(--amber)';
 }
 
-// app/build.gradle
-apply plugin: 'com.android.application'
+// ── FILE UPLOADS ────────────────────────────────────────
+function onFile(e,type){
+  const file=e.target.files[0];if(!file)return;
+  if(file.size>8*1024*1024){toast('error','Arquivo muito grande','Máximo 8 MB');return;}
+  const rd=new FileReader();
+  rd.onload=ev=>{
+    if(type==='icon'){
+      S.icon=ev.target.result;
+      document.getElementById('dz').classList.add('ok');
+      document.getElementById('upUI').innerHTML=`<img src="${S.icon}" class="prev-img"><div class="upttl" style="color:var(--green)">${file.name}</div><div class="upsub">${(file.size/1024).toFixed(0)} KB · Toque para alterar</div>`;
+      syncPreview();toast('success','Ícone carregado','6 tamanhos serão gerados');
+    }else{
+      S.splash=ev.target.result;
+      document.getElementById('dz2').classList.add('ok');
+      document.getElementById('splashUI').innerHTML=`<img src="${S.splash}" class="prev-img"><div class="upttl" style="color:var(--green)">${file.name}</div><div class="upsub">Splash definida</div>`;
+      toast('success','Splash carregada','Usada na abertura do app');
+    }
+  };
+  rd.readAsDataURL(file);
+}
+['dragenter','dragover','dragleave','drop'].forEach(ev=>document.getElementById('dz').addEventListener(ev,e=>{e.preventDefault();e.stopPropagation();}));
+['dragenter','dragover'].forEach(ev=>document.getElementById('dz').addEventListener(ev,()=>document.getElementById('dz').classList.add('drag')));
+['dragleave','drop'].forEach(ev=>document.getElementById('dz').addEventListener(ev,()=>document.getElementById('dz').classList.remove('drag')));
+document.getElementById('dz').addEventListener('drop',e=>{document.getElementById('fileIn').files=e.dataTransfer.files;onFile({target:{files:e.dataTransfer.files}},'icon');});
 
-android {
-    namespace '${packageName}'
-    compileSdk 34
-    
-    defaultConfig {
-        applicationId '${packageName}'
-        minSdk 21
-        targetSdk 34
-        versionCode 1
-        versionName '${version}'
-    }
-    
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
-        }
-    }
+// ── COLORS ─────────────────────────────────────────────
+function pickColor(el){document.querySelectorAll('.csq').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');S.color=el.dataset.c;document.getElementById('cInput').value=S.color;document.getElementById('hexVal').textContent=S.color.toUpperCase();syncPreview();}
+function pickCustom(c){document.querySelectorAll('.csq').forEach(x=>x.classList.remove('sel'));S.color=c;document.getElementById('hexVal').textContent=c.toUpperCase();syncPreview();}
+
+// ── FEATURES ───────────────────────────────────────────
+function toggleFeat(el){
+  const k=el.dataset.key;if(k==='internet')return;
+  S.feats[k]=!S.feats[k];
+  el.classList.toggle('on',S.feats[k]);
+  el.querySelector('.toggle').classList.toggle('on',S.feats[k]);
 }
 
-dependencies {
-    implementation 'androidx.webkit:webkit:1.8.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-}`;
+// ── PREVIEW ────────────────────────────────────────────
+function syncPreview(){
+  const name=document.getElementById('nameIn').value.trim()||'Meu App';
+  const url=document.getElementById('urlIn').value.trim();
+  document.getElementById('phNm').textContent=name;
+  document.getElementById('phBar').style.borderBottom=`2px solid ${S.color}30`;
+  const ico=document.getElementById('phIco');
+  ico.style.background=`linear-gradient(135deg,${S.color},${dk(S.color,30)})`;
+  if(S.icon)ico.innerHTML=`<img src="${S.icon}" style="width:100%;height:100%;object-fit:cover;border-radius:3px">`;
+  else ico.textContent=name.charAt(0).toUpperCase()||'⚡';
+  if(url){try{document.getElementById('phUrl').textContent=new URL(url).hostname.replace('www.','');}catch{document.getElementById('phUrl').textContent=url;}}
+}
+function dk(hex,a){const n=parseInt(hex.replace('#',''),16);return'#'+[((n>>16)-a),((n>>8&0xff)-a),(n&0xff-a)].map(x=>Math.max(0,Math.min(255,x)).toString(16).padStart(2,'0')).join('');}
 
-    // Template MainActivity.java
-    const generateMainActivity = (packageName, websiteUrl) => `package ${packageName};
+// ── CONSOLE ────────────────────────────────────────────
+function clog(msg,t='inf'){
+  const b=document.getElementById('consoleBdy');
+  const d=document.createElement('div');d.className={ok:'lok',err:'lerr',inf:'linf',wrn:'lwrn',dim:'ldim'}[t]||'linf';
+  const now=new Date(),ts=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+  d.textContent=`[${ts}] ${msg}`;b.appendChild(d);b.scrollTop=b.scrollHeight;
+}
+function clearCons(){document.getElementById('consoleBdy').innerHTML='<div class="ldim">$ build iniciado...</div>';}
 
+// ── ICON CANVAS ─────────────────────────────────────────
+function resizeIcon(src,size){
+  return new Promise(res=>{
+    const img=new Image();
+    img.onload=()=>{
+      const c=document.createElement('canvas');c.width=c.height=size;const ctx=c.getContext('2d');
+      const r=size*.22;ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(size-r,0);ctx.quadraticCurveTo(size,0,size,r);ctx.lineTo(size,size-r);ctx.quadraticCurveTo(size,size,size-r,size);ctx.lineTo(r,size);ctx.quadraticCurveTo(0,size,0,size-r);ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath();
+      ctx.fillStyle=S.color;ctx.fill();ctx.clip();
+      const min=Math.min(img.width,img.height);ctx.drawImage(img,(img.width-min)/2,(img.height-min)/2,min,min,0,0,size,size);
+      res(c.toDataURL('image/png').split(',')[1]);
+    };
+    img.onerror=()=>res(defaultIcon(size));img.src=src;
+  });
+}
+function defaultIcon(size){
+  const c=document.createElement('canvas');c.width=c.height=size;const ctx=c.getContext('2d');
+  const r=size*.22;ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(size-r,0);ctx.quadraticCurveTo(size,0,size,r);ctx.lineTo(size,size-r);ctx.quadraticCurveTo(size,size,size-r,size);ctx.lineTo(r,size);ctx.quadraticCurveTo(0,size,0,size-r);ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath();
+  const g=ctx.createLinearGradient(0,0,size,size);g.addColorStop(0,S.color);g.addColorStop(1,dk(S.color,60));ctx.fillStyle=g;ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.9)';ctx.font=`bold ${size*.42}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText((S.name||'A').charAt(0).toUpperCase(),size/2,size/2);
+  return c.toDataURL('image/png').split(',')[1];
+}
+
+// ── VALIDATION ─────────────────────────────────────────
+function validate(){
+  const url=document.getElementById('urlIn').value.trim();
+  const name=document.getElementById('nameIn').value.trim();
+  if(!url){toast('error','URL obrigatória','Informe o endereço do site');document.getElementById('urlIn').focus();return false;}
+  try{new URL(url);}catch{toast('error','URL inválida','Use formato https://meusite.com');return false;}
+  if(!name){toast('error','Nome obrigatório','Dê um nome ao aplicativo');document.getElementById('nameIn').focus();return false;}
+  return true;
+}
+
+// ── GENERATION ─────────────────────────────────────────
+function startGen(){
+  if(!validate())return;
+  S.url=document.getElementById('urlIn').value.trim();
+  S.name=document.getElementById('nameIn').value.trim();
+  S.ver=document.getElementById('verIn').value.trim()||'1.0.0';
+  S.pkg=document.getElementById('pkgIn').value.trim()||('com.appforge.'+S.name.toLowerCase().replace(/[^a-z0-9]/g,'').substring(0,15));
+  switchTab('preview');clearCons();
+  clog(`Build iniciado: ${S.name}`,'inf');clog(`URL: ${S.url}`,'dim');clog(`Package: ${S.pkg}`,'dim');clog(`Versão: ${S.ver}`,'dim');
+  stepTo(2,'active');
+  document.getElementById('formSec').classList.add('hidden');
+  document.getElementById('progSec').classList.add('on');
+  runBuild();
+}
+
+async function runBuild(){
+  const miles=[18,40,62,82,100];let pct=0,cur=0;
+  const steps=['ps1','ps2','ps3','ps4','ps5'];
+  setPS('ps1','active');
+  return new Promise(resolve=>{
+    genTimer=setInterval(async()=>{
+      pct+=Math.random()*3+1;
+      if(pct>miles[cur]&&cur<4){setPS(steps[cur],'done');cur++;setPS(steps[cur],'active');}
+      if(pct>=100){
+        pct=100;clearInterval(genTimer);setPS('ps5','done');
+        await doBuild();setTimeout(showSuccess,400);resolve();
+      }
+      updateRing(pct);
+    },120);
+  });
+}
+
+// ── ZIP BUILDER ────────────────────────────────────────
+async function doBuild(){
+  clog('Gerando ícones via Canvas API…','inf');
+  const SIZES=[48,72,96,144,192,512];
+  const icons={};
+  for(const sz of SIZES){icons[sz]=S.icon?await resizeIcon(S.icon,sz):defaultIcon(sz);clog(`  ✓ Ícone ${sz}×${sz}px`,'ok');}
+
+  clog('Criando estrutura ZIP…','inf');
+  const zip=new JSZip();const appSlug=S.name.replace(/[^a-z0-9]/gi,'_');const pkgPath=S.pkg.replace(/\./g,'/');let fc=0;
+  const orient=document.getElementById('orientSel').value;const feats=S.feats;
+
+  // ── PWA FOLDER ─────────────────────────────────────
+  const pwa=zip.folder('📱 PWA — Instalar via Chrome');
+  const manifestIcons=SIZES.map(sz=>({src:`icons/icon-${sz}x${sz}.png`,sizes:`${sz}x${sz}`,type:'image/png',purpose:sz>=192?'any maskable':'any'}));
+  pwa.file('manifest.json',JSON.stringify({name:S.name,short_name:S.name.substring(0,12),description:`${S.name} — AppForge Pro`,start_url:S.url,scope:S.url,display:'standalone',orientation:orient,background_color:S.bgColor,theme_color:S.color,lang:'pt-BR',id:S.pkg,icons:manifestIcons,categories:['productivity'],prefer_related_applications:false},null,2));fc++;
+  const pwaIcons=pwa.folder('icons');for(const sz of SIZES){pwaIcons.file(`icon-${sz}x${sz}.png`,icons[sz],{base64:true});fc++;}
+
+  const sw=`// AppForge Pro SW — ${S.name} v${S.ver}\nconst CACHE='af-${appSlug}-v${S.ver}';\nconst PRE=['/','/index.html','/manifest.json'];\nself.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(PRE.filter(Boolean))).then(()=>self.skipWaiting()));});\nself.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});\nself.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(r=>{const cl=r.clone();caches.open(CACHE).then(c=>c.put(e.request,cl));return r;}).catch(()=>caches.match(e.request).then(r=>r||new Response('<h2 style="font-family:sans-serif;text-align:center;padding:40px;color:#8faabb">📵 Sem conexão</h2>',{headers:{'Content-Type':'text/html'}}))));});`;
+  pwa.file('sw.js',sw);fc++;
+
+  const offlineHtml=`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sem Conexão — ${S.name}</title><style>*{margin:0;padding:0;box-sizing:border-box}body{background:${S.bgColor};color:#e8f0fe;font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh}.w{text-align:center;padding:32px 24px;max-width:320px}.i{font-size:64px;margin-bottom:20px;display:block;opacity:.5}h1{font-size:20px;font-weight:800;margin-bottom:8px}p{font-size:13px;color:rgba(232,240,254,.5);margin-bottom:28px;line-height:1.6}button{background:${S.color};border:none;padding:13px 32px;border-radius:10px;color:#000;font-size:14px;font-weight:700;cursor:pointer}</style></head><body><div class="w"><span class="i">📵</span><h1>Sem Conexão</h1><p>Verifique sua conexão e tente novamente.</p><button onclick="location.reload()">Tentar novamente</button></div></body></html>`;
+  pwa.file('offline.html',offlineHtml);fc++;
+
+  const pwaHtml=`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"><meta name="theme-color" content="${S.color}"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="${S.name}"><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icons/icon-192x192.png"><title>${S.name}</title><style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden;background:${S.bgColor}}#splash{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:${S.bgColor};animation:out .4s ease 2.5s forwards}#si{width:96px;height:96px;border-radius:22px;margin-bottom:20px;box-shadow:0 12px 40px rgba(0,0,0,.4);background:linear-gradient(135deg,${S.color},${dk(S.color,40)});display:flex;align-items:center;justify-content:center;font-size:48px;overflow:hidden}#si img{width:100%;height:100%;object-fit:cover;border-radius:20px}#sn{font-family:system-ui,sans-serif;font-size:24px;font-weight:800;color:#fff;margin-bottom:6px;letter-spacing:-.3px}#su{font-size:12px;color:rgba(255,255,255,.4);font-family:monospace;margin-bottom:28px}#sb{width:120px;height:3px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden}#sf{height:100%;background:${S.color};border-radius:2px;animation:lb 2.2s ease-in-out forwards}@keyframes lb{from{width:0}to{width:100%}}@keyframes out{to{opacity:0;visibility:hidden;pointer-events:none}}iframe{width:100%;height:100%;border:none;display:block}</style></head><body><div id="splash"><div id="si">${(S.name||'A').charAt(0).toUpperCase()}</div><div id="sn">${S.name}</div><div id="su">${S.url.replace(/^https?:\/\//,'').split('/')[0]}</div><div id="sb"><div id="sf"></div></div></div><iframe id="frm" src="${S.url}" allow="camera;microphone;geolocation;payment;fullscreen" loading="eager"></iframe><script>const ico=document.getElementById('si');const im=new Image();im.onload=()=>{ico.innerHTML='';im.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:20px';ico.appendChild(im);};im.src='icons/icon-192x192.png';if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js',{scope:'/'}).catch(()=>{}));window.addEventListener('offline',()=>document.getElementById('frm').src='offline.html');window.addEventListener('online',()=>document.getElementById('frm').src='${S.url}');<\/script></body></html>`;
+  pwa.file('index.html',pwaHtml);fc++;
+  clog('✓ PWA gerada (index + manifest + sw + offline + 6 ícones)','ok');
+
+  // ── ANDROID STUDIO ─────────────────────────────────
+  const as=zip.folder('📦 AndroidStudio — Compilar APK');
+
+  as.file('build.gradle',`buildscript{repositories{google();mavenCentral()};dependencies{classpath 'com.android.tools.build:gradle:8.2.0'}}\nallprojects{repositories{google();mavenCentral()}}`);fc++;
+  as.file('settings.gradle',`pluginManagement{repositories{google();mavenCentral();gradlePluginPortal()}}\ndependencyResolutionManagement{repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS);repositories{google();mavenCentral()}}\nrootProject.name="${S.name.replace(/[^a-zA-Z0-9_]/g,'_')}"\ninclude ':app'`);fc++;
+  as.file('gradle.properties','org.gradle.jvmargs=-Xmx2048m\nandroid.useAndroidX=true\nandroid.enableJetifier=true');fc++;
+
+  const appDir=as.folder('app');
+  appDir.file('build.gradle',`apply plugin:'com.android.application'\nandroid{namespace '${S.pkg}';compileSdk 34;defaultConfig{applicationId '${S.pkg}';minSdk 21;targetSdk 34;versionCode 1;versionName '${S.ver}'};buildTypes{release{minifyEnabled false;proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')};debug{applicationIdSuffix '.debug';debuggable true}};compileOptions{sourceCompatibility JavaVersion.VERSION_11;targetCompatibility JavaVersion.VERSION_11}}\ndependencies{implementation 'androidx.webkit:webkit:1.10.0';implementation 'androidx.appcompat:appcompat:1.7.0';implementation 'androidx.constraintlayout:constraintlayout:2.1.4';implementation 'com.google.android.material:material:1.12.0'}`);fc++;
+  appDir.file('proguard-rules.pro','# AppForge Pro proguard rules\n-keep class '+S.pkg+'.** { *; }');fc++;
+
+  const permsArr=[
+    feats.internet?'<uses-permission android:name="android.permission.INTERNET" />':'',
+    feats.internet?'<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />':'',
+    feats.camera?'<uses-permission android:name="android.permission.CAMERA" />':'',
+    feats.mic?'<uses-permission android:name="android.permission.RECORD_AUDIO" />':'',
+    feats.geo?'<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />':'',
+    feats.geo?'<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />':'',
+    feats.notif?'<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />':'',
+    feats.storage?'<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />':'',
+    feats.storage?'<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />':'',
+    feats.vibrate?'<uses-permission android:name="android.permission.VIBRATE" />':'',
+    feats.bluetooth?'<uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />':'',
+  ].filter(Boolean).join('\n    ');
+
+  const appNmClean=S.name.replace(/[^a-zA-Z0-9]/g,'')||'App';
+  const mainSrc=appDir.folder('src').folder('main');
+  mainSrc.file('AndroidManifest.xml',`<?xml version="1.0" encoding="utf-8"?>\n<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">\n    ${permsArr}\n    <application android:allowBackup="true" android:icon="@mipmap/ic_launcher" android:label="@string/app_name" android:roundIcon="@mipmap/ic_launcher_round" android:supportsRtl="true" android:theme="@style/Theme.${appNmClean}"${feats.clearText?' android:usesCleartextTraffic="true"':''} tools:targetApi="31">\n        <activity android:name=".MainActivity" android:exported="true" android:configChanges="orientation|screenSize|keyboardHidden" android:screenOrientation="${orient}"${feats.fullscreen?' android:theme="@style/Theme.App.Fullscreen"':''}>\n            <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>\n        </activity>\n    </application>\n</manifest>`);fc++;
+
+  mainSrc.folder('java').folder(pkgPath).file('MainActivity.java',
+`package ${S.pkg};
+import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
-import android.webkit.WebChromeClient;
-import android.webkit.WebSettings;
+import android.view.KeyEvent;
+import android.view.View;
+import android.webkit.*;
 import androidx.appcompat.app.AppCompatActivity;
-
 public class MainActivity extends AppCompatActivity {
     private WebView webView;
-    
+    private static final String APP_URL = "${S.url}";
+    @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        
         webView = findViewById(R.id.webView);
-        WebSettings webSettings = webView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        webSettings.setDomStorageEnabled(true);
-        webSettings.setLoadWithOverviewMode(true);
-        webSettings.setUseWideViewPort(true);
-        webSettings.setBuiltInZoomControls(true);
-        webSettings.setDisplayZoomControls(false);
-        
-        webView.setWebViewClient(new WebViewClient());
-        webView.setWebChromeClient(new WebChromeClient());
-        webView.loadUrl("${websiteUrl}");
+        WebSettings s = webView.getSettings();
+        s.setJavaScriptEnabled(${feats.jsEnabled});
+        s.setDomStorageEnabled(${feats.domStorage});
+        s.setLoadWithOverviewMode(true);
+        s.setUseWideViewPort(true);
+        s.setBuiltInZoomControls(${feats.zoom});
+        s.setDisplayZoomControls(false);
+        s.setSupportZoom(${feats.zoom});
+        s.setAllowFileAccess(false);
+        s.setCacheMode(WebSettings.LOAD_DEFAULT);
+        s.setMediaPlaybackRequiresUserGesture(false);
+        webView.setWebViewClient(new WebViewClient() {
+            @Override public void onPageStarted(WebView v,String url,android.graphics.Bitmap f){ View pb=findViewById(R.id.progressBar);if(pb!=null)pb.setVisibility(View.VISIBLE); }
+            @Override public void onPageFinished(WebView v,String url){ View pb=findViewById(R.id.progressBar);if(pb!=null)pb.setVisibility(View.GONE); }
+            @Override public void onReceivedError(WebView v,WebResourceRequest req,WebResourceError err){ if(req.isForMainFrame())v.loadUrl("file:///android_asset/offline.html"); }
+        });
+        webView.setWebChromeClient(new WebChromeClient() {
+            @Override public void onProgressChanged(WebView v,int p){ android.widget.ProgressBar pb=findViewById(R.id.progressBar);if(pb!=null)pb.setProgress(p); }
+        });
+        if(savedInstanceState!=null)webView.restoreState(savedInstanceState);
+        else webView.loadUrl(APP_URL);
     }
-    
-    @Override
-    public void onBackPressed() {
-        if (webView.canGoBack()) {
-            webView.goBack();
-        } else {
-            super.onBackPressed();
-        }
-    }
-}`;
+    @Override public boolean onKeyDown(int kc,KeyEvent e){ if(${feats.backNav}&&kc==KeyEvent.KEYCODE_BACK&&webView.canGoBack()){webView.goBack();return true;}return super.onKeyDown(kc,e); }
+    @Override protected void onSaveInstanceState(Bundle out){super.onSaveInstanceState(out);webView.saveState(out);}
+    @Override protected void onPause(){super.onPause();webView.onPause();}
+    @Override protected void onResume(){super.onResume();webView.onResume();}
+    @Override protected void onDestroy(){webView.destroy();super.onDestroy();}
+}`);fc++;
 
-    // ==================== FUNÇÃO PRINCIPAL DE GERAÇÃO DO PACOTE ====================
-    const generateCompletePackage = async (config, iconFile, splashFile) => {
-      const JSZip = window.JSZip;
-      const zip = new JSZip();
-      
-      const {
-        appName,
-        websiteUrl,
-        themeColor,
-        packageName,
-        version,
-        features,
-        bgColor
-      } = config;
-      
-      // Criar pasta principal
-      const root = zip.folder(`${appName.replace(/[^a-z0-9]/gi, '_')}-v${version}`);
-      
-      // 1. Documentação
-      const now = new Date();
-      root.file("readme.txt", `WEB2APK PRO - PACOTE COMPLETO
-================================
-App Name: ${appName}
-Version: ${version}
-Package: ${packageName}
-Website: ${websiteUrl}
-Theme: ${themeColor}
-Build Date: ${now.toISOString()}
-Features: ${JSON.stringify(features, null, 2)}
-================================
-INSTRUÇÕES:
-1. Este ZIP contém toda estrutura Android
-2. Para gerar APK final, use Android Studio
-3. Ou utilize nosso serviço premium de build
-================================`);
-      
-      root.file("license.txt", `MIT License
-Copyright (c) ${now.getFullYear()} Web2APK Pro
-Permission is hereby granted...`);
-      
-      root.file("certification.txt", `CERTIFICAÇÃO
-App ID: ${Math.floor(Math.random() * 10000000)}
-App Key: ${Math.random().toString(36).substring(2, 15)}
-Data: ${now.toLocaleString()}`);
-      
-      // 2. Arquivos .url
-      root.file("home.url", `[InternetShortcut]
-URL=${websiteUrl}
-IDList=
-HotKey=0
-IconFile=${websiteUrl}/favicon.ico
-IconIndex=0`);
-      
-      root.file("author.url", `[InternetShortcut]
-URL=https://web2apk.app/author/dashboard
-IDList=
-HotKey=0
-IconFile=https://web2apk.app/favicon.ico
-IconIndex=0`);
-      
-      // 3. Assets HTML (splash, loading, error)
-      const assetsFolder = root.folder("assets");
-      const htmlappFolder = assetsFolder.folder("htmlapp");
-      const rootFolder = htmlappFolder.folder("root");
-      const helpersFolder = htmlappFolder.folder("helpers");
-      
-      rootFolder.file("index.html", `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${appName}</title>
-  <style>
-    body { margin: 0; padding: 0; overflow: hidden; }
-    iframe { width: 100%; height: 100vh; border: none; }
-  </style>
-</head>
-<body>
-  <iframe src="${websiteUrl}" allow="camera; microphone; geolocation"></iframe>
-</body>
-</html>`);
-      
-      helpersFolder.file("splash.html", generateSplashHTML(appName, themeColor, bgColor || "#0a0a1f"));
-      helpersFolder.file("loading.html", generateLoadingHTML(themeColor));
-      helpersFolder.file("error.html", generateErrorHTML(themeColor));
-      
-      // 4. Configurações JSON
-      root.file("config.json", generateConfigJSON(appName, websiteUrl, themeColor, packageName, version, features));
-      root.file("manifest.json", JSON.stringify({
-        name: appName,
-        short_name: appName.slice(0, 12),
-        start_url: websiteUrl,
-        display: features.fullscreen ? "fullscreen" : "standalone",
-        theme_color: themeColor,
-        background_color: bgColor || "#0a0a1f",
-        icons: [{ src: "icon.png", sizes: "192x192", type: "image/png" }]
-      }, null, 2));
-      
-      // 5. Estrutura Android
-      const androidFolder = root.folder("android");
-      androidFolder.file("AndroidManifest.xml", generateManifestXML(packageName, appName, themeColor, features));
-      androidFolder.file("build.gradle", generateBuildGradle(packageName, appName, version));
-      
-      const javaFolder = androidFolder.folder("app").folder("src").folder("main").folder("java");
-      const packagePath = packageName.replace(/\./g, "/");
-      const packageFolder = javaFolder.folder(packagePath);
-      packageFolder.file("MainActivity.java", generateMainActivity(packageName, websiteUrl));
-      
-      // 6. Recursos (res)
-      const resFolder = androidFolder.folder("app").folder("src").folder("main").folder("res");
-      const valuesFolder = resFolder.folder("values");
-      valuesFolder.file("colors.xml", `<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <color name="colorPrimary">${themeColor}</color>
-    <color name="colorPrimaryDark">${themeColor}</color>
-    <color name="colorAccent">#06D9FF</color>
-</resources>`);
-      
-      valuesFolder.file("strings.xml", `<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="app_name">${appName}</string>
-    <string name="website_url">${websiteUrl}</string>
-</resources>`);
-      
-      // Layout da activity
-      const layoutFolder = resFolder.folder("layout");
-      layoutFolder.file("activity_main.xml", `<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
-    <WebView
-        android:id="@+id/webView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-</LinearLayout>`);
-      
-      // 7. Ícones (se fornecidos)
-      if (iconFile) {
-        const mipmapFolder = resFolder.folder("mipmap-hdpi");
-        const iconData = await iconToBlob(iconFile);
-        mipmapFolder.file("ic_launcher.png", iconData, { binary: true });
-        mipmapFolder.file("ic_launcher_round.png", iconData, { binary: true });
-      }
-      
-      // 8. Splash screen personalizada
-      if (splashFile) {
-        const drawableFolder = resFolder.folder("drawable");
-        const splashData = await iconToBlob(splashFile);
-        drawableFolder.file("splash.png", splashData, { binary: true });
-      }
-      
-      // Gerar ZI? final
-      return await zip.generateAsync({ type: "blob" });
-    };
-    
-    const iconToBlob = (file) => {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result.split(',')[1]);
-        reader.readAsDataURL(file);
-      });
-    };
+  const resDir=mainSrc.folder('res');
+  resDir.folder('layout').file('activity_main.xml',`<?xml version="1.0" encoding="utf-8"?>\n<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/colorBackground">\n    <WebView android:id="@+id/webView" android:layout_width="match_parent" android:layout_height="match_parent"/>\n    <ProgressBar android:id="@+id/progressBar" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="3dp" android:layout_alignParentTop="true" android:progressTint="@color/colorPrimary" android:max="100" android:visibility="gone"/>\n</RelativeLayout>`);fc++;
 
-    // ==================== COMPONENTE PRINCIPAL ====================
-    const AppGenerator = () => {
-      const [appName, setAppName] = useState("Meu App Incrível");
-      const [websiteUrl, setWebsiteUrl] = useState("https://");
-      const [themeColor, setThemeColor] = useState("#FF006E");
-      const [bgColor, setBgColor] = useState("#0a0a1f");
-      const [packageName, setPackageName] = useState("com.app.meuapp");
-      const [version, setVersion] = useState("1.0");
-      const [features, setFeatures] = useState({
-        fullscreen: false,
-        orientation: "portrait",
-        pullToRefresh: true,
-        allowCamera: false,
-        allowMicrophone: false,
-        allowGeolocation: false,
-        allowNotifications: false,
-        admobEnabled: false,
-        analyticsEnabled: false
-      });
-      const [iconFile, setIconFile] = useState(null);
-      const [splashFile, setSplashFile] = useState(null);
-      const [iconPreview, setIconPreview] = useState(null);
-      const [splashPreview, setSplashPreview] = useState(null);
-      const [generating, setGenerating] = useState(false);
-      const [progress, setProgress] = useState(0);
-      const [logs, setLogs] = useState([]);
-      
-      const addLog = (msg) => setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`]);
-      
-      const handleIconUpload = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-          setIconFile(file);
-          const reader = new FileReader();
-          reader.onloadend = () => setIconPreview(reader.result);
-          reader.readAsDataURL(file);
-        }
-      };
-      
-      const handleSplashUpload = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-          setSplashFile(file);
-          const reader = new FileReader();
-          reader.onloadend = () => setSplashPreview(reader.result);
-          reader.readAsDataURL(file);
-        }
-      };
-      
-      const toggleFeature = (key) => {
-        setFeatures(prev => ({ ...prev, [key]: !prev[key] }));
-      };
-      
-      const generatePackage = async () => {
-        setGenerating(true);
-        setProgress(0);
-        setLogs([]);
-        
-        addLog("Iniciando geração do pacote completo...");
-        addLog(`App: ${appName}`);
-        addLog(`URL: ${websiteUrl}`);
-        addLog(`Package: ${packageName}`);
-        
-        setProgress(20);
-        addLog("Criando templates HTML (splash, loading, error)...");
-        
-        setProgress(40);
-        addLog("Gerando estrutura Android (manifest, gradle, activities)...");
-        
-        setProgress(60);
-        addLog("Adicionando recursos e configurações...");
-        
-        setProgress(80);
-        addLog("Empacotando ZIP...");
-        
-        try {
-          const blob = await generateCompletePackage({
-            appName,
-            websiteUrl,
-            themeColor,
-            bgColor,
-            packageName,
-            version,
-            features
-          }, iconFile, splashFile);
-          
-          setProgress(100);
-          addLog("✅ Pacote gerado com sucesso!");
-          addLog("📦 Iniciando download...");
-          
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `${appName.toLowerCase().replace(/[^a-z0-9]/g, '_')}-v${version}-complete.zip`;
-          a.click();
-          URL.revokeObjectURL(url);
-          
-          addLog("✅ Download concluído!");
-        } catch (error) {
-          addLog(`❌ Erro: ${error.message}`);
-        } finally {
-          setTimeout(() => setGenerating(false), 1000);
-        }
-      };
-      
-      // Atualizar package name automaticamente
-      useEffect(() => {
-        if (appName && !packageName.includes(appName.toLowerCase().slice(0, 10))) {
-          const clean = appName.toLowerCase().replace(/[^a-z0-9]/g, '');
-          setPackageName(`com.app.${clean || 'meuapp'}`);
-        }
-      }, [appName]);
-      
-      return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-          {/* Header */}
-          <div className="border-b border-pink-500/20 bg-slate-950/50 backdrop-blur-sm sticky top-0 z-50">
-            <div className="container mx-auto px-6 py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-r from-pink-600 to-cyan-500 rounded-xl flex items-center justify-center">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                      <rect x="4" y="4" width="16" height="16" rx="2"/>
-                      <rect x="9" y="9" width="6" height="6"/>
-                    </svg>
-                  </div>
-                  <div>
-                    <span className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-cyan-400 bg-clip-text text-transparent">Web2APK Pro</span>
-                    <span className="text-[10px] text-cyan-400 block">Criador de APK/AAB/PWA</span>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <span className="px-3 py-1 bg-pink-500/20 text-pink-400 text-xs rounded-full">Beta</span>
-                  <span className="px-3 py-1 bg-cyan-500/20 text-cyan-400 text-xs rounded-full">v4.2</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="container mx-auto px-6 py-8">
-            <div className="grid lg:grid-cols-2 gap-8">
-              {/* Formulário de Configuração */}
-              <div className="space-y-6">
-                <div className="bg-slate-900/60 backdrop-blur-sm border border-slate-800 rounded-2xl p-6">
-                  <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                    Configurações Básicas
-                  </h2>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Nome do App *</label>
-                      <input type="text" value={appName} onChange={e => setAppName(e.target.value)} 
-                        className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:border-pink-500 transition" />
-                    </div>
-                    
-                    <div>
-                      <label className="text-xs font-bold text-slate-400 uppercase block mb-1">URL do Site *</label>
-                      <input type="url" value={websiteUrl} onChange={e => setWebsiteUrl(e.target.value)} 
-                        className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:border-pink-500 transition" />
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Cor Principal</label>
-                        <div className="flex gap-2">
-                          <input type="color" value={themeColor} onChange={e => setThemeColor(e.target.value)} className="w-12 h-12 rounded-xl cursor-pointer" />
-                          <input type="text" value={themeColor} onChange={e => setThemeColor(e.target.value)} className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 font-mono text-sm" />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Cor de Fundo</label>
-                        <div className="flex gap-2">
-                          <input type="color" value={bgColor} onChange={e => setBgColor(e.target.value)} className="w-12 h-12 rounded-xl cursor-pointer" />
-                          <input type="text" value={bgColor} onChange={e => setBgColor(e.target.value)} className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 font-mono text-sm" />
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Package Name</label>
-                      <input type="text" value={packageName} onChange={e => setPackageName(e.target.value)} 
-                        className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 font-mono text-sm" />
-                      <p className="text-[10px] text-slate-500 mt-1">Identificador único do aplicativo</p>
-                    </div>
-                    
-                    <div>
-                      <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Versão</label>
-                      <input type="text" value={version} onChange={e => setVersion(e.target.value)} 
-                        className="w-32 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3" />
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Upload de Imagens */}
-                <div className="bg-slate-900/60 backdrop-blur-sm border border-slate-800 rounded-2xl p-6">
-                  <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                    Imagens do App
-                  </h2>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Ícone do App</label>
-                      <div className="border-2 border-dashed border-slate-700 rounded-xl p-4 text-center cursor-pointer hover:border-pink-500 transition"
-                        onClick={() => document.getElementById('iconInput').click()}>
-                        {iconPreview ? (
-                          <img src={iconPreview} alt="Icon" className="w-16 h-16 mx-auto rounded-xl object-cover" />
-                        ) : (
-                          <div className="text-slate-500">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="mx-auto mb-2"><rect x="5" y="2" width="14" height="20" rx="2"/></svg>
-                            <span className="text-xs">Clique para enviar</span>
-                          </div>
-                        )}
-                        <input id="iconInput" type="file" accept="image/*" className="hidden" onChange={handleIconUpload} />
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Splash Screen</label>
-                      <div className="border-2 border-dashed border-slate-700 rounded-xl p-4 text-center cursor-pointer hover:border-pink-500 transition"
-                        onClick={() => document.getElementById('splashInput').click()}>
-                        {splashPreview ? (
-                          <img src={splashPreview} alt="Splash" className="w-16 h-16 mx-auto rounded-xl object-cover" />
-                        ) : (
-                          <div className="text-slate-500">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="mx-auto mb-2"><circle cx="12" cy="12" r="10"/></svg>
-                            <span className="text-xs">Clique para enviar</span>
-                          </div>
-                        )}
-                        <input id="splashInput" type="file" accept="image/*" className="hidden" onChange={handleSplashUpload} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Recursos Premium */}
-                <div className="bg-slate-900/60 backdrop-blur-sm border border-slate-800 rounded-2xl p-6">
-                  <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                    Recursos Premium
-                  </h2>
-                  
-                  <div className="grid grid-cols-2 gap-3">
-                    {[
-                      { key: "fullscreen", label: "📱 Modo Tela Cheia" },
-                      { key: "pullToRefresh", label: "🔄 Pull to Refresh" },
-                      { key: "allowCamera", label: "📷 Câmera" },
-                      { key: "allowMicrophone", label: "🎤 Microfone" },
-                      { key: "allowGeolocation", label: "📍 Geolocalização" },
-                      { key: "allowNotifications", label: "🔔 Push Notifications" },
-                      { key: "admobEnabled", label: "💰 AdMob Ads" },
-                      { key: "analyticsEnabled", label: "📊 Analytics" }
-                    ].map(feat => (
-                      <label key={feat.key} className="flex items-center justify-between p-3 bg-slate-950/50 rounded-xl cursor-pointer hover:bg-slate-800/50 transition">
-                        <span className="text-sm">{feat.label}</span>
-                        <input type="checkbox" checked={features[feat.key]} onChange={() => toggleFeature(feat.key)} 
-                          className="w-4 h-4 accent-pink-500" />
-                      </label>
-                    ))}
-                  </div>
-                  
-                  <div className="mt-4">
-                    <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Orientação da Tela</label>
-                    <select value={features.orientation} onChange={e => setFeatures({...features, orientation: e.target.value})}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3">
-                      <option value="portrait">Retrato (Vertical)</option>
-                      <option value="landscape">Paisagem (Horizontal)</option>
-                      <option value="fullSensor">Automático (Sensor)</option>
-                    </select>
-                  </div>
-                </div>
-                
-                {/* Botão Gerar */}
-                <button 
-                  onClick={generatePackage}
-                  disabled={generating || !appName || !websiteUrl}
-                  className={`w-full py-4 bg-gradient-to-r from-pink-600 to-cyan-500 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all ${
-                    generating ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 hover:shadow-lg'
-                  }`}>
-                  {generating ? (
-                    <>
-                      <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none">
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeDasharray="30" />
-                      </svg>
-                      Gerando Pacote... {progress}%
-                    </>
-                  ) : (
-                    <>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 17 12 12 18 17"/><path d="M12 12V3"/><path d="M4 21h16"/></svg>
-                      Gerar Pacote Completo
-                    </>
-                  )}
-                </button>
-              </div>
-              
-              {/* Preview e Logs */}
-              <div className="space-y-6">
-                {/* Preview do App */}
-                <div className="bg-slate-900/60 backdrop-blur-sm border border-slate-800 rounded-2xl p-6">
-                  <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-                    Preview do Aplicativo
-                  </h2>
-                  
-                  <div className="flex justify-center">
-                    <div className="border-4 border-slate-800 rounded-3xl bg-slate-950 p-3 w-64">
-                      <div className="relative">
-                        <div className="w-24 h-5 bg-slate-800 rounded-b-2xl mx-auto absolute -top-3 left-1/2 -translate-x-1/2 z-10"></div>
-                        <div className="flex justify-between text-[10px] text-slate-400 px-2 pt-1">
-                          <span>12:00</span>
-                          <span>📶 🔋</span>
-                        </div>
-                        <div className="bg-gradient-to-br from-slate-900 to-slate-950 rounded-2xl p-4 text-center min-h-[400px] flex flex-col items-center justify-center">
-                          {iconPreview ? (
-                            <img src={iconPreview} className="w-20 h-20 rounded-2xl mb-3 shadow-lg" />
-                          ) : (
-                            <div className="w-20 h-20 rounded-2xl bg-gradient-to-r from-pink-500 to-cyan-500 flex items-center justify-center mb-3 shadow-lg">
-                              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white"><rect x="5" y="2" width="14" height="20" rx="2"/></svg>
-                            </div>
-                          )}
-                          <h3 className="font-bold text-lg">{appName || "Meu App"}</h3>
-                          <p className="text-xs text-slate-500 mt-1 break-all">{websiteUrl}</p>
-                          <div className="mt-4 w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                            <div className="h-full rounded-full transition-all" style={{ width: '30%', backgroundColor: themeColor }}></div>
-                          </div>
-                          <p className="text-[10px] text-slate-600 mt-3">Carregando...</p>
-                        </div>
-                        <div className="flex justify-center gap-8 pt-2 pb-1 text-slate-600">
-                          <span>◀</span>
-                          <span>●</span>
-                          <span>■</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Log Console */}
-                <div className="bg-slate-900/60 backdrop-blur-sm border border-slate-800 rounded-2xl p-6">
-                  <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-                    Console de Build
-                  </h2>
-                  
-                  <div className="bg-black/60 rounded-xl p-4 h-64 overflow-y-auto font-mono text-xs">
-                    {logs.length === 0 ? (
-                      <div className="text-slate-500 text-center py-8">Aguardando comando...</div>
-                    ) : (
-                      logs.map((log, i) => (
-                        <div key={i} className="text-green-400 mb-1">{log}</div>
-                      ))
-                    )}
-                  </div>
-                  
-                  {progress > 0 && progress < 100 && (
-                    <div className="mt-4">
-                      <div className="flex justify-between text-xs mb-1">
-                        <span>Progresso</span>
-                        <span className="text-pink-400">{progress}%</span>
-                      </div>
-                      <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                        <div className="bg-gradient-to-r from-pink-500 to-cyan-500 h-full rounded-full transition-all duration-300" style={{ width: `${progress}%` }}></div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                
-                {/* O que está incluso */}
-                <div className="bg-gradient-to-r from-pink-500/10 to-cyan-500/10 border border-pink-500/30 rounded-2xl p-6">
-                  <h3 className="font-bold mb-3 flex items-center gap-2">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
-                    Conteúdo do Pacote ZIP
-                  </h3>
-                  <div className="grid grid-cols-2 gap-2 text-sm text-slate-300">
-                    <div>📱 APK (estrutura)</div>
-                    <div>📄 readme.txt</div>
-                    <div>📜 license.txt</div>
-                    <div>🔐 certification.txt</div>
-                    <div>🌐 home.url</div>
-                    <div>👤 author.url</div>
-                    <div>🎨 Splash + Loading + Error</div>
-                    <div>📁 AndroidManifest.xml</div>
-                    <div>⚙️ build.gradle</div>
-                    <div>📦 assets/ + res/</div>
-                    <div>📋 config.json</div>
-                    <div>🔧 Código Java/Kotlin</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <footer className="border-t border-pink-500/10 bg-slate-950/40 mt-12 py-6 text-center text-slate-500 text-xs">
-            <div className="container mx-auto px-6">
-              Web2APK Pro - Criador de APK/AAB/PWA | Pacote completo com estrutura Android + documentação + templates
-            </div>
-          </footer>
-        </div>
-      );
-    };
-    
-    ReactDOM.createRoot(document.getElementById('root')).render(<AppGenerator />);
-  </script>
+  const vals=resDir.folder('values');
+  vals.file('colors.xml',`<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="colorPrimary">${S.color}</color>\n    <color name="colorPrimaryDark">${dk(S.color,30)}</color>\n    <color name="colorAccent">${S.color}</color>\n    <color name="colorBackground">${S.bgColor}</color>\n</resources>`);fc++;
+  vals.file('strings.xml',`<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <string name="app_name">${S.name}</string>\n    <string name="website_url">${S.url}</string>\n    <string name="version">${S.ver}</string>\n</resources>`);fc++;
+  vals.file('themes.xml',`<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <style name="Theme.${appNmClean}" parent="Theme.MaterialComponents.DayNight.NoActionBar">\n        <item name="colorPrimary">@color/colorPrimary</item>\n        <item name="android:windowBackground">@color/colorBackground</item>\n        <item name="android:statusBarColor">@color/colorPrimary</item>\n        <item name="android:navigationBarColor">@color/colorBackground</item>\n    </style>\n    <style name="Theme.App.Fullscreen" parent="Theme.${appNmClean}">\n        <item name="android:windowFullscreen">true</item>\n        <item name="android:windowNoTitle">true</item>\n    </style>\n</resources>`);fc++;
+
+  const densities={48:'mdpi',72:'hdpi',96:'xhdpi',144:'xxhdpi',192:'xxxhdpi'};
+  for(const[sz,d]of Object.entries(densities)){const mf=resDir.folder(`mipmap-${d}`);mf.file('ic_launcher.png',icons[sz],{base64:true});mf.file('ic_launcher_round.png',icons[sz],{base64:true});fc+=2;}
+  // 512px as xxxhdpi large
+  resDir.folder('mipmap-xxxhdpi').file('ic_launcher_foreground.png',icons[512],{base64:true});fc++;
+
+  mainSrc.folder('assets').file('offline.html',offlineHtml);fc++;
+
+  clog('✓ Projeto Android Studio criado','ok');
+  clog('  • MainActivity.java (WebView + back nav + sw)','dim');
+  clog(`  • AndroidManifest.xml (${Object.values(feats).filter(Boolean).length} permissões, targetSdk 34)`,'dim');
+  clog('  • Gradle scripts (compileSdk 34, minSdk 21)','dim');
+  clog('  • Recursos: 5 densidades (mdpi→xxxhdpi)','dim');
+
+  // README
+  const readme=`# ${S.name} — AppForge Pro Build\n\n## Estrutura do ZIP\n- 📱 PWA — Instalar via Chrome/\n  • index.html, manifest.json, sw.js, offline.html\n  • icons/ (48→512px)\n- 📦 AndroidStudio — Compilar APK/\n  • Projeto completo Android Studio\n  • MainActivity.java (WebView + permissões)\n  • AndroidManifest.xml + build.gradle\n  • Recursos em 5 densidades\n\n## Informações\n- App: ${S.name}\n- URL: ${S.url}\n- Package: ${S.pkg}\n- Versão: ${S.ver}\n- Cor: ${S.color}\n- Build: ${new Date().toISOString()}\n- minSdk: 21 (Android 5+) | targetSdk: 34\n\n## Como instalar\n### PWA (imediato, sem compilar)\n1. Hospede pasta PWA em HTTPS (Netlify: netlify.com/drop)\n2. Chrome Android → menu ⋮ → Adicionar à tela inicial\n\n### APK via Android Studio\n1. Abra pasta AndroidStudio/ no Android Studio\n2. Build → Generate Signed APK → Debug\n3. Instale app-debug.apk no celular\n\n### APK via PWABuilder (mais fácil)\n1. Hospede pasta PWA em HTTPS\n2. pwabuilder.com → cole a URL → Package for Stores → Android\n\n## Package ID: ${S.pkg}\n## Gerado com AppForge Pro v3\n`;
+  zip.file('README.md',readme);fc++;
+  zip.file('config.json',JSON.stringify({appName:S.name,url:S.url,packageId:S.pkg,version:S.ver,themeColor:S.color,bgColor:S.bgColor,features:feats,orientation:orient,buildDate:new Date().toISOString(),generator:'AppForge Pro v3'},null,2));fc++;
+
+  clog('Empacotando com DEFLATE nível 9…','inf');
+  const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:9}});
+  S.zip=blob;S.zipSize=blob.size;S.fileCount=fc;
+  clog(`✓ ZIP pronto: ${fc} arquivos · ${fmtB(blob.size)}`,'ok');
+}
+
+// ── UI HELPERS ─────────────────────────────────────────
+function setPS(id,st){const el=document.getElementById(id);if(!el)return;el.className='pstep '+st;if(st==='done')el.querySelector('.ps-ico').textContent='✓';}
+function updateRing(p){const c=2*Math.PI*45;document.getElementById('rfill').style.strokeDashoffset=c-(p/100)*c;document.getElementById('pctTxt').textContent=Math.round(p)+'%';}
+function stepTo(n,st){
+  for(let i=1;i<=3;i++){
+    const c=document.getElementById('sn'+i),l=document.getElementById('sl'+i);
+    if(i<n){c.className='scirc done';c.textContent='✓';l.className='slbl done';}
+    else if(i===n){c.className='scirc '+st;l.className='slbl active';}
+    else{c.className='scirc';c.textContent=i;l.className='slbl';}
+    if(i<3)document.getElementById('sr'+i).className='srail'+(i<n?' done':'');
+  }
+}
+function showSuccess(){
+  stepTo(3,'active');stepTo(2,'done');
+  document.getElementById('progSec').classList.remove('on');
+  document.getElementById('succSec').classList.add('on');
+  document.getElementById('rName').textContent=S.name;
+  document.getElementById('rUrl').textContent=S.url;
+  document.getElementById('rPkg').textContent=S.pkg;
+  document.getElementById('rVer').textContent=S.ver;
+  document.getElementById('rFiles').textContent=S.fileCount+' arquivos';
+  document.getElementById('rSize').textContent=fmtB(S.zipSize);
+  document.getElementById('qrDiv').innerHTML='';
+  try{new QRCode(document.getElementById('qrDiv'),{text:S.url,width:124,height:124,colorDark:'#07090f',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});}catch(e){}
+  toast('success','Pacote gerado!',`${S.fileCount} arquivos · ${fmtB(S.zipSize)}`);
+}
+function cancelGen(){
+  clearInterval(genTimer);stepTo(1,'active');
+  ['ps1','ps2','ps3','ps4','ps5'].forEach((id,i)=>{const el=document.getElementById(id);if(!el)return;el.className='pstep';el.querySelector('.ps-ico').textContent=['⚙️','🖼️','📱','🌐','📦'][i];});
+  updateRing(0);document.getElementById('progSec').classList.remove('on');document.getElementById('formSec').classList.remove('hidden');
+  toast('info','Cancelado','Build interrompido');
+}
+function doDownload(){
+  if(!S.zip){toast('error','Erro','Gere o pacote primeiro');return;}
+  const url=URL.createObjectURL(S.zip);const a=document.createElement('a');a.href=url;
+  a.download=S.name.replace(/[^a-z0-9]/gi,'_')+'_appforge_pro.zip';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),15000);
+  toast('success','Download iniciado','ZIP completo salvo');
+}
+function doReset(){
+  S.url='';S.name='';S.pkg='';S.zip=null;S.zipSize=0;S.icon=null;S.splash=null;S._pkgManual=false;
+  ['urlIn','nameIn','pkgIn'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('verIn').value='1.0.0';
+  document.getElementById('dz').classList.remove('ok');document.getElementById('upUI').innerHTML='<span class="upico">📤</span><div class="upttl">Toque para enviar ícone</div><div class="upsub">PNG, JPG • máx 5 MB • 512×512 ideal</div>';
+  document.getElementById('dz2').classList.remove('ok');document.getElementById('splashUI').innerHTML='<span class="upico" style="font-size:22px">🎭</span><div class="upttl">Splash screen personalizada</div><div class="upsub">PNG • 1080×1920 ideal</div>';
+  document.querySelectorAll('.csq').forEach(x=>x.classList.remove('sel'));document.querySelector('.csq').classList.add('sel');
+  document.getElementById('cInput').value='#00e5ff';document.getElementById('hexVal').textContent='#00E5FF';
+  document.getElementById('qrDiv').innerHTML='';
+  ['ps1','ps2','ps3','ps4','ps5'].forEach((id,i)=>{const el=document.getElementById(id);if(!el)return;el.className='pstep';el.querySelector('.ps-ico').textContent=['⚙️','🖼️','📱','🌐','📦'][i];});
+  updateRing(0);stepTo(1,'active');
+  document.getElementById('succSec').classList.remove('on');document.getElementById('formSec').classList.remove('hidden');
+  switchTab('basic');syncPreview();clearCons();
+}
+function fmtB(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(2)+' MB';}
+function showAbout(){toast('info','AppForge Pro v3','PWA instalável + Projeto Android Studio completo com MainActivity.java, AndroidManifest, Gradle e recursos multi-densidade');}
+function toast(type,title,msg){
+  const w=document.getElementById('toastWrap');const el=document.createElement('div');el.className='toast';
+  const icos={success:'✅',error:'❌',info:'ℹ️',warn:'⚠️'};const cols={success:'var(--green)',error:'var(--red)',info:'var(--cyan)',warn:'var(--amber)'};
+  el.style.borderLeft=`3px solid ${cols[type]||cols.info}`;
+  el.innerHTML=`<div class="toast-ico">${icos[type]||icos.info}</div><div><div class="toast-ttl">${title}</div><div class="toast-msg">${msg}</div></div>`;
+  w.appendChild(el);setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300);},4000);
+}
+
+// INIT
+document.getElementById('pkgIn').value='com.appforge.meuapp';S.pkg='com.appforge.meuapp';syncPreview();
+</script>
 </body>
 </html>
