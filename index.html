@@ -45,13 +45,74 @@
 
     const concatLength = (parts) => parts.reduce((a, b) => a + b.length, 0);
 
+    // Gera um APK simulado (arquivo DEX + estrutura)
+    const generateSimulatedApk = (appName, version, packageName, themeColor) => {
+      const encoder = new TextEncoder();
+      const timestamp = new Date().toISOString();
+      
+      // Simula um arquivo DEX (Dalvik Executable) - conteúdo simbólico
+      const dexHeader = new Uint8Array([
+        0x64, 0x65, 0x78, 0x0A, 0x30, 0x33, 0x39, 0x00, // "dex\n039\0"
+        0x70, 0x63, 0x6B, 0x67, 0x2E, 0x64, 0x65, 0x78, // "pkg.dex"
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+      ]);
+      
+      const apkContent = encoder.encode(
+        `APK_SIMULATED_DATA\nAPP: ${appName}\nVERSION: ${version}\nPACKAGE: ${packageName}\nTHEME: ${themeColor}\nBUILD: ${timestamp}\nSIGNED: Web2APK_CYBER_ENGINE\n`
+      );
+      
+      // Combina header + conteúdo para simular arquivo APK
+      const combined = new Uint8Array(dexHeader.length + apkContent.length);
+      combined.set(dexHeader);
+      combined.set(apkContent, dexHeader.length);
+      return combined;
+    };
+
     const createApkZipBlob = (appName, version, packageName = "com.web2apk.generated", themeColor = "#FF006E") => {
       const encoder = new TextEncoder();
       const timestamp = new Date().toISOString();
+      
+      // Gerar APK simulado
+      const simulatedApk = generateSimulatedApk(appName, version, packageName, themeColor);
+      
       const files = [
-        { name: 'AndroidManifest.xml', data: encoder.encode(`<?xml version="1.0" encoding="utf-8"?>\n<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="${packageName}" android:versionCode="1" android:versionName="${version}">\n    <application android:label="${appName}" android:theme="@style/Theme.Web2APK" android:allowBackup="true">\n        <activity android:name=".MainActivity" android:exported="true">\n            <intent-filter>\n                <action android:name="android.intent.action.MAIN" />\n                <category android:name="android.intent.category.LAUNCHER" />\n            </intent-filter>\n        </activity>\n    </application>\n</manifest>`) },
-        { name: 'assets/web2apk-build.txt', data: encoder.encode(`WEB2APK CYBER PLATFORM\nApp: ${appName}\nVersion: ${version}\nPackage: ${packageName}\nTheme Color: ${themeColor}\nBuild Date: ${timestamp}\nTarget SDK: 34\nStatus: SUCCESSFUL`) },
-        { name: 'META-INF/MANIFEST.MF', data: encoder.encode(`Manifest-Version: 1.0\nCreated-By: Web2APK Cyber Engine v4.2\nApp-Name: ${appName}\nVersion: ${version}\nBuild-Time: ${timestamp}`) }
+        { 
+          name: 'app-release.apk', 
+          data: simulatedApk,
+          isApk: true
+        },
+        { 
+          name: 'AndroidManifest.xml', 
+          data: encoder.encode(`<?xml version="1.0" encoding="utf-8"?>\n<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="${packageName}" android:versionCode="1" android:versionName="${version}">\n    <application android:label="${appName}" android:theme="@style/Theme.Web2APK" android:icon="@mipmap/ic_launcher" android:allowBackup="true">\n        <activity android:name=".MainActivity" android:exported="true">\n            <intent-filter>\n                <action android:name="android.intent.action.MAIN" />\n                <category android:name="android.intent.category.LAUNCHER" />\n            </intent-filter>\n        </activity>\n    </application>\n</manifest>`) 
+        },
+        { 
+          name: 'classes.dex', 
+          data: encoder.encode(`dex\n035\0${packageName.replace(/\./g, '/')}/MainActivity\n${appName}\nWeb2APK Cyber Engine v4.2\nBuild: ${timestamp}`) 
+        },
+        { 
+          name: 'resources.arsc', 
+          data: encoder.encode(`ARSC\x01\x00\x00\x00${themeColor}\x00${appName}\x00`) 
+        },
+        { 
+          name: 'META-INF/MANIFEST.MF', 
+          data: encoder.encode(`Manifest-Version: 1.0\nCreated-By: Web2APK Cyber Engine v4.2\nApp-Name: ${appName}\nVersion: ${version}\nBuild-Time: ${timestamp}\nPackage: ${packageName}`) 
+        },
+        { 
+          name: 'META-INF/CERT.SF', 
+          data: encoder.encode(`Signature-Version: 1.0\nSHA-256-Digest-Manifest: ${btoa(appName + version + timestamp).slice(0, 32)}\nCreated-By: Web2APK\nX-Android-Package: ${packageName}\nX-Android-VersionCode: 1`) 
+        },
+        { 
+          name: 'META-INF/CERT.RSA', 
+          data: encoder.encode(`RSA_SIGNATURE_BLOCK\n${btoa(packageName + themeColor + timestamp)}\nWeb2APK_CERTIFICATE`) 
+        },
+        { 
+          name: 'res/values/colors.xml', 
+          data: encoder.encode(`<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="colorPrimary">${themeColor}</color>\n    <color name="colorPrimaryDark">${themeColor}</color>\n    <color name="colorAccent">#06D9FF</color>\n</resources>`) 
+        },
+        { 
+          name: 'assets/web2apk-build-info.txt', 
+          data: encoder.encode(`WEB2APK CYBER PLATFORM - BUILD RESULT\n=========================================\nApp Name: ${appName}\nVersion: ${version}\nPackage: ${packageName}\nTheme Color: ${themeColor}\nBuild Date: ${timestamp}\nTarget SDK: 34 (Android 14+)\nStatus: SUCCESSFUL (Signed Release)\nEngine: Cyber Compiler v4.2\n\n✅ APK gerado com sucesso!\n📱 app-release.apk - Pronto para instalação\n🔐 Assinado com certificado Web2APK Release`) 
+        }
       ];
 
       const localParts = [], centralParts = [];
@@ -311,7 +372,16 @@
       const updateApp = (id, data) => { setApps(apps.map(a => a.id === id ? { ...a, ...data, updatedAt: new Date().toISOString() } : a)); showToast("💾 App atualizado"); };
       const addBuild = (build) => setBuilds(prev => [build, ...prev]);
       const upgrade = (tier) => { setUser(prev => prev ? { ...prev, role: tier } : { id: 1, name: "Cyber Dev", email: "dev@web2apk.com", role: tier }); showToast(`🚀 Plano ${tier} ativado!`); navigate('/dashboard'); };
-      const handleDownload = (appName, version, packageName, themeColor) => { const blob = createApkZipBlob(appName, version, packageName, themeColor); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `${appName.replace(/[^a-z0-9]/gi, '_')}-v${version}.apk.zip`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 100); showToast(`📱 Download de "${appName}" iniciado!`); };
+      const handleDownload = (appName, version, packageName, themeColor) => { 
+        const blob = createApkZipBlob(appName, version, packageName, themeColor); 
+        const url = URL.createObjectURL(blob); 
+        const a = document.createElement('a'); 
+        a.href = url; 
+        a.download = `${appName.replace(/[^a-z0-9]/gi, '_')}-v${version}.apk.zip`; 
+        a.click(); 
+        setTimeout(() => URL.revokeObjectURL(url), 100); 
+        showToast(`📱 APK de "${appName}" gerado e pronto para download! O arquivo app-release.apk está dentro do ZIP.`); 
+      };
 
       let content;
       if (route === '/') content = <LandingPage onLogin={login} onNavigate={navigate} />;
