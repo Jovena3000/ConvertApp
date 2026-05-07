@@ -1,1085 +1,1157 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#080b10">
+<title>AppForge — Gerador de APK</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root {
+  --ink:       #080b10;
+  --ink2:      #0e1520;
+  --ink3:      #151d2b;
+  --ink4:      #1e2a3d;
+  --cyan:      #00e5ff;
+  --cyan2:     #00b8cc;
+  --cyan-dim:  rgba(0,229,255,.10);
+  --cyan-glow: rgba(0,229,255,.25);
+  --amber:     #ffb627;
+  --green:     #00e676;
+  --red:       #ff3d3d;
+  --text1:     #e8f0fe;
+  --text2:     #8a9bb8;
+  --text3:     #4a5a72;
+  --border:    rgba(0,229,255,.12);
+  --border2:   rgba(0,229,255,.25);
+  --r-sm: 6px; --r-md: 10px; --r-lg: 16px; --r-xl: 24px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  font-family:'Exo 2',sans-serif;
+  background:var(--ink);
+  color:var(--text1);
+  min-height:100vh;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── BACKGROUND ── */
+.bg-layer{position:fixed;inset:0;pointer-events:none;z-index:0}
+.bg-noise{
+  position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px;
+}
+.bg-grid{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:48px 48px;
+  mask-image:radial-gradient(ellipse 70% 70% at 50% 30%,black 40%,transparent 100%);
+}
+.bg-glow1{position:fixed;width:500px;height:500px;top:-150px;left:-150px;background:radial-gradient(circle,rgba(0,229,255,.06),transparent 70%);pointer-events:none;z-index:0}
+.bg-glow2{position:fixed;width:400px;height:400px;bottom:-100px;right:-100px;background:radial-gradient(circle,rgba(255,182,39,.04),transparent 70%);pointer-events:none;z-index:0}
+
+/* ── LAYOUT ── */
+.shell{position:relative;z-index:1;max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+
+/* ── HEADER ── */
+header{
+  padding:16px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(8,11,16,.85);
+  backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:200;
+}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{
+  width:34px;height:34px;border-radius:8px;
+  background:linear-gradient(135deg,var(--cyan),var(--cyan2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;box-shadow:0 0 20px var(--cyan-glow);
+  position:relative;overflow:hidden;
+}
+.logo-mark::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.15),transparent);
+}
+.logo-name{
+  font-size:19px;font-weight:800;letter-spacing:-.3px;
+  background:linear-gradient(90deg,var(--text1) 60%,var(--cyan));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.logo-ver{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;color:var(--cyan);background:var(--cyan-dim);
+  padding:2px 6px;border-radius:4px;border:1px solid var(--border2);
+  margin-left:6px;letter-spacing:.5px;
+}
+.hdr-btns{display:flex;gap:8px}
+.hdr-btn{
+  width:34px;height:34px;border-radius:8px;
+  border:1px solid var(--border);background:var(--ink3);
+  color:var(--text2);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .2s;font-size:15px;
+}
+.hdr-btn:hover{border-color:var(--border2);color:var(--cyan);background:var(--ink4)}
+
+/* ── MAIN ── */
+main{flex:1;padding:20px;display:flex;flex-direction:column;gap:20px}
+
+/* ── HERO ── */
+.hero{text-align:center;padding:12px 0 4px}
+.badge{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:5px 14px;background:var(--cyan-dim);
+  border:1px solid var(--border2);border-radius:100px;
+  font-size:11px;font-weight:600;color:var(--cyan);letter-spacing:.8px;text-transform:uppercase;
+  margin-bottom:14px;
+}
+.badge-dot{width:6px;height:6px;background:var(--green);border-radius:50%;box-shadow:0 0 8px var(--green);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{font-size:26px;font-weight:900;line-height:1.15;letter-spacing:-.5px;margin-bottom:10px}
+.hero h1 em{font-style:italic;color:var(--cyan)}
+.hero p{color:var(--text2);font-size:14px;max-width:300px;margin:0 auto;line-height:1.6}
+
+/* ── STEP INDICATOR ── */
+.stepper{display:flex;align-items:center;gap:0;padding:4px 0}
+.step-node{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  flex:0 0 auto;
+}
+.step-circle{
+  width:30px;height:30px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;transition:all .4s;border:2px solid var(--border);
+  background:var(--ink3);color:var(--text3);
+}
+.step-circle.active{
+  border-color:var(--cyan);background:rgba(0,229,255,.1);color:var(--cyan);
+  box-shadow:0 0 16px var(--cyan-glow);
+}
+.step-circle.done{border-color:var(--green);background:rgba(0,230,118,.1);color:var(--green)}
+.step-lbl{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;transition:color .3s}
+.step-lbl.active{color:var(--cyan)}
+.step-lbl.done{color:var(--green)}
+.step-rail{flex:1;height:2px;background:var(--ink4);margin:0 6px;position:relative;top:-12px;border-radius:1px;transition:background .4s}
+.step-rail.done{background:var(--green)}
+
+/* ── CARDS ── */
+.card{
+  background:var(--ink2);border:1px solid var(--border);
+  border-radius:var(--r-lg);padding:20px;
+  transition:border-color .2s;
+}
+.card:hover{border-color:var(--border2)}
+.card-hdr{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.card-ico{
+  width:36px;height:36px;border-radius:var(--r-sm);
+  background:var(--cyan-dim);border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;font-size:17px;
+}
+.card-ttl{font-size:14px;font-weight:700;letter-spacing:-.1px}
+.card-sub{font-size:12px;color:var(--text3);margin-top:2px}
+
+/* ── INPUTS ── */
+.igrp{margin-bottom:14px}
+.ilbl{
+  display:block;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+  color:var(--text2);margin-bottom:7px;
+}
+.iwrap{position:relative}
+.ifield{
+  width:100%;padding:12px 14px 12px 40px;
+  background:var(--ink);border:1px solid var(--border);border-radius:var(--r-md);
+  color:var(--text1);font-size:14px;font-family:inherit;outline:none;transition:all .2s;
+}
+.ifield:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,229,255,.08)}
+.ifield::placeholder{color:var(--text3)}
+.iico{
+  position:absolute;left:13px;top:50%;transform:translateY(-50%);
+  color:var(--text3);font-size:16px;pointer-events:none;
+}
+.ihint{font-size:11px;color:var(--text3);margin-top:5px;display:flex;align-items:center;gap:4px}
+
+/* ── UPLOAD ── */
+.upload-zone{
+  border:2px dashed var(--border);border-radius:var(--r-md);
+  padding:28px 20px;text-align:center;cursor:pointer;
+  transition:all .25s;background:var(--ink);position:relative;overflow:hidden;
+}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--cyan);background:var(--cyan-dim)}
+.upload-zone.ok{border-color:var(--green);background:rgba(0,230,118,.04);border-style:solid}
+.upload-ico{font-size:36px;display:block;margin-bottom:10px}
+.upload-ttl{font-size:13px;font-weight:600;color:var(--text2)}
+.upload-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.upload-prev{
+  width:72px;height:72px;border-radius:var(--r-md);object-fit:cover;
+  margin:0 auto 10px;border:2px solid var(--green);box-shadow:0 0 20px rgba(0,230,118,.2);
+}
+#fileInput{display:none}
+
+/* ── COLORS ── */
+.color-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.color-swatch{
+  aspect-ratio:1;border-radius:var(--r-sm);cursor:pointer;
+  border:2px solid transparent;transition:all .2s;position:relative;
+}
+.color-swatch:hover{transform:scale(1.12)}
+.color-swatch.sel{border-color:#fff;box-shadow:0 0 0 2px var(--ink),0 0 0 4px var(--cyan)}
+.color-swatch.sel::after{
+  content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:800;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6);
+}
+.custom-row{display:flex;align-items:center;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.custom-swatch{
+  width:38px;height:38px;border-radius:var(--r-sm);cursor:pointer;
+  border:none;background:none;padding:0;flex-shrink:0;
+}
+.custom-swatch::-webkit-color-swatch-wrapper{padding:0}
+.custom-swatch::-webkit-color-swatch{border:2px solid var(--border2);border-radius:var(--r-sm)}
+.hex-display{
+  font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cyan);
+  background:var(--ink);padding:8px 12px;border-radius:var(--r-sm);
+  border:1px solid var(--border);flex:1;letter-spacing:1px;
+}
+
+/* ── PHONE PREVIEW ── */
+.preview-wrap{
+  background:linear-gradient(160deg,var(--ink3),var(--ink2));
+  border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;
+}
+.phone{
+  width:180px;height:360px;margin:0 auto;
+  background:var(--ink);border-radius:28px;padding:6px;
+  box-shadow:0 20px 60px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.06),inset 0 0 0 1px rgba(255,255,255,.04);
+  position:relative;
+}
+.phone-screen{
+  width:100%;height:100%;background:var(--ink2);
+  border-radius:22px;overflow:hidden;display:flex;flex-direction:column;
+}
+.phone-notch{
+  width:70px;height:18px;background:var(--ink);
+  border-radius:0 0 10px 10px;margin:0 auto;position:relative;z-index:2;
+}
+.phone-st{
+  display:flex;justify-content:space-between;padding:3px 14px;
+  font-size:8px;color:var(--text3);font-family:'JetBrains Mono',monospace;
+}
+.phone-bar{
+  padding:8px 12px;display:flex;align-items:center;gap:7px;
+  border-bottom:1px solid var(--border);
+}
+.phone-app-ico{width:24px;height:24px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;overflow:hidden}
+.phone-app-ico img{width:100%;height:100%;object-fit:cover}
+.phone-app-nm{font-size:10px;font-weight:700;letter-spacing:-.2px}
+.phone-body{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  background:var(--ink);position:relative;overflow:hidden;
+}
+.phone-body::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 20px,rgba(0,229,255,.015) 20px,rgba(0,229,255,.015) 21px),
+             repeating-linear-gradient(90deg,transparent,transparent 20px,rgba(0,229,255,.015) 20px,rgba(0,229,255,.015) 21px);
+}
+.phone-body-inner{text-align:center;position:relative;z-index:1}
+.phone-glob{font-size:28px;opacity:.3;display:block;margin-bottom:6px}
+.phone-url{font-size:8px;color:var(--text3);font-family:'JetBrains Mono',monospace;word-break:break-all;padding:0 8px}
+.phone-hbar{width:80px;height:3px;background:rgba(255,255,255,.15);border-radius:2px;margin:6px auto}
+
+/* ── BUTTONS ── */
+.btn{
+  width:100%;padding:14px 20px;border:none;border-radius:var(--r-md);
+  font-size:14px;font-weight:700;font-family:inherit;letter-spacing:.3px;
+  cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  position:relative;overflow:hidden;
+}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-cyan{
+  background:linear-gradient(135deg,var(--cyan),var(--cyan2));color:var(--ink);
+  box-shadow:0 4px 20px var(--cyan-glow);
+}
+.btn-cyan:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 30px var(--cyan-glow)}
+.btn-cyan:active:not(:disabled){transform:none}
+.btn-ghost{background:var(--ink3);color:var(--text1);border:1px solid var(--border)}
+.btn-ghost:hover:not(:disabled){border-color:var(--border2);background:var(--ink4)}
+.btn-green{
+  background:linear-gradient(135deg,var(--green),#00c853);color:var(--ink);
+  box-shadow:0 4px 20px rgba(0,230,118,.25);
+}
+.btn-green:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,230,118,.35)}
+.btn-shine{
+  position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);
+  transition:left .5s;
+}
+.btn:hover .btn-shine{left:100%}
+
+/* ── PROGRESS ── */
+.prog-section{display:none;padding:4px 0;animation:fadeUp .4s}
+.prog-section.on{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.prog-ring-wrap{width:120px;height:120px;margin:0 auto 20px;position:relative}
+.prog-ring-wrap svg{transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:var(--ink4);stroke-width:5}
+.ring-fill{fill:none;stroke:url(#rg);stroke-width:5;stroke-linecap:round;stroke-dasharray:283;stroke-dashoffset:283;transition:stroke-dashoffset .4s ease}
+.ring-txt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-pct{font-size:26px;font-weight:900;color:var(--cyan)}
+.ring-lbl{font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;letter-spacing:.5px}
+.prog-ttl{text-align:center;font-size:17px;font-weight:800;margin-bottom:4px}
+.prog-sub{text-align:center;font-size:12px;color:var(--text3);margin-bottom:20px}
+.prog-steps{display:flex;flex-direction:column;gap:10px}
+.pstep{
+  display:flex;align-items:center;gap:12px;padding:12px 14px;
+  background:var(--ink);border:1px solid var(--border);border-radius:var(--r-md);transition:all .3s;
+}
+.pstep.active{border-color:var(--cyan);background:rgba(0,229,255,.04)}
+.pstep.done{border-color:var(--green);background:rgba(0,230,118,.04)}
+.pstep-ico{
+  width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:13px;flex-shrink:0;background:var(--ink3);color:var(--text3);
+}
+.pstep.active .pstep-ico{background:rgba(0,229,255,.15);animation:spin 1s linear infinite}
+.pstep.done .pstep-ico{background:rgba(0,230,118,.15)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pstep-title{font-size:12px;font-weight:700}
+.pstep-desc{font-size:10px;color:var(--text3);margin-top:2px;font-family:'JetBrains Mono',monospace}
+
+/* ── SUCCESS ── */
+.success-section{display:none;animation:fadeUp .5s}
+.success-section.on{display:block}
+.success-anim{width:96px;height:96px;margin:0 auto 20px;position:relative}
+.success-ring{
+  width:100%;height:100%;border-radius:50%;
+  background:linear-gradient(135deg,var(--green),#00c853);
+  display:flex;align-items:center;justify-content:center;
+  font-size:44px;color:var(--ink);font-weight:900;
+  box-shadow:0 0 50px rgba(0,230,118,.3);
+  animation:pop .5s cubic-bezier(.175,.885,.32,1.275);
+}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+.success-ttl{text-align:center;font-size:22px;font-weight:900;letter-spacing:-.3px;margin-bottom:6px}
+.success-sub{text-align:center;color:var(--text2);font-size:13px;margin-bottom:20px}
+.apk-table{
+  background:var(--ink);border:1px solid var(--border);
+  border-radius:var(--r-md);padding:4px 0;margin-bottom:18px;
+}
+.apk-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 14px;border-bottom:1px solid var(--border);
+  font-size:12px;
+}
+.apk-row:last-child{border-bottom:none}
+.apk-lbl{color:var(--text3);font-weight:600;display:flex;align-items:center;gap:6px}
+.apk-val{
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:var(--text1);font-weight:500;text-align:right;max-width:55%;word-break:break-all;
+}
+.apk-val.ok{color:var(--green)}
+.qr-wrap{
+  width:152px;height:152px;margin:0 auto 8px;
+  background:#fff;border-radius:var(--r-md);padding:10px;
+  box-shadow:0 0 30px rgba(0,229,255,.1);
+}
+#qrCanvas{width:100%;height:100%}
+.qr-hint{text-align:center;font-size:11px;color:var(--text3);margin-bottom:18px}
+.install-note{
+  background:rgba(255,182,39,.06);border:1px solid rgba(255,182,39,.2);
+  border-radius:var(--r-md);padding:14px;margin-bottom:18px;
+}
+.install-note-ttl{font-size:12px;font-weight:700;color:var(--amber);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.install-note p{font-size:11px;color:var(--text2);line-height:1.6}
+.install-note code{font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:10px}
+
+/* ── TOAST ── */
+.toast-wrap{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  z-index:999;display:flex;flex-direction:column;gap:8px;
+  width:calc(100% - 40px);max-width:420px;pointer-events:none;
+}
+.toast{
+  background:var(--ink3);border:1px solid var(--border);border-radius:var(--r-md);
+  padding:12px 16px;display:flex;align-items:center;gap:10px;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);
+  animation:toastIn .3s ease;pointer-events:all;
+}
+@keyframes toastIn{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+.toast-ico{font-size:18px;flex-shrink:0}
+.toast-ttl{font-size:13px;font-weight:700}
+.toast-msg{font-size:11px;color:var(--text3);margin-top:1px}
+
+/* ── FOOTER ── */
+footer{
+  padding:16px 20px;text-align:center;border-top:1px solid var(--border);
+  font-size:11px;color:var(--text3);
+}
+footer span{color:var(--cyan)}
+
+.hidden{display:none!important}
+@media(min-width:768px){.shell{max-width:520px}}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--ink)}
+::-webkit-scrollbar-thumb{background:var(--ink4);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-noise"></div>
+<div class="bg-glow1"></div>
+<div class="bg-glow2"></div>
+
+<div class="shell">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <div class="logo-mark">⚡</div>
+      <div class="logo-name">AppForge</div>
+      <span class="logo-ver">v2.0</span>
+    </div>
+    <div class="hdr-btns">
+      <button class="hdr-btn" onclick="toast('info','Histórico','Em desenvolvimento')">📋</button>
+      <button class="hdr-btn" onclick="toast('info','Configurações','Em desenvolvimento')">⚙️</button>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="badge">
+        <span class="badge-dot"></span>
+        Sistema Online
+      </div>
+      <h1>Sites em <em>Apps Android</em><br>em segundos</h1>
+      <p>Cole o link, personalize o ícone e baixe um pacote PWA real, pronto para virar APK</p>
+    </section>
+
+    <!-- STEPPER -->
+    <div class="stepper">
+      <div class="step-node">
+        <div class="step-circle active" id="sn1">1</div>
+        <span class="step-lbl active" id="sl1">Config</span>
+      </div>
+      <div class="step-rail" id="sr1"></div>
+      <div class="step-node">
+        <div class="step-circle" id="sn2">2</div>
+        <span class="step-lbl" id="sl2">Gerar</span>
+      </div>
+      <div class="step-rail" id="sr2"></div>
+      <div class="step-node">
+        <div class="step-circle" id="sn3">3</div>
+        <span class="step-lbl" id="sl3">Baixar</span>
+      </div>
+    </div>
+
+    <!-- FORM -->
+    <section id="formSec">
+
+      <!-- URL + NOME -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-ico">🔗</div>
+          <div>
+            <div class="card-ttl">Configurações do App</div>
+            <div class="card-sub">URL e identificação</div>
+          </div>
+        </div>
+        <div class="igrp">
+          <label class="ilbl">🌐 Link do site</label>
+          <div class="iwrap">
+            <span class="iico">🔗</span>
+            <input type="url" class="ifield" id="urlIn" placeholder="https://meusite.com" oninput="onUrl();syncPreview()">
+          </div>
+          <div class="ihint">💡 Cole a URL completa com https://</div>
+        </div>
+        <div class="igrp" style="margin-bottom:0">
+          <label class="ilbl">🏷️ Nome do app</label>
+          <div class="iwrap">
+            <span class="iico">📱</span>
+            <input type="text" class="ifield" id="nameIn" placeholder="Meu App" maxlength="30" oninput="syncPreview()">
+          </div>
+        </div>
+      </div>
+
+      <!-- ÍCONE -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-ico">🎨</div>
+          <div>
+            <div class="card-ttl">Ícone do App</div>
+            <div class="card-sub">PNG ou JPG • 512×512 px recomendado</div>
+          </div>
+        </div>
+        <div class="upload-zone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+          <div id="uploadUI">
+            <span class="upload-ico">📤</span>
+            <div class="upload-ttl">Toque para enviar ícone</div>
+            <div class="upload-sub">PNG, JPG ou SVG • máx 5 MB</div>
+          </div>
+          <input type="file" id="fileInput" accept="image/*" onchange="onFile(event)">
+        </div>
+      </div>
+
+      <!-- COR -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-ico">🎨</div>
+          <div>
+            <div class="card-ttl">Cor do Tema</div>
+            <div class="card-sub">Aparência da barra de status e splash</div>
+          </div>
+        </div>
+        <div class="color-grid" id="colorGrid">
+          <div class="color-swatch sel" style="background:#00e5ff" data-c="#00e5ff" onclick="pickColor(this)"></div>
+          <div class="color-swatch" style="background:#6366f1" data-c="#6366f1" onclick="pickColor(this)"></div>
+          <div class="color-swatch" style="background:#10b981" data-c="#10b981" onclick="pickColor(this)"></div>
+          <div class="color-swatch" style="background:#f59e0b" data-c="#f59e0b" onclick="pickColor(this)"></div>
+          <div class="color-swatch" style="background:#ef4444" data-c="#ef4444" onclick="pickColor(this)"></div>
+          <div class="color-swatch" style="background:#8b5cf6" data-c="#8b5cf6" onclick="pickColor(this)"></div>
+          <div class="color-swatch" style="background:#ec4899" data-c="#ec4899" onclick="pickColor(this)"></div>
+          <div class="color-swatch" style="background:#14b8a6" data-c="#14b8a6" onclick="pickColor(this)"></div>
+          <div class="color-swatch" style="background:#f97316" data-c="#f97316" onclick="pickColor(this)"></div>
+          <div class="color-swatch" style="background:#3b82f6" data-c="#3b82f6" onclick="pickColor(this)"></div>
+          <div class="color-swatch" style="background:#84cc16" data-c="#84cc16" onclick="pickColor(this)"></div>
+          <div class="color-swatch" style="background:#e11d48" data-c="#e11d48" onclick="pickColor(this)"></div>
+        </div>
+        <div class="custom-row">
+          <input type="color" class="custom-swatch" id="customColor" value="#00e5ff" onchange="pickCustomColor(this.value)">
+          <div class="hex-display" id="hexDisplay">#00E5FF</div>
+        </div>
+      </div>
+
+      <!-- PREVIEW -->
+      <div class="preview-wrap">
+        <div class="card-hdr" style="margin-bottom:14px">
+          <div class="card-ico">👁️</div>
+          <div>
+            <div class="card-ttl">Pré-visualização</div>
+            <div class="card-sub">Como aparece no celular</div>
+          </div>
+        </div>
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-notch"></div>
+            <div class="phone-st"><span>9:41</span><span>▲▲▲ ▇</span></div>
+            <div class="phone-bar" id="phoneBar">
+              <div class="phone-app-ico" id="phoneIco" style="background:linear-gradient(135deg,#00e5ff,#00b8cc)">⚡</div>
+              <div class="phone-app-nm" id="phoneNm">AppForge</div>
+            </div>
+            <div class="phone-body">
+              <div class="phone-body-inner">
+                <span class="phone-glob">🌐</span>
+                <div class="phone-url" id="phoneUrl">meusite.com</div>
+              </div>
+            </div>
+            <div class="phone-hbar"></div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-cyan" id="genBtn" onclick="startGen()">
+        <span class="btn-shine"></span>
+        <span>⚡</span>
+        <span>Gerar Pacote APK</span>
+      </button>
+
+    </section>
+
+    <!-- PROGRESS -->
+    <section class="prog-section" id="progSec">
+      <div class="prog-ring-wrap">
+        <svg width="120" height="120" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#00e5ff"/>
+              <stop offset="100%" style="stop-color:#10b981"/>
+            </linearGradient>
+          </defs>
+          <circle class="ring-bg" cx="50" cy="50" r="45"/>
+          <circle class="ring-fill" id="ringFill" cx="50" cy="50" r="45"/>
+        </svg>
+        <div class="ring-txt">
+          <div class="ring-pct" id="pctTxt">0%</div>
+          <div class="ring-lbl">BUILD</div>
+        </div>
+      </div>
+      <div class="prog-ttl">Montando o pacote…</div>
+      <div class="prog-sub">Isso levará alguns segundos</div>
+      <div class="prog-steps">
+        <div class="pstep active" id="ps1">
+          <div class="pstep-ico">⚙️</div>
+          <div>
+            <div class="pstep-title">Validando configurações</div>
+            <div class="pstep-desc">Checando URL e parâmetros</div>
+          </div>
+        </div>
+        <div class="pstep" id="ps2">
+          <div class="pstep-ico">🖼️</div>
+          <div>
+            <div class="pstep-title">Gerando ícones</div>
+            <div class="pstep-desc">48 / 72 / 96 / 144 / 192 / 512 px</div>
+          </div>
+        </div>
+        <div class="pstep" id="ps3">
+          <div class="pstep-ico">📦</div>
+          <div>
+            <div class="pstep-title">Empacotando PWA</div>
+            <div class="pstep-desc">manifest.json + service-worker + HTML</div>
+          </div>
+        </div>
+        <div class="pstep" id="ps4">
+          <div class="pstep-ico">🔐</div>
+          <div>
+            <div class="pstep-title">Finalizando ZIP</div>
+            <div class="pstep-desc">DEFLATE nível 9 · pronto para download</div>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-ghost" style="margin-top:16px" onclick="cancelGen()">
+        <span>✕</span><span>Cancelar</span>
+      </button>
+    </section>
+
+    <!-- SUCCESS -->
+    <section class="success-section" id="succSec">
+      <div class="success-anim">
+        <div class="success-ring">✓</div>
+      </div>
+      <div class="success-ttl">Pacote Gerado!</div>
+      <div class="success-sub">ZIP real, funcional e pronto para instalar</div>
+
+      <div class="apk-table">
+        <div class="apk-row">
+          <span class="apk-lbl">📱 Nome</span>
+          <span class="apk-val" id="rName">—</span>
+        </div>
+        <div class="apk-row">
+          <span class="apk-lbl">🔗 URL</span>
+          <span class="apk-val" id="rUrl">—</span>
+        </div>
+        <div class="apk-row">
+          <span class="apk-lbl">📦 Versão</span>
+          <span class="apk-val">1.0.0</span>
+        </div>
+        <div class="apk-row">
+          <span class="apk-lbl">🖼️ Ícones</span>
+          <span class="apk-val ok" id="rIcons">6 tamanhos</span>
+        </div>
+        <div class="apk-row">
+          <span class="apk-lbl">💾 Tamanho</span>
+          <span class="apk-val" id="rSize">—</span>
+        </div>
+        <div class="apk-row">
+          <span class="apk-lbl">✔ Tipo</span>
+          <span class="apk-val ok">PWA · TWA-ready</span>
+        </div>
+      </div>
+
+      <div class="qr-wrap">
+        <div id="qrCanvas"></div>
+      </div>
+      <div class="qr-hint">📷 Escaneie para abrir a URL no celular</div>
+
+      <div class="install-note">
+        <div class="install-note-ttl">⚡ Como instalar como APK</div>
+        <p>
+          <strong>Opção 1 (mais fácil):</strong> Abra o site no Chrome do Android → menu → <em>"Adicionar à tela inicial"</em> — funciona como app nativo.<br><br>
+          <strong>Opção 2 (APK verdadeiro):</strong> Envie seu ZIP para <code>pwabuilder.com</code>, clique em <em>Package for Stores → Android</em> e baixe o APK assinado gratuitamente.
+        </p>
+      </div>
+
+      <button class="btn btn-green" onclick="doDownload()">
+        <span class="btn-shine"></span>
+        <span>⬇️</span><span>Baixar ZIP Real</span>
+      </button>
+      <button class="btn btn-ghost" style="margin-top:10px" onclick="reset()">
+        <span>🔄</span><span>Criar Novo App</span>
+      </button>
+    </section>
+
+  </main>
+
+  <footer>AppForge © 2026 — <span>ZIP + PWA + TWA-ready</span></footer>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────
+const S = { url:'', name:'', icon:null, color:'#00e5ff', zip:null, zipSize:0 };
+let genTimer = null;
+
+// ─── URL ─────────────────────────────────────────────────
+function onUrl(){
+  const el = document.getElementById('urlIn');
+  let v = el.value.trim();
+  if(v && !v.match(/^https?:\/\//)) { el.value = 'https://'+v; }
+  S.url = el.value.trim();
+}
+
+// ─── FILE UPLOAD ─────────────────────────────────────────
+function onFile(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  if(file.size > 5*1024*1024){ toast('error','Arquivo muito grande','Máximo 5 MB'); return; }
+  const rd = new FileReader();
+  rd.onload = ev => {
+    S.icon = ev.target.result;
+    const dz = document.getElementById('dropzone');
+    dz.classList.add('ok');
+    document.getElementById('uploadUI').innerHTML =
+      `<img src="${S.icon}" class="upload-prev" alt="Ícone">
+       <div class="upload-ttl" style="color:var(--green)">${file.name}</div>
+       <div class="upload-sub">Toque para alterar</div>`;
+    syncPreview();
+    toast('success','Ícone carregado','Imagem definida com sucesso');
+  };
+  rd.readAsDataURL(file);
+}
+
+// drag & drop
+const dz = document.getElementById('dropzone');
+['dragenter','dragover','dragleave','drop'].forEach(ev => dz.addEventListener(ev, e=>{ e.preventDefault(); e.stopPropagation(); }));
+['dragenter','dragover'].forEach(ev => dz.addEventListener(ev, ()=>dz.classList.add('drag')));
+['dragleave','drop'].forEach(ev => dz.addEventListener(ev, ()=>dz.classList.remove('drag')));
+dz.addEventListener('drop', e => {
+  document.getElementById('fileInput').files = e.dataTransfer.files;
+  onFile({ target: { files: e.dataTransfer.files } });
+});
+
+// ─── COLOR ───────────────────────────────────────────────
+function pickColor(el){
+  document.querySelectorAll('.color-swatch').forEach(x=>x.classList.remove('sel'));
+  el.classList.add('sel');
+  S.color = el.dataset.c;
+  document.getElementById('customColor').value = S.color;
+  document.getElementById('hexDisplay').textContent = S.color.toUpperCase();
+  syncPreview();
+}
+function pickCustomColor(c){
+  document.querySelectorAll('.color-swatch').forEach(x=>x.classList.remove('sel'));
+  S.color = c;
+  document.getElementById('hexDisplay').textContent = c.toUpperCase();
+  syncPreview();
+}
+
+// ─── PREVIEW ─────────────────────────────────────────────
+function syncPreview(){
+  const name = document.getElementById('nameIn').value.trim() || 'Meu App';
+  const url  = document.getElementById('urlIn').value.trim();
+  S.name = name; S.url = url;
+
+  document.getElementById('phoneNm').textContent = name;
+  const bar = document.getElementById('phoneBar');
+  bar.style.borderBottom = `2px solid ${S.color}30`;
+
+  const ico = document.getElementById('phoneIco');
+  ico.style.background = `linear-gradient(135deg,${S.color},${darken(S.color,30)})`;
+  if(S.icon){
+    ico.innerHTML = `<img src="${S.icon}" style="width:100%;height:100%;object-fit:cover;border-radius:4px">`;
+  } else {
+    ico.textContent = name.charAt(0).toUpperCase() || '⚡';
+  }
+
+  if(url){
+    try{ document.getElementById('phoneUrl').textContent = new URL(url).hostname.replace('www.',''); }
+    catch{ document.getElementById('phoneUrl').textContent = url; }
+  }
+}
+
+function darken(hex, amt){
+  const n = parseInt(hex.replace('#',''),16);
+  const r = Math.max(0,Math.min(255,(n>>16)-amt));
+  const g = Math.max(0,Math.min(255,((n>>8)&0xff)-amt));
+  const b = Math.max(0,Math.min(255,(n&0xff)-amt));
+  return '#'+((r<<16)|(g<<8)|b).toString(16).padStart(6,'0');
+}
+
+// ─── ICON CANVAS GENERATOR ───────────────────────────────
+function resizeIcon(src, size){
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = c.height = size;
+      const ctx = c.getContext('2d');
+      // rounded rect mask
+      const r = size * 0.22;
+      ctx.beginPath();
+      ctx.moveTo(r,0); ctx.lineTo(size-r,0);
+      ctx.quadraticCurveTo(size,0,size,r);
+      ctx.lineTo(size,size-r);
+      ctx.quadraticCurveTo(size,size,size-r,size);
+      ctx.lineTo(r,size);
+      ctx.quadraticCurveTo(0,size,0,size-r);
+      ctx.lineTo(0,r);
+      ctx.quadraticCurveTo(0,0,r,0);
+      ctx.closePath();
+      ctx.fillStyle = S.color;
+      ctx.fill();
+      ctx.clip();
+      const min = Math.min(img.width,img.height);
+      const sx = (img.width-min)/2, sy = (img.height-min)/2;
+      ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+      res(c.toDataURL('image/png').split(',')[1]);
+    };
+    img.src = src;
+  });
+}
+
+function makeDefaultIcon(size){
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const ctx = c.getContext('2d');
+  const r = size * 0.22;
+  ctx.beginPath();
+  ctx.moveTo(r,0); ctx.lineTo(size-r,0);
+  ctx.quadraticCurveTo(size,0,size,r);
+  ctx.lineTo(size,size-r);
+  ctx.quadraticCurveTo(size,size,size-r,size);
+  ctx.lineTo(r,size);
+  ctx.quadraticCurveTo(0,size,0,size-r);
+  ctx.lineTo(0,r);
+  ctx.quadraticCurveTo(0,0,r,0);
+  ctx.closePath();
+  const g = ctx.createLinearGradient(0,0,size,size);
+  g.addColorStop(0, S.color);
+  g.addColorStop(1, darken(S.color,50));
+  ctx.fillStyle = g;
+  ctx.fill();
+  ctx.fillStyle = '#ffffff';
+  ctx.font = `bold ${size*.45}px sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText((S.name||'A').charAt(0).toUpperCase(), size/2, size/2);
+  return c.toDataURL('image/png').split(',')[1];
+}
+
+// ─── GENERATION ──────────────────────────────────────────
+function startGen(){
+  const url  = document.getElementById('urlIn').value.trim();
+  const name = document.getElementById('nameIn').value.trim();
+  if(!url){ toast('error','URL obrigatória','Informe o endereço do site'); document.getElementById('urlIn').focus(); return; }
+  if(!name){ toast('error','Nome obrigatório','Dê um nome ao aplicativo'); document.getElementById('nameIn').focus(); return; }
+  try{ new URL(url); } catch{ toast('error','URL inválida','Verifique se o link está correto'); return; }
+
+  S.url = url; S.name = name;
+  stepTo(2,'active');
+  document.getElementById('formSec').classList.add('hidden');
+  document.getElementById('progSec').classList.add('on');
+  runSim();
+}
+
+function runSim(){
+  let pct = 0, cur = 0;
+  const milestones = [22, 55, 80, 100];
+  const icons = ['⚙️','🖼️','📦','🔐'];
+  setStep('ps1','active');
+  genTimer = setInterval(async () => {
+    pct += Math.random()*4+1;
+    if(pct > milestones[cur] && cur < 3){
+      setStep('ps'+(cur+1),'done');
+      cur++;
+      setStep('ps'+(cur+1),'active');
+    }
+    if(pct >= 100){
+      pct = 100;
+      clearInterval(genTimer);
+      setStep('ps4','done');
+      await buildZip();
+      setTimeout(showSuccess, 400);
+    }
+    updateRing(pct);
+  }, 120);
+}
+
+function setStep(id, state){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.className = 'pstep '+state;
+  if(state==='done') el.querySelector('.pstep-ico').textContent = '✓';
+}
+
+function updateRing(p){
+  const circ = 2*Math.PI*45;
+  document.getElementById('ringFill').style.strokeDashoffset = circ - (p/100)*circ;
+  document.getElementById('pctTxt').textContent = Math.round(p)+'%';
+}
+
+function cancelGen(){
+  clearInterval(genTimer);
+  stepTo(1,'active');
+  ['ps1','ps2','ps3','ps4'].forEach((id,i)=>{
+    const el=document.getElementById(id); el.className='pstep';
+    el.querySelector('.pstep-ico').textContent=['⚙️','🖼️','📦','🔐'][i];
+  });
+  updateRing(0);
+  document.getElementById('progSec').classList.remove('on');
+  document.getElementById('formSec').classList.remove('hidden');
+  toast('info','Cancelado','Geração interrompida');
+}
+
+// ─── ZIP BUILD ───────────────────────────────────────────
+async function buildZip(){
+  const zip = new JSZip();
+  const iconsFolder = zip.folder('icons');
+  const SIZES = [48,72,96,144,192,512];
+  const manifestIcons = [];
+
+  for(const sz of SIZES){
+    const b64 = S.icon ? await resizeIcon(S.icon, sz) : makeDefaultIcon(sz);
+    iconsFolder.file(`icon-${sz}x${sz}.png`, b64, {base64:true});
+    manifestIcons.push({
+      src: `icons/icon-${sz}x${sz}.png`,
+      sizes: `${sz}x${sz}`,
+      type: 'image/png',
+      purpose: sz>=192 ? 'any maskable' : 'any'
+    });
+  }
+
+  const pkgId = 'com.appforge.' + S.name.toLowerCase().replace(/[^a-z0-9]/g,'');
+  const manifest = {
+    name: S.name,
+    short_name: S.name.substring(0,12),
+    description: S.name + ' — gerado pelo AppForge',
+    start_url: S.url,
+    scope: S.url,
+    display: 'standalone',
+    orientation: 'portrait-primary',
+    background_color: S.color,
+    theme_color: S.color,
+    lang: 'pt-BR',
+    id: pkgId,
+    icons: manifestIcons,
+    categories: ['productivity'],
+    prefer_related_applications: false
+  };
+  zip.file('manifest.json', JSON.stringify(manifest, null, 2));
+
+  // Service Worker com cache estratégico
+  const sw = `// AppForge Service Worker — ${S.name}
+const CACHE = 'appforge-v1';
+const SHELL = ['/', '/index.html'];
+
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+});
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(ks => Promise.all(ks.filter(k => k!==CACHE).map(k => caches.delete(k))))
+    .then(() => self.clients.claim())
+  );
+});
+self.addEventListener('fetch', e => {
+  if(e.request.method !== 'GET') return;
+  e.respondWith(
+    fetch(e.request)
+      .then(r => { const rc=r.clone(); caches.open(CACHE).then(c=>c.put(e.request,rc)); return r; })
+      .catch(() => caches.match(e.request).then(r => r || new Response(
+        '<h1 style="font-family:sans-serif;text-align:center;padding:40px;color:#aaa">Sem conexão</h1>',
+        {headers:{'Content-Type':'text/html'}}
+      )))
+  );
+});`;
+  zip.file('sw.js', sw);
+
+  // HTML principal
+  const html = `<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>ConvertAPK • Instale qualquer site como app nativo</title>
-  <meta name="theme-color" content="#FF006E">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="${S.color}">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="ConvertAPK">
-  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+  <meta name="apple-mobile-web-app-title" content="${S.name}">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+  <title>${S.name}</title>
   <style>
-    :root {
-      --pink: #FF006E; --cyan: #00d9ff; --purple: #7C3AED;
-      --bg: #020617; --surface: rgba(15,23,42,.72);
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{width:100%;height:100%;overflow:hidden;background:${S.color}}
+    #splash{
+      position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;
+      align-items:center;justify-content:center;background:${S.color};
+      animation:fadeOut .4s ease 2.2s forwards;
     }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-    body { background: var(--bg); font-family: 'Rajdhani', sans-serif; font-size: 16px; min-height: 100vh; color: #e2e8f0; }
-    h1,h2,h3,h4 { font-family: 'Orbitron', monospace; }
-
-    /* ── Scrollbar ── */
-    ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: #0f172a; }
-    ::-webkit-scrollbar-thumb { background: var(--pink); border-radius: 10px; }
-
-    /* ── Grid bg ── */
-    .grid-bg {
-      background-image:
-        linear-gradient(rgba(255,0,110,.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,0,110,.04) 1px, transparent 1px);
-      background-size: 44px 44px;
-    }
-
-    /* ── Glass ── */
-    .glass { backdrop-filter: blur(14px); background: var(--surface); border: 1px solid rgba(51,65,85,.55); }
-    .glass-pink  { border-color: rgba(255,0,110,.35) !important; }
-    .glass-cyan  { border-color: rgba(0,217,255,.3) !important; background: rgba(0,217,255,.04) !important; }
-    .glass-green { border-color: rgba(74,222,128,.3) !important; background: rgba(74,222,128,.04) !important; }
-
-    /* ── Buttons ── */
-    .btn { font-family: 'Rajdhani', sans-serif; font-weight: 700; border: none; cursor: pointer;
-           display: inline-flex; align-items: center; gap: .4rem; border-radius: .75rem;
-           padding: .6rem 1.4rem; transition: all .2s; font-size: 1rem; line-height: 1; }
-    .btn-primary { background: linear-gradient(135deg, var(--pink), #9333ea); color: #fff; }
-    .btn-primary:hover { filter: brightness(1.12); transform: translateY(-1px); box-shadow: 0 0 24px rgba(255,0,110,.45); }
-    .btn-cyan  { background: linear-gradient(135deg, #0891b2, var(--cyan)); color: #000; }
-    .btn-cyan:hover  { filter: brightness(1.1); transform: translateY(-1px); }
-    .btn-green { background: linear-gradient(135deg, #15803d, #4ade80); color: #000; }
-    .btn-green:hover { filter: brightness(1.1); transform: translateY(-1px); }
-    .btn-outline { background: transparent; border: 1px solid rgba(255,0,110,.5); color: var(--pink); }
-    .btn-outline:hover { background: rgba(255,0,110,.1); border-color: var(--pink); }
-    .btn-ghost  { background: transparent; border: 1px solid rgba(51,65,85,.7); color: #94a3b8; }
-    .btn-ghost:hover  { border-color: #94a3b8; color: #e2e8f0; }
-    .btn-danger { background: transparent; border: 1px solid rgba(239,68,68,.4); color: #f87171; }
-    .btn-danger:hover { background: rgba(239,68,68,.1); }
-    .btn-pwa { background: linear-gradient(135deg, #7C3AED, #06b6d4); color: #fff; }
-    .btn-pwa:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 0 24px rgba(124,58,237,.45); }
-
-    /* ── Inputs ── */
-    .input-field { width: 100%; background: rgba(2,6,23,.85); border: 1px solid #1e293b; color: #e2e8f0;
-                   padding: .65rem 1rem; border-radius: .75rem; outline: none;
-                   font-family: 'Rajdhani', sans-serif; font-size: 1rem; transition: border-color .2s, box-shadow .2s; }
-    .input-field:focus { border-color: var(--pink); box-shadow: 0 0 0 3px rgba(255,0,110,.15); }
-    .input-field::placeholder { color: #475569; }
-    .field-label { display: block; font-size: .7rem; font-weight: 700; letter-spacing: .08em;
-                   text-transform: uppercase; color: #64748b; margin-bottom: .35rem; }
-
-    /* ── Upload zone ── */
-    .upload-zone { border: 2px dashed rgba(255,0,110,.3); border-radius: 1rem; padding: 1.2rem;
-                   text-align: center; cursor: pointer; transition: all .2s; background: rgba(255,0,110,.03); }
-    .upload-zone:hover, .upload-zone.drag-over { border-color: var(--pink); background: rgba(255,0,110,.09); }
-
-    /* ── Progress ── */
-    .prog-track { width: 100%; height: 8px; background: #1e293b; border-radius: 99px; overflow: hidden; }
-    .prog-fill { height: 100%; border-radius: 99px;
-                 background: linear-gradient(90deg, var(--pink), var(--cyan)); transition: width .45s ease; }
-
-    /* ── Log console ── */
-    .log-box { background: #020617; border: 1px solid #1e293b; border-radius: .75rem; padding: .75rem;
-               font-family: 'JetBrains Mono', monospace; font-size: .68rem; color: #64748b;
-               overflow-y: auto; height: 280px; line-height: 1.6; }
-    .log-ok   { color: #4ade80; } .log-info { color: #38bdf8; }
-    .log-warn { color: #facc15; } .log-err  { color: #f87171; }
-    .log-pink { color: #f472b6; }
-
-    /* ── Toast ── */
-    .toast { position: fixed; bottom: 2rem; right: 1.5rem; z-index: 9999;
-             padding: .85rem 1.4rem; border-radius: 1rem; backdrop-filter: blur(14px);
-             animation: slideUp .3s ease; display: flex; align-items: center; gap: .6rem;
-             max-width: 400px; font-weight: 700; font-size: .9rem; }
-    .toast-success { background: rgba(15,23,42,.97); border: 1px solid #4ade80; color: #4ade80; }
-    .toast-error   { background: rgba(15,23,42,.97); border: 1px solid #f87171; color: #f87171; }
-    .toast-info    { background: rgba(15,23,42,.97); border: 1px solid #38bdf8; color: #38bdf8; }
-    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-    /* ── Badges ── */
-    .badge { display: inline-flex; align-items: center; padding: .15rem .6rem; border-radius: 99px; font-size: .68rem; font-weight: 700; }
-    .b-pink  { background: rgba(255,0,110,.15); color: #ff6eb4; border: 1px solid rgba(255,0,110,.3); }
-    .b-green { background: rgba(74,222,128,.12); color: #4ade80; border: 1px solid rgba(74,222,128,.3); }
-    .b-cyan  { background: rgba(0,217,255,.12); color: #00d9ff; border: 1px solid rgba(0,217,255,.3); }
-    .b-purple{ background: rgba(124,58,237,.15); color: #a78bfa; border: 1px solid rgba(124,58,237,.3); }
-
-    /* ── Cards ── */
-    .app-card { transition: border-color .2s, box-shadow .2s, transform .15s; cursor: pointer; }
-    .app-card:hover { border-color: rgba(255,0,110,.55)!important; box-shadow: 0 0 28px rgba(255,0,110,.15); transform: translateY(-2px); }
-
-    /* ── Icon default ── */
-    .icon-def { background: linear-gradient(135deg, #1e1b4b, #4c1d95); display: flex; align-items: center;
-                justify-content: center; font-size: 1.4rem; border-radius: .75rem; flex-shrink: 0; }
-
-    /* ── Modal ── */
-    .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.85); backdrop-filter: blur(8px);
-                display: flex; align-items: center; justify-content: center; z-index: 500; padding: 1rem; }
-
-    /* ── Step cards ── */
-    .step-card { border-radius: 1rem; padding: 1rem; display: flex; gap: .75rem; align-items: flex-start; }
-    .step-num  { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center;
-                 justify-content: center; font-weight: 900; font-size: .85rem; flex-shrink: 0; font-family: 'Orbitron', monospace; }
-
-    /* ── Divider ── */
-    .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,0,110,.4), rgba(0,217,255,.4), transparent); margin: 1.5rem 0; }
-
-    /* ── Method cards ── */
-    .method-card { border-radius: 1.25rem; padding: 1.25rem; cursor: pointer; transition: all .2s; }
-    .method-card:hover { transform: translateY(-2px); }
-    .method-card.selected { box-shadow: 0 0 0 2px var(--pink); }
-
-    /* ── Responsive ── */
-    @media (max-width: 768px) {
-      .hide-mobile { display: none !important; }
-      .grid-2 { grid-template-columns: 1fr !important; }
-    }
-
-    @keyframes pulse-dot { 0%,100%{opacity:.5} 50%{opacity:1} }
-    .pulse { animation: pulse-dot 1.2s infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .spin { animation: spin 1s linear infinite; }
+    #splash img{width:96px;height:96px;border-radius:22px;margin-bottom:16px;
+      box-shadow:0 8px 30px rgba(0,0,0,.3)}
+    #splash h1{font-family:system-ui,sans-serif;font-size:22px;font-weight:700;
+      color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.3)}
+    @keyframes fadeOut{to{opacity:0;visibility:hidden}}
+    iframe{width:100%;height:100%;border:none;display:block}
   </style>
 </head>
 <body>
-<div id="app-root" style="display:flex;flex-direction:column;min-height:100vh;"></div>
-
-<script>
-'use strict';
-
-// ════════════════════════════════════════════════════════════════════
-//  ConvertAPK — Conversor de Sites para App
-//
-//  CORREÇÃO PRINCIPAL EXPLICADA:
-//  ─────────────────────────────
-//  O bug original: installMainPWA() e installAppAsPWA() ambos
-//  tentavam instalar o PRÓPRIO site (jovena3000.github.io) porque:
-//
-//  1. O manifest do ConvertAPK tinha start_url: "/" → instala o criador
-//  2. installAppAsPWA() criava blob URLs no contexto PAI e as passava
-//     para a nova aba — blob: URLs são cross-origin, o manifest e SW
-//     nunca carregavam, o Chrome nunca disparava beforeinstallprompt.
-//
-//  SOLUÇÃO ADOTADA (honesta e funcional):
-//  ─────────────────────────────────────
-//  A. installMainPWA() → continua instalando o ConvertAPK (correto)
-//
-//  B. Para instalar apps criados pelo usuário, temos 3 métodos reais:
-//
-//     MÉTODO 1 — PWABuilder (Microsoft/Google, GRATUITO):
-//       Abre https://www.pwabuilder.com/?site=URL_DO_APP
-//       Gera APK real assinado, AAB para Play Store, etc.
-//       É a forma OFICIAL recomendada pelo Google.
-//
-//     MÉTODO 2 — Instalação manual via Chrome:
-//       Abre a URL do app em nova aba + guia visual passo a passo
-//       Chrome no Android oferece "Adicionar à tela inicial"
-//       Funciona em qualquer site HTTPS
-//
-//     MÉTODO 3 — Download do manifest.json:
-//       Gera e baixa o manifest.json correto para o site do usuário
-//       O usuário pode hospedar no próprio site e o Chrome instala
-//
-//  Esta abordagem é honesta: sem simular algo que não funciona.
-// ════════════════════════════════════════════════════════════════════
-
-// ── Estado ──────────────────────────────────────────────────────────
-var user = null, apps = [], toastQueue = [], currentToast = null;
-var editModalAppId = null, installModalApp = null;
-var deferredInstallPrompt = null;
-
-window.addEventListener('beforeinstallprompt', function(e) {
-  e.preventDefault();
-  deferredInstallPrompt = e;
-});
-
-// ── Storage ──────────────────────────────────────────────────────────
-function loadStorage() {
-  try {
-    user = JSON.parse(localStorage.getItem('ca_user') || 'null');
-    apps = JSON.parse(localStorage.getItem('ca_apps') || '[]');
-  } catch(e) { apps = []; }
-  if (!apps.length) {
-    apps = [{
-      id: 1, userId: 1, name: 'TechNews Brasil',
-      description: 'Portal de notícias de tecnologia.',
-      websiteUrl: 'https://technews.com.br',
-      packageName: 'com.convertapk.technews',
-      version: '1.0.0', themeColor: '#FF006E', orientation: 'portrait',
-      permissions: ['INTERNET'], offlineSupport: true,
-      deepLinking: false, analyticsEnabled: true,
-      iconUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=100&q=80',
-      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
-    }];
-  }
-}
-function persist() {
-  try {
-    localStorage.setItem('ca_user', JSON.stringify(user));
-    localStorage.setItem('ca_apps', JSON.stringify(apps));
-  } catch(e) {}
-}
-
-// ── Router ───────────────────────────────────────────────────────────
-function getRoute() { return window.location.hash.slice(1) || '/'; }
-function navigate(r) { window.location.hash = r; rerender(); }
-window.navigate = navigate;
-
-// ── Toast ────────────────────────────────────────────────────────────
-function toast(msg, type) {
-  type = type || 'success';
-  toastQueue.push({ msg: msg, type: type });
-  if (!currentToast) nextToast();
-}
-function nextToast() {
-  if (!toastQueue.length) { currentToast = null; rerender(); return; }
-  currentToast = toastQueue.shift(); rerender();
-  setTimeout(nextToast, 3500);
-}
-window.toast = toast;
-
-// ── Helpers ──────────────────────────────────────────────────────────
-function esc(s) {
-  return String(s == null ? '' : s)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
-function fmtDate(s) {
-  try { return new Date(s).toLocaleDateString('pt-BR'); } catch(e) { return ''; }
-}
-function fileToB64(f) {
-  return new Promise(function(res, rej) {
-    var r = new FileReader();
-    r.onload = function() { res(r.result); };
-    r.onerror = rej;
-    r.readAsDataURL(f);
-  });
-}
-function validImg(f) {
-  if (!f.type.match(/^image\/(jpeg|png|gif|webp)$/)) { toast('Apenas JPG/PNG/GIF/WEBP', 'error'); return false; }
-  if (f.size > 2097152) { toast('Máx 2MB', 'error'); return false; }
-  return true;
-}
-function iconHtml(url, sz) {
-  sz = sz || 48;
-  if (url && url !== '[base64-image]') {
-    return '<img src="' + esc(url) + '" style="width:' + sz + 'px;height:' + sz + 'px;border-radius:.75rem;object-fit:cover;flex-shrink:0;display:block;" onerror="this.outerHTML=\'<div class=icon-def style=width:' + sz + 'px;height:' + sz + 'px;>&#128241;</div>\'">';
-  }
-  return '<div class="icon-def" style="width:' + sz + 'px;height:' + sz + 'px;">&#128241;</div>';
-}
-
-// ── Auth ─────────────────────────────────────────────────────────────
-window.handleLogin = function() {
-  user = { id: 1, name: 'Cyber Dev', email: 'dev@convertapk.com', role: 'free' };
-  persist(); toast('Bem-vindo, Cyber Dev! 🖥'); navigate('/dashboard');
-};
-window.handleLogout = function() { user = null; persist(); toast('Desconectado', 'info'); navigate('/'); };
-window.handleUpgrade = function(tier) {
-  if (!user) user = { id: 1, name: 'Cyber Dev', email: 'dev@convertapk.com', role: tier };
-  else user.role = tier;
-  persist(); toast('Plano ' + tier.toUpperCase() + ' ativado! 🚀'); navigate('/dashboard');
-};
-
-// ── CRUD ─────────────────────────────────────────────────────────────
-window.createApp = function(data) {
-  var a = Object.assign({}, data, {
-    id: Date.now(), userId: user ? user.id : 1,
-    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
-  });
-  apps = [a].concat(apps); persist();
-  toast('"' + a.name + '" criado! ✨'); navigate('/dashboard');
-};
-window.updateApp = function(id, data) {
-  apps = apps.map(function(a) {
-    return a.id === id ? Object.assign({}, a, data, { updatedAt: new Date().toISOString() }) : a;
-  });
-  persist(); toast('App atualizado!'); rerender();
-};
-window.deleteApp = function(id) {
-  var n = (apps.find(function(a) { return a.id === id; }) || {}).name || 'App';
-  apps = apps.filter(function(a) { return a.id !== id; });
-  persist(); toast('"' + n + '" removido', 'info'); navigate('/dashboard');
-};
-
-// ════════════════════════════════════════════════════════════════════
-//  INSTALAR O PRÓPRIO ConvertAPK
-//  ─────────────────────────────
-//  Aqui SIM instalamos o próprio site criador (jovena3000.github.io)
-//  como PWA. Isso é correto e esperado.
-// ════════════════════════════════════════════════════════════════════
-window.installMainPWA = function() {
-  // Injeta manifest do ConvertAPK apontando para o próprio site
-  if (!document.querySelector('link[rel="manifest"]')) {
-    var manifestData = JSON.stringify({
-      name: 'ConvertAPK - Criador de Apps',
-      short_name: 'ConvertAPK',
-      start_url: window.location.pathname || '/',
-      scope: window.location.pathname || '/',
-      display: 'standalone',
-      theme_color: '#FF006E',
-      background_color: '#020617',
-      description: 'Transforme qualquer site em app Android',
-      icons: [{
-        src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23FF006E'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle' fill='white'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E",
-        sizes: 'any', type: 'image/svg+xml'
-      }]
-    });
-    var mBlob = new Blob([manifestData], { type: 'application/manifest+json' });
-    var link = document.createElement('link');
-    link.rel = 'manifest';
-    link.href = URL.createObjectURL(mBlob);
-    document.head.appendChild(link);
-  }
-
-  if (deferredInstallPrompt) {
-    deferredInstallPrompt.prompt();
-    deferredInstallPrompt.userChoice.then(function() { deferredInstallPrompt = null; });
-  } else {
-    // Abre modal de instruções manuais para instalar o ConvertAPK
-    installModalApp = '__main__'; rerender();
-  }
-};
-
-// ════════════════════════════════════════════════════════════════════
-//  INSTALAR UM APP CRIADO PELO USUÁRIO
-//  ────────────────────────────────────
-//  CORREÇÃO: Não tentamos mais instalar o jovena3000.github.io.
-//  Em vez disso, abrimos um modal com 3 métodos reais:
-//
-//  1) PWABuilder → gera APK real GRÁTIS a partir da URL do app
-//  2) Chrome manual → abre a URL do app em nova aba + guia de instalação
-//  3) Download manifest.json → para quem tem acesso ao servidor do app
-// ════════════════════════════════════════════════════════════════════
-window.openInstallModal = function(app) {
-  installModalApp = app; rerender();
-};
-
-// Método 1: PWABuilder — gera APK real gratuito
-window.openPWABuilder = function(url) {
-  var pwaUrl = 'https://www.pwabuilder.com/?site=' + encodeURIComponent(url);
-  window.open(pwaUrl, '_blank');
-  toast('PWABuilder aberto! Cole a URL e clique em "Start" para gerar o APK.', 'info');
-};
-
-// Método 2: Abrir o site do app em nova aba para instalação manual
-window.openAppTab = function(url, appName) {
-  var tab = window.open(url, '_blank');
-  if (tab) {
-    toast('"' + appName + '" aberto! No Chrome Android: Menu ⋮ → "Adicionar à tela inicial"', 'success');
-  } else {
-    toast('Permita pop-ups nas configurações do navegador.', 'error');
-  }
-};
-
-// ── Build simulator ───────────────────────────────────────────────────
-window.startBuild = function(appId) {
-  var app = apps.find(function(a) { return a.id === appId; });
-  if (!app) return;
-  var pre   = document.getElementById('buildPreChecks');
-  var prog  = document.getElementById('buildProgress');
-  var result= document.getElementById('buildResult');
-  var logs  = document.getElementById('buildLogs');
-  var bar   = document.getElementById('buildProgressBar');
-  var pct   = document.getElementById('buildPct');
-  var phase = document.getElementById('buildPhaseLabel');
-  var dot   = document.getElementById('consoleStatusDot');
-  if (pre)  pre.style.display  = 'none';
-  if (prog) prog.style.display = 'block';
-  if (dot)  { dot.style.background = '#facc15'; dot.classList.add('pulse'); }
-
-  function log(msg, cls) {
-    if (!logs) return;
-    logs.innerHTML += '\n<span class="' + (cls || '') + '">[' + new Date().toLocaleTimeString() + '] ' + msg + '</span>';
-    logs.scrollTop = logs.scrollHeight;
-  }
-  log('Iniciando análise: ' + app.name, 'log-pink');
-  log('URL: ' + app.websiteUrl, 'log-info');
-
-  var phases = [
-    { l: 'Verificando URL do site',        p: 14 },
-    { l: 'Checando compatibilidade PWA',   p: 28 },
-    { l: 'Analisando recursos da página',  p: 42 },
-    { l: 'Gerando manifest.json',          p: 58 },
-    { l: 'Configurando Service Worker',    p: 72 },
-    { l: 'Preparando pacote de instalação',p: 86 },
-    { l: 'Finalizando',                    p: 100 }
-  ];
-  var i = 0;
-  function run() {
-    if (i >= phases.length) {
-      if (dot) { dot.style.background = '#4ade80'; dot.classList.remove('pulse'); }
-      log('Análise concluída. Escolha o método de instalação abaixo.', 'log-ok');
-      if (result) {
-        result.style.display = 'block';
-        result.innerHTML =
-          '<div class="glass glass-green" style="border-radius:1rem;padding:1.25rem;margin-top:1rem;">'
-          + '<div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;">'
-          + '<span style="font-size:2rem;">🎉</span>'
-          + '<div><div style="color:#4ade80;font-weight:700;font-size:1rem;">Análise concluída!</div>'
-          + '<div style="font-size:.8rem;color:#64748b;">' + esc(app.name) + ' está pronto para instalação</div></div></div>'
-          + '<p style="font-size:.82rem;color:#94a3b8;margin-bottom:1rem;">Escolha o método mais adequado para você:</p>'
-          + '<div style="display:flex;flex-direction:column;gap:.6rem;">'
-          + '<button class="btn btn-pwa" onclick="openInstallModal(apps.find(function(a){return a.id===' + appId + '}))" style="justify-content:center;font-size:.9rem;padding:.75rem;">🚀 Ver todos os métodos de instalação</button>'
-          + '<button class="btn btn-green" onclick="openPWABuilder(\'' + esc(app.websiteUrl) + '\')" style="justify-content:center;font-size:.85rem;">⚡ Gerar APK real com PWABuilder (grátis)</button>'
-          + '</div></div>';
-      }
-      return;
+  <div id="splash">
+    <img src="icons/icon-192x192.png" alt="${S.name}">
+    <h1>${S.name}</h1>
+  </div>
+  <iframe
+    id="frame"
+    src="${S.url}"
+    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads allow-top-navigation"
+    allow="geolocation;camera;microphone;payment"
+    loading="eager"
+  ></iframe>
+  <script>
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.register('sw.js').catch(()=>{});
     }
-    var p = phases[i];
-    if (bar)   bar.style.width   = p.p + '%';
-    if (pct)   pct.textContent   = p.p + '%';
-    if (phase) phase.textContent = p.l;
-    log('[' + p.l + ']...');
-    i++; setTimeout(run, 520);
+    // Previne scroll bounce no iOS
+    document.addEventListener('touchmove', e=>{
+      if(e.target===document.body) e.preventDefault();
+    },{passive:false});
+  <\/script>
+</body>
+</html>`;
+  zip.file('index.html', html);
+
+  // README
+  const readme = `# ${S.name} — Pacote PWA gerado pelo AppForge
+
+## Conteúdo do ZIP
+- index.html       → app shell com splash + iframe
+- manifest.json    → Web App Manifest (PWA)
+- sw.js            → Service Worker com cache offline
+- icons/           → ícones em 6 tamanhos (48→512 px)
+
+## Como instalar no Android
+
+### Opção 1 — PWA via Chrome (sem APK)
+1. Hospede os arquivos em qualquer servidor HTTPS
+   (Netlify, Vercel, GitHub Pages — todos gratuitos)
+2. Acesse a URL no Chrome do Android
+3. Menu (⋮) → "Adicionar à tela inicial"
+4. Pronto — funciona como app nativo, com ícone e splash
+
+### Opção 2 — APK verdadeiro via PWABuilder (gratuito)
+1. Hospede os arquivos em HTTPS (veja acima)
+2. Acesse https://www.pwabuilder.com
+3. Cole a URL e clique em "Start"
+4. Package for Stores → Android → Download Package
+5. O arquivo .apk pode ser instalado diretamente
+   (ative "Fontes desconhecidas" nas configurações)
+
+### Opção 3 — Google Play Store via TWA
+Use o mesmo pacote do PWABuilder e publique na Play Store.
+O package ID gerado é: ${pkgId}
+
+## Gerado por AppForge — https://appforge.io
+`;
+  zip.file('README.md', readme);
+
+  // Gerar blob
+  const blob = await zip.generateAsync({
+    type:'blob', compression:'DEFLATE', compressionOptions:{level:9}
+  });
+  S.zip = blob;
+  S.zipSize = blob.size;
+}
+
+// ─── SUCCESS ─────────────────────────────────────────────
+function showSuccess(){
+  stepTo(3,'active'); stepTo(2,'done');
+  document.getElementById('progSec').classList.remove('on');
+  document.getElementById('succSec').classList.add('on');
+
+  document.getElementById('rName').textContent = S.name;
+  document.getElementById('rUrl').textContent = S.url;
+  document.getElementById('rSize').textContent = formatBytes(S.zipSize);
+
+  // QR Code real
+  document.getElementById('qrCanvas').innerHTML = '';
+  try{
+    new QRCode(document.getElementById('qrCanvas'), {
+      text: S.url,
+      width: 132, height: 132,
+      colorDark: '#080b10', colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch(e){ document.getElementById('qrCanvas').textContent = S.url; }
+
+  toast('success','Pacote pronto!','ZIP real gerado com sucesso');
+}
+
+function doDownload(){
+  if(!S.zip){ toast('error','Erro','Gere o pacote primeiro'); return; }
+  const url = URL.createObjectURL(S.zip);
+  const a   = document.createElement('a');
+  a.href = url;
+  a.download = S.name.replace(/\s+/g,'_') + '_pwa.zip';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 10000);
+  toast('success','Download iniciado','ZIP salvo com sucesso');
+}
+
+// ─── HELPERS ─────────────────────────────────────────────
+function stepTo(n, state){
+  for(let i=1;i<=3;i++){
+    const c=document.getElementById('sn'+i);
+    const l=document.getElementById('sl'+i);
+    if(i<n){ c.className='step-circle done'; c.textContent='✓'; l.className='step-lbl done'; }
+    else if(i===n){ c.className='step-circle '+state; l.className='step-lbl active'; }
+    else{ c.className='step-circle'; c.textContent=i; l.className='step-lbl'; }
+    if(i<3){
+      const r=document.getElementById('sr'+i);
+      r.className = 'step-rail' + (i<n?' done':'');
+    }
   }
-  setTimeout(run, 150);
-};
+}
 
-// ── Upload de imagem ──────────────────────────────────────────────────
-var caIconData = null, quickIconData = null, editIconData = null;
+function formatBytes(b){
+  if(b<1024) return b+' B';
+  if(b<1024*1024) return (b/1024).toFixed(1)+' KB';
+  return (b/1024/1024).toFixed(2)+' MB';
+}
 
-window.handleCaImage = function(file) {
-  if (!file || !validImg(file)) return;
-  fileToB64(file).then(function(b64) {
-    caIconData = b64;
-    var p = document.getElementById('caIconPreview');
-    if (p) p.innerHTML = '<img src="' + b64 + '" style="width:100%;height:100%;object-fit:cover;border-radius:.75rem;">';
+function reset(){
+  S.url=''; S.name=''; S.icon=null; S.color='#00e5ff'; S.zip=null; S.zipSize=0;
+  document.getElementById('urlIn').value='';
+  document.getElementById('nameIn').value='';
+  document.getElementById('dropzone').classList.remove('ok');
+  document.getElementById('uploadUI').innerHTML=
+    '<span class="upload-ico">📤</span><div class="upload-ttl">Toque para enviar ícone</div><div class="upload-sub">PNG, JPG ou SVG • máx 5 MB</div>';
+  document.querySelectorAll('.color-swatch').forEach(x=>x.classList.remove('sel'));
+  document.querySelector('.color-swatch').classList.add('sel');
+  document.getElementById('customColor').value='#00e5ff';
+  document.getElementById('hexDisplay').textContent='#00E5FF';
+  document.getElementById('qrCanvas').innerHTML='';
+  ['ps1','ps2','ps3','ps4'].forEach((id,i)=>{
+    const el=document.getElementById(id); el.className='pstep';
+    el.querySelector('.pstep-ico').textContent=['⚙️','🖼️','📦','🔐'][i];
   });
-};
-window.clearCaIcon = function() {
-  caIconData = null;
-  var p = document.getElementById('caIconPreview'); if (p) p.innerHTML = '&#128241;';
-  var u = document.getElementById('caIconUrl'); if (u) u.value = '';
-};
-window.submitCreateApp = function() {
-  var name = (document.getElementById('caName') || {}).value && document.getElementById('caName').value.trim();
-  var url  = (document.getElementById('caUrl')  || {}).value && document.getElementById('caUrl').value.trim();
-  var pkg  = (document.getElementById('caPkg')  || {}).value && document.getElementById('caPkg').value.trim();
-  if (!name || !url || !pkg) { toast('Preencha Nome, URL e Package', 'error'); return; }
-  createApp({
-    name: name, websiteUrl: url,
-    description: document.getElementById('caDesc') ? document.getElementById('caDesc').value : '',
-    packageName: pkg,
-    version: document.getElementById('caVersion') ? document.getElementById('caVersion').value : '1.0.0',
-    themeColor: document.getElementById('caColor') ? document.getElementById('caColor').value : '#FF006E',
-    orientation: document.getElementById('caOrientation') ? document.getElementById('caOrientation').value : 'portrait',
-    permissions: ['INTERNET'],
-    offlineSupport: !!(document.getElementById('caOffline') && document.getElementById('caOffline').checked),
-    deepLinking: !!(document.getElementById('caDeep') && document.getElementById('caDeep').checked),
-    analyticsEnabled: !!(document.getElementById('caAnalytics') && document.getElementById('caAnalytics').checked),
-    iconUrl: caIconData || (document.getElementById('caIconUrl') ? document.getElementById('caIconUrl').value.trim() : '') || ''
-  });
-  caIconData = null;
-};
-window.handleQuickImage = function(file) {
-  if (!file || !validImg(file)) return;
-  fileToB64(file).then(function(b64) {
-    quickIconData = b64;
-    var p = document.getElementById('quickIconPreview');
-    if (p) p.innerHTML = '<img src="' + b64 + '" style="height:48px;border-radius:.5rem;">';
-  });
-};
-window.handleQuickForm = function() {
-  var name = (document.getElementById('qName') ? document.getElementById('qName').value.trim() : '') || 'Quick App';
-  var url  = document.getElementById('qUrl') ? document.getElementById('qUrl').value.trim() : '';
-  if (!url) { toast('URL obrigatória', 'error'); return; }
-  if (!user) handleLogin();
-  createApp({
-    name: name, websiteUrl: url, description: 'Criado rapidamente',
-    packageName: 'com.quick.' + (Date.now() % 100000),
-    version: '1.0.0', themeColor: '#FF006E', orientation: 'portrait',
-    permissions: ['INTERNET'], offlineSupport: true, deepLinking: false, analyticsEnabled: true,
-    iconUrl: quickIconData || ''
-  });
-  quickIconData = null;
-};
-window.openEditModal = function(id) { editModalAppId = id; editIconData = null; rerender(); };
-window.handleEditImage = function(file) {
-  if (!file || !validImg(file)) return;
-  fileToB64(file).then(function(b64) {
-    editIconData = b64;
-    var p = document.getElementById('editIconPreview');
-    if (p) p.innerHTML = '<img src="' + b64 + '" style="width:64px;height:64px;border-radius:.75rem;object-fit:cover;">';
-  });
-};
-window.saveEditModal = function(id) {
-  var name = document.getElementById('editName') ? document.getElementById('editName').value.trim() : '';
-  var url  = document.getElementById('editUrl')  ? document.getElementById('editUrl').value.trim()  : '';
-  if (!name || !url) { toast('Nome e URL obrigatórios', 'error'); return; }
-  var icon = editIconData
-    || (document.getElementById('editIconUrl') ? document.getElementById('editIconUrl').value.trim() : '')
-    || ((apps.find(function(a) { return a.id === id; }) || {}).iconUrl || '');
-  updateApp(id, {
-    name: name, websiteUrl: url,
-    description: document.getElementById('editDesc') ? document.getElementById('editDesc').value : '',
-    packageName: document.getElementById('editPkg') ? document.getElementById('editPkg').value : '',
-    version: document.getElementById('editVersion') ? document.getElementById('editVersion').value : '1.0.0',
-    themeColor: document.getElementById('editColor') ? document.getElementById('editColor').value : '#FF006E',
-    orientation: document.getElementById('editOrientation') ? document.getElementById('editOrientation').value : 'portrait',
-    offlineSupport: !!(document.getElementById('editOffline') && document.getElementById('editOffline').checked),
-    deepLinking: !!(document.getElementById('editDeep') && document.getElementById('editDeep').checked),
-    analyticsEnabled: !!(document.getElementById('editAnalytics') && document.getElementById('editAnalytics').checked),
-    iconUrl: icon
-  });
-  editModalAppId = null; editIconData = null; rerender();
-};
-
-// ════════════════════════════════════════════════════════════════════
-//  RENDER ENGINE
-// ════════════════════════════════════════════════════════════════════
-
-// ── Install Modal ─────────────────────────────────────────────────────
-function renderInstallModal() {
-  if (!installModalApp) return '';
-
-  // Modal de instruções para instalar o próprio ConvertAPK
-  if (installModalApp === '__main__') {
-    return '<div class="modal-bg" onclick="if(event.target===this){installModalApp=null;rerender();}">'
-      + '<div class="glass glass-pink" style="border-radius:1.5rem;padding:1.75rem;max-width:460px;width:100%;">'
-      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">'
-      + '<h3 style="font-size:1rem;margin:0;">📲 Instalar ConvertAPK</h3>'
-      + '<button onclick="installModalApp=null;rerender();" style="background:none;border:none;color:#94a3b8;font-size:1.3rem;cursor:pointer;">✕</button></div>'
-      + '<p style="font-size:.85rem;color:#94a3b8;margin-bottom:1rem;">Instale este criador de apps na tela inicial do seu dispositivo:</p>'
-      + '<div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.25rem;">'
-      + '<div style="background:rgba(255,255,255,.04);border-radius:.65rem;padding:.6rem .85rem;font-size:.82rem;">🟢 <strong>Android Chrome/Edge</strong> — Menu ⋮ → "Adicionar à tela inicial"</div>'
-      + '<div style="background:rgba(255,255,255,.04);border-radius:.65rem;padding:.6rem .85rem;font-size:.82rem;">🔵 <strong>Samsung Internet</strong> — Menu ≡ → "Adicionar página à tela inicial"</div>'
-      + '<div style="background:rgba(255,255,255,.04);border-radius:.65rem;padding:.6rem .85rem;font-size:.82rem;">🍎 <strong>iOS Safari</strong> — Compartilhar ↑ → "Adicionar à Tela de Início"</div>'
-      + '<div style="background:rgba(255,255,255,.04);border-radius:.65rem;padding:.6rem .85rem;font-size:.82rem;">💻 <strong>Desktop Chrome</strong> — Ícone ⊕ na barra de endereços</div>'
-      + '</div>'
-      + '<button class="btn btn-primary" onclick="installModalApp=null;rerender();" style="width:100%;justify-content:center;">Entendi ✓</button>'
-      + '</div></div>';
-  }
-
-  // Modal de métodos de instalação para UM APP CRIADO
-  var app = installModalApp;
-  return '<div class="modal-bg" onclick="if(event.target===this){installModalApp=null;rerender();}">'
-    + '<div class="glass glass-pink" style="border-radius:1.5rem;padding:1.75rem;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;">'
-    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">'
-    + '<div style="display:flex;gap:.75rem;align-items:center;">'
-    + iconHtml(app.iconUrl, 44)
-    + '<div><h3 style="font-size:1rem;margin:0;">Instalar: ' + esc(app.name) + '</h3>'
-    + '<div style="font-size:.72rem;color:#64748b;margin-top:.15rem;">' + esc(app.websiteUrl) + '</div></div></div>'
-    + '<button onclick="installModalApp=null;rerender();" style="background:none;border:none;color:#94a3b8;font-size:1.3rem;cursor:pointer;">✕</button></div>'
-
-    // ── MÉTODO 1: PWABuilder ──────────────────────────────────────
-    + '<div class="glass" style="border-radius:1.25rem;padding:1.25rem;margin-bottom:.9rem;border-color:rgba(124,58,237,.4);background:rgba(124,58,237,.06);">'
-    + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;">'
-    + '<div style="flex:1;">'
-    + '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;">'
-    + '<span style="font-size:1.1rem;">⚡</span>'
-    + '<span style="font-weight:700;color:#a78bfa;">MÉTODO 1 — PWABuilder</span>'
-    + '<span class="badge b-purple">RECOMENDADO</span></div>'
-    + '<p style="font-size:.8rem;color:#94a3b8;margin-bottom:.6rem;">Ferramenta oficial da Microsoft + Google. Gera <strong style="color:#e2e8f0;">APK real assinado</strong>, AAB para Play Store e pacote iOS. Completamente gratuito.</p>'
-    + '<div style="font-size:.75rem;color:#64748b;display:flex;flex-direction:column;gap:.25rem;">'
-    + '<div>✅ APK funcional instalável no Android</div>'
-    + '<div>✅ Pode publicar na Google Play Store</div>'
-    + '<div>✅ Suporte a notificações, offline e câmera</div>'
-    + '</div></div>'
-    + '<button class="btn btn-pwa" onclick="openPWABuilder(\'' + esc(app.websiteUrl) + '\')" style="flex-shrink:0;white-space:nowrap;">Abrir PWABuilder ↗</button>'
-    + '</div>'
-    + '<div style="margin-top:.9rem;background:rgba(0,0,0,.3);border-radius:.65rem;padding:.65rem .85rem;font-size:.75rem;color:#94a3b8;">'
-    + '<strong style="color:#a78bfa;">Como usar:</strong> Cole a URL do site → clique "Start" → aba Android → "Generate Package" → baixe o APK.'
-    + '</div></div>'
-
-    // ── MÉTODO 2: Chrome manual ───────────────────────────────────
-    + '<div class="glass" style="border-radius:1.25rem;padding:1.25rem;margin-bottom:.9rem;border-color:rgba(0,217,255,.3);background:rgba(0,217,255,.04);">'
-    + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;">'
-    + '<div style="flex:1;">'
-    + '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;">'
-    + '<span style="font-size:1.1rem;">🌐</span>'
-    + '<span style="font-weight:700;color:#00d9ff;">MÉTODO 2 — Chrome direto</span>'
-    + '<span class="badge b-cyan">MAIS RÁPIDO</span></div>'
-    + '<p style="font-size:.8rem;color:#94a3b8;margin-bottom:.6rem;">Abre o site em nova aba. No Chrome Android, o menu oferece "Adicionar à tela inicial" — instala como WebAPK nativo sem APK.</p>'
-    + '<div style="font-size:.75rem;color:#64748b;display:flex;flex-direction:column;gap:.25rem;">'
-    + '<div>✅ Funciona em qualquer site HTTPS</div>'
-    + '<div>✅ Zero configuração</div>'
-    + '<div>⚠️ Requer Chrome no Android / Safari no iOS</div>'
-    + '</div></div>'
-    + '<button class="btn btn-cyan" onclick="openAppTab(\'' + esc(app.websiteUrl) + '\',\'' + esc(app.name) + '\')" style="flex-shrink:0;white-space:nowrap;color:#000;">Abrir Site ↗</button>'
-    + '</div>'
-    + '<div style="margin-top:.9rem;background:rgba(0,0,0,.3);border-radius:.65rem;padding:.65rem .85rem;font-size:.75rem;color:#94a3b8;">'
-    + '<strong style="color:#00d9ff;">Passos:</strong>'
-    + ' Chrome Android: Menu ⋮ → "Adicionar à tela inicial" |'
-    + ' iOS Safari: Compartilhar ↑ → "Adicionar à Tela de Início" |'
-    + ' Desktop: ícone ⊕ na barra de endereços'
-    + '</div></div>'
-
-    // ── MÉTODO 3: AppsGeyser + serviços alternativos gratuitos ──────
-    + '<div class="glass" style="border-radius:1.25rem;padding:1.25rem;border-color:rgba(74,222,128,.3);background:rgba(74,222,128,.05);">'
-    + '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;">'
-    + '<span style="font-size:1.1rem;">🤖</span>'
-    + '<span style="font-weight:700;color:#4ade80;">MÉTODO 3 — Geradores de APK Gratuitos</span>'
-    + '<span class="badge b-green">SEM CÓDIGO</span></div>'
-    + '<p style="font-size:.79rem;color:#94a3b8;margin-bottom:.9rem;">'
-    + 'Serviços online que geram um <strong style="color:#e2e8f0;">APK real e assinado</strong> a partir da URL do site — sem instalar nada, sem código. Basta colar a URL e baixar o APK.'
-    + '</p>'
-
-    // AppsGeyser — principal
-    + '<div style="background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.25);border-radius:.85rem;padding:.9rem;margin-bottom:.65rem;">'
-    + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.75rem;flex-wrap:wrap;">'
-    + '<div style="flex:1;">'
-    + '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem;">'
-    + '<span style="font-weight:700;font-size:.88rem;color:#4ade80;">AppsGeyser</span>'
-    + '<span class="badge b-green" style="font-size:.62rem;">GRÁTIS · MAIS POPULAR</span></div>'
-    + '<p style="font-size:.75rem;color:#94a3b8;margin-bottom:.4rem;">Cole a URL → escolha o template WebView → clica em "Create" → APK gerado na nuvem para download. Não precisa de conta.</p>'
-    + '<div style="font-size:.72rem;color:#64748b;display:flex;flex-direction:column;gap:.2rem;">'
-    + '<div>✅ APK real para instalar no Android</div>'
-    + '<div>✅ Sem conta obrigatória no plano gratuito</div>'
-    + '<div>✅ Funciona com qualquer URL (https://)</div>'
-    + '</div></div>'
-    + '<button class="btn btn-green" onclick="window.open(\'https://appsgeyser.com/apk-maker/?url=\'+encodeURIComponent(\'' + esc(app.websiteUrl) + '\'),\'_blank\')" style="flex-shrink:0;color:#000;white-space:nowrap;padding:.45rem .9rem;font-size:.78rem;">Abrir AppsGeyser ↗</button>'
-    + '</div></div>'
-
-    // WebSite2APK
-    + '<div style="background:rgba(56,189,248,.05);border:1px solid rgba(56,189,248,.2);border-radius:.85rem;padding:.9rem;margin-bottom:.65rem;">'
-    + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.75rem;flex-wrap:wrap;">'
-    + '<div style="flex:1;">'
-    + '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem;">'
-    + '<span style="font-weight:700;font-size:.88rem;color:#38bdf8;">WebSite2APK</span>'
-    + '<span class="badge b-cyan" style="font-size:.62rem;">GRÁTIS · APK + AAB</span></div>'
-    + '<p style="font-size:.75rem;color:#94a3b8;margin-bottom:.4rem;">Gera APK e AAB (App Bundle para Play Store). Interface simples: cole a URL, configure nome e ícone, baixe o pacote.</p>'
-    + '<div style="font-size:.72rem;color:#64748b;display:flex;flex-direction:column;gap:.2rem;">'
-    + '<div>✅ Gera APK e AAB para Play Store</div>'
-    + '<div>✅ Personalize nome, ícone e cor</div>'
-    + '<div>✅ Sem necessidade de Android Studio</div>'
-    + '</div></div>'
-    + '<button class="btn btn-cyan" onclick="window.open(\'https://websitetoapk.com/\',\'_blank\')" style="flex-shrink:0;color:#000;white-space:nowrap;padding:.45rem .9rem;font-size:.78rem;">Abrir WebSite2APK ↗</button>'
-    + '</div></div>'
-
-    // webtoapp.cloud
-    + '<div style="background:rgba(168,85,247,.05);border:1px solid rgba(168,85,247,.2);border-radius:.85rem;padding:.9rem;margin-bottom:.65rem;">'
-    + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.75rem;flex-wrap:wrap;">'
-    + '<div style="flex:1;">'
-    + '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem;">'
-    + '<span style="font-weight:700;font-size:.88rem;color:#a78bfa;">WebToApp.cloud</span>'
-    + '<span class="badge b-purple" style="font-size:.62rem;">100% GRÁTIS · APK + AAB</span></div>'
-    + '<p style="font-size:.75rem;color:#94a3b8;margin-bottom:.4rem;">Cole a URL, escolha ícone e splash screen, clique em converter — gera APK e AAB releasable (pronto para Play Store) totalmente grátis, sem cadastro.</p>'
-    + '<div style="font-size:.72rem;color:#64748b;display:flex;flex-direction:column;gap:.2rem;">'
-    + '<div>✅ APK + AAB release prontos para download</div>'
-    + '<div>✅ Escolha ícone e splash screen</div>'
-    + '<div>✅ Sem cadastro obrigatório</div>'
-    + '</div></div>'
-    + '<button class="btn btn-pwa" onclick="window.open(\'https://webtoapp.cloud/\',\'_blank\')" style="flex-shrink:0;white-space:nowrap;padding:.45rem .9rem;font-size:.78rem;">Abrir ↗</button>'
-    + '</div></div>'
-
-    // WebIntoApp
-    + '<div style="background:rgba(251,146,60,.05);border:1px solid rgba(251,146,60,.2);border-radius:.85rem;padding:.9rem;margin-bottom:.65rem;">'
-    + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.75rem;flex-wrap:wrap;">'
-    + '<div style="flex:1;">'
-    + '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem;">'
-    + '<span style="font-weight:700;font-size:.88rem;color:#fb923c;">WebIntoApp</span>'
-    + '<span style="background:rgba(251,146,60,.15);color:#fb923c;border:1px solid rgba(251,146,60,.3);padding:.15rem .6rem;border-radius:99px;font-size:.62rem;font-weight:700;">FREE TRIAL · APK + AAB + SRC</span></div>'
-    + '<p style="font-size:.75rem;color:#94a3b8;margin-bottom:.4rem;">Gera APK debug e release + AAB + código-fonte em minutos. Suporta Push Notifications, AdMob e detecção de instalações. Free trial disponível.</p>'
-    + '<div style="font-size:.72rem;color:#64748b;display:flex;flex-direction:column;gap:.2rem;">'
-    + '<div>✅ APK release + AAB + código-fonte</div>'
-    + '<div>✅ Push Notifications e AdMob inclusos</div>'
-    + '<div>✅ Free trial sem cartão de crédito</div>'
-    + '</div></div>'
-    + '<button class="btn" onclick="window.open(\'https://www.webintoapp.com/\',\'_blank\')" style="flex-shrink:0;white-space:nowrap;padding:.45rem .9rem;font-size:.78rem;background:linear-gradient(135deg,#ea580c,#fb923c);color:#fff;">Abrir ↗</button>'
-    + '</div></div>'
-
-    // FreeWebToApk
-    + '<div style="background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.2);border-radius:.85rem;padding:.9rem;">'
-    + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.75rem;flex-wrap:wrap;">'
-    + '<div style="flex:1;">'
-    + '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem;">'
-    + '<span style="font-weight:700;font-size:.88rem;color:#22c55e;">FreeWebToApk</span>'
-    + '<span class="badge b-green" style="font-size:.62rem;">GRÁTIS · 2 SEGUNDOS</span></div>'
-    + '<p style="font-size:.75rem;color:#94a3b8;margin-bottom:.4rem;">Converte qualquer site (WordPress, Wix, Shopify, HTML5) em APK em aproximadamente 2 segundos. Geração rápida com download de APK e AAB para Play Store.</p>'
-    + '<div style="font-size:.72rem;color:#64748b;display:flex;flex-direction:column;gap:.2rem;">'
-    + '<div>✅ Conversão em ~2 segundos</div>'
-    + '<div>✅ Suporta WordPress, Wix, Shopify e HTML5</div>'
-    + '<div>✅ APK e AAB para Play Store</div>'
-    + '</div></div>'
-    + '<button class="btn btn-green" onclick="window.open(\'https://freewebtoapk.com/\',\'_blank\')" style="flex-shrink:0;white-space:nowrap;padding:.45rem .9rem;font-size:.78rem;color:#000;">Abrir ↗</button>'
-    + '</div></div>'
-
-    // Dica de uso com URL copiada
-    + '<div style="margin-top:.85rem;background:rgba(0,0,0,.3);border-radius:.65rem;padding:.65rem .85rem;font-size:.75rem;color:#94a3b8;">'
-    + '<strong style="color:#4ade80;">💡 Como usar:</strong>'
-    + ' Copie a URL do seu app: <span style="font-family:\'JetBrains Mono\',monospace;color:#00d9ff;font-size:.7rem;word-break:break-all;">' + esc(app.websiteUrl) + '</span>'
-    + ' → abra qualquer serviço acima → cole a URL → configure nome e ícone → clique em gerar → baixe o APK.'
-    + '</div>'
-    + '</div>'
-
-    + '</div></div>';
+  updateRing(0);
+  stepTo(1,'active');
+  document.getElementById('succSec').classList.remove('on');
+  document.getElementById('formSec').classList.remove('hidden');
+  syncPreview();
 }
 
-// ── Edit Modal ────────────────────────────────────────────────────────
-function renderEditModal() {
-  if (!editModalAppId) return '';
-  var a = apps.find(function(x) { return x.id === editModalAppId; });
-  if (!a) return '';
-  return '<div class="modal-bg" onclick="if(event.target===this){editModalAppId=null;rerender();}">'
-    + '<div class="glass glass-pink" style="border-radius:1.5rem;padding:1.75rem;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;">'
-    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">'
-    + '<h3 style="font-size:1rem;margin:0;">✏️ Editar App</h3>'
-    + '<button onclick="editModalAppId=null;rerender();" style="background:none;border:none;color:#94a3b8;font-size:1.3rem;cursor:pointer;">✕</button></div>'
-    + '<div style="display:flex;flex-direction:column;gap:.9rem;">'
-    + '<div style="display:flex;gap:.75rem;align-items:flex-start;">'
-    + '<div id="editIconPreview" style="width:64px;height:64px;border-radius:.75rem;overflow:hidden;background:linear-gradient(135deg,#1e1b4b,#4c1d95);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;">'
-    + (a.iconUrl && a.iconUrl !== '[base64-image]' ? '<img src="' + esc(a.iconUrl) + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.outerHTML=\'&#128241;\'">' : '&#128241;')
-    + '</div>'
-    + '<div style="flex:1;">'
-    + '<div class="upload-zone" onclick="document.getElementById(\'editIconFile\').click();" ondragover="event.preventDefault();this.classList.add(\'drag-over\');" ondragleave="this.classList.remove(\'drag-over\');" ondrop="event.preventDefault();this.classList.remove(\'drag-over\');handleEditImage(event.dataTransfer.files[0]);">'
-    + '<div style="font-size:.8rem;color:#94a3b8;">📸 Nova imagem (JPG/PNG, máx 2MB)</div></div>'
-    + '<input type="file" id="editIconFile" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none;" onchange="handleEditImage(this.files[0])">'
-    + '<input class="input-field" id="editIconUrl" placeholder="Ou cole URL da imagem..." value="' + esc(!a.iconUrl || a.iconUrl.startsWith('data:') || a.iconUrl === '[base64-image]' ? '' : a.iconUrl) + '" style="margin-top:.5rem;font-size:.85rem;"></div></div>'
-    + '<div><label class="field-label">Nome *</label><input class="input-field" id="editName" value="' + esc(a.name) + '"></div>'
-    + '<div><label class="field-label">URL do Site *</label><input class="input-field" id="editUrl" value="' + esc(a.websiteUrl) + '"></div>'
-    + '<div><label class="field-label">Descrição</label><textarea class="input-field" id="editDesc" rows="2">' + esc(a.description || '') + '</textarea></div>'
-    + '<div><label class="field-label">Package Name</label><input class="input-field" id="editPkg" value="' + esc(a.packageName) + '"></div>'
-    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">'
-    + '<div><label class="field-label">Versão</label><input class="input-field" id="editVersion" value="' + esc(a.version) + '"></div>'
-    + '<div><label class="field-label">Cor tema</label><input type="color" id="editColor" value="' + (a.themeColor || '#FF006E') + '" style="width:100%;height:42px;border:1px solid #1e293b;background:rgba(2,6,23,.8);border-radius:.75rem;cursor:pointer;"></div></div>'
-    + '<div><label class="field-label">Orientação</label><select class="input-field" id="editOrientation">'
-    + '<option value="portrait" ' + (a.orientation === 'portrait' ? 'selected' : '') + '>Portrait</option>'
-    + '<option value="landscape" ' + (a.orientation === 'landscape' ? 'selected' : '') + '>Landscape</option>'
-    + '<option value="both" ' + (a.orientation === 'both' ? 'selected' : '') + '>Ambos</option></select></div>'
-    + '<div style="display:flex;gap:1.2rem;flex-wrap:wrap;font-size:.88rem;">'
-    + '<label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;"><input type="checkbox" id="editOffline" ' + (a.offlineSupport ? 'checked' : '') + ' style="accent-color:#FF006E;"> Offline</label>'
-    + '<label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;"><input type="checkbox" id="editDeep" ' + (a.deepLinking ? 'checked' : '') + ' style="accent-color:#FF006E;"> Deep Link</label>'
-    + '<label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;"><input type="checkbox" id="editAnalytics" ' + (a.analyticsEnabled ? 'checked' : '') + ' style="accent-color:#FF006E;"> Analytics</label></div>'
-    + '<div style="display:flex;gap:.75rem;margin-top:.25rem;">'
-    + '<button class="btn btn-primary" onclick="saveEditModal(' + a.id + ')" style="flex:1;justify-content:center;">💾 Salvar</button>'
-    + '<button class="btn btn-ghost" onclick="editModalAppId=null;rerender();">Cancelar</button></div>'
-    + '</div></div></div>';
+function toast(type, title, msg){
+  const wrap = document.getElementById('toastWrap');
+  const el   = document.createElement('div');
+  el.className = 'toast';
+  const icos = {success:'✅',error:'❌',info:'ℹ️',warning:'⚠️'};
+  const cols = {success:'var(--green)',error:'var(--red)',info:'var(--cyan)',warning:'var(--amber)'};
+  el.style.borderLeft = `3px solid ${cols[type]}`;
+  el.innerHTML = `<div class="toast-ico">${icos[type]}</div>
+    <div><div class="toast-ttl">${title}</div><div class="toast-msg">${msg}</div></div>`;
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(),300); }, 4000);
 }
 
-// ── Toast ─────────────────────────────────────────────────────────────
-function renderToast() {
-  if (!currentToast) return '';
-  var cls = currentToast.type === 'error' ? 'toast-error' : currentToast.type === 'info' ? 'toast-info' : 'toast-success';
-  var ico = currentToast.type === 'error' ? '❌' : currentToast.type === 'info' ? 'ℹ️' : '✅';
-  return '<div class="toast ' + cls + '">' + ico + ' ' + esc(currentToast.msg) + '</div>';
-}
-
-// ── Navbar ────────────────────────────────────────────────────────────
-function renderNavbar() {
-  return '<nav style="position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(255,0,110,.18);backdrop-filter:blur(18px);background:rgba(2,6,23,.88);">'
-    + '<div style="max-width:1280px;margin:0 auto;padding:.9rem 1.5rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;">'
-    + '<div onclick="navigate(\'/\')" style="display:flex;align-items:center;gap:.75rem;cursor:pointer;">'
-    + '<div style="width:42px;height:42px;background:linear-gradient(135deg,#FF006E,#7C3AED,#00d9ff);border-radius:.75rem;display:flex;align-items:center;justify-content:center;font-size:1.4rem;box-shadow:0 0 18px rgba(255,0,110,.4);">⚡</div>'
-    + '<div><div style="font-family:\'Orbitron\',monospace;font-size:1.2rem;font-weight:900;background:linear-gradient(90deg,#FF006E,#a855f7,#00d9ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;">ConvertAPK</div>'
-    + '<div style="font-size:.6rem;color:#00d9ff;font-family:\'JetBrains Mono\',monospace;letter-spacing:.1em;">INSTALE QUALQUER SITE</div></div></div>'
-    + '<div style="display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;">'
-    + (user
-      ? '<span style="color:#94a3b8;font-weight:700;font-size:.85rem;cursor:pointer;" onclick="navigate(\'/dashboard\')" onmouseover="this.style.color=\'#FF006E\'" onmouseout="this.style.color=\'#94a3b8\'">Painel</span>'
-        + '<span style="color:#94a3b8;font-weight:700;font-size:.85rem;cursor:pointer;" onclick="navigate(\'/create-app\')" onmouseover="this.style.color=\'#FF006E\'" onmouseout="this.style.color=\'#94a3b8\'">Novo App</span>'
-        + '<button class="btn btn-outline" onclick="installMainPWA()" style="padding:.38rem .85rem;font-size:.78rem;">📲 Instalar ConvertAPK</button>'
-        + '<div style="display:flex;align-items:center;gap:.45rem;background:rgba(15,23,42,.7);border:1px solid rgba(255,0,110,.2);padding:.28rem .65rem;border-radius:99px;">'
-        + '<span style="font-size:.8rem;font-weight:700;">' + esc(user.name) + '</span>'
-        + '<div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#FF006E,#00d9ff);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.75rem;color:#000;">' + esc(user.name.charAt(0)) + '</div></div>'
-        + '<button class="btn btn-ghost" onclick="handleLogout()" style="padding:.35rem .75rem;font-size:.78rem;">Sair</button>'
-      : '<button class="btn btn-outline" onclick="installMainPWA()" style="padding:.38rem .85rem;font-size:.78rem;">📲 Instalar</button>'
-        + '<button class="btn btn-primary" onclick="handleLogin()">Entrar</button>')
-    + '</div></div></nav>';
-}
-
-function renderFooter() {
-  return '<footer style="border-top:1px solid rgba(255,0,110,.1);background:rgba(2,6,23,.5);padding:2rem 1.5rem;text-align:center;margin-top:auto;">'
-    + '<div style="font-size:.72rem;color:#334155;">© 2026 ConvertAPK — Converta sites em apps via PWABuilder, Chrome WebAPK, AppsGeyser e AppYet</div>'
-    + '</footer>';
-}
-
-// ── PAGES ─────────────────────────────────────────────────────────────
-
-function renderLanding() {
-  return '<div class="grid-bg" style="padding:4.5rem 1.5rem 5rem;position:relative;overflow:hidden;">'
-    + '<div style="position:absolute;top:-120px;left:-80px;width:600px;height:600px;background:radial-gradient(circle,rgba(255,0,110,.1),transparent 70%);pointer-events:none;"></div>'
-    + '<div style="position:absolute;bottom:-80px;right:-60px;width:400px;height:400px;background:radial-gradient(circle,rgba(0,217,255,.07),transparent 70%);pointer-events:none;"></div>'
-    + '<div style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;position:relative;" class="grid-2">'
-
-    // Hero left
-    + '<div>'
-    + '<div style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,0,110,.1);border:1px solid rgba(255,0,110,.3);padding:.3rem .9rem;border-radius:99px;margin-bottom:1.5rem;">'
-    + '<span style="width:7px;height:7px;background:#FF006E;border-radius:50%;display:inline-block;" class="pulse"></span>'
-    + '<span style="font-size:.7rem;font-weight:700;letter-spacing:.1em;color:#FF006E;">POWERED BY PWABUILDER + CHROME WEBAPK</span></div>'
-    + '<h1 style="font-size:clamp(1.8rem,4.5vw,3rem);line-height:1.05;margin:0 0 1.2rem;">'
-    + 'Transforme QUALQUER<br>'
-    + '<span style="background:linear-gradient(90deg,#FF006E,#a855f7,#00d9ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Site em App Android</span></h1>'
-    + '<p style="color:#94a3b8;font-size:1.05rem;margin-bottom:2rem;max-width:460px;">'
-    + 'Sem código. Gere um <strong style="color:#e2e8f0;">APK real</strong> com o PWABuilder (grátis) ou instale direto pelo Chrome em 3 passos.</p>'
-    + '<div style="display:flex;gap:.9rem;flex-wrap:wrap;margin-bottom:2.5rem;">'
-    + '<button class="btn btn-primary" onclick="handleLogin()" style="font-size:1rem;padding:.75rem 1.75rem;">⚡ Começar Grátis →</button>'
-    + '<button class="btn btn-pwa" onclick="window.open(\'https://www.pwabuilder.com\',\'_blank\')">🚀 Abrir PWABuilder</button></div>'
-    + '<div style="display:flex;gap:1.75rem;">'
-    + '<div><div style="font-size:1.3rem;">🤖</div><div style="font-weight:700;font-size:.88rem;">APK Real</div><div style="font-size:.72rem;color:#64748b;">Via PWABuilder</div></div>'
-    + '<div><div style="font-size:1.3rem;">⚡</div><div style="font-weight:700;font-size:.88rem;">3 Passos</div><div style="font-size:.72rem;color:#64748b;">Para instalar</div></div>'
-    + '<div><div style="font-size:1.3rem;">🔒</div><div style="font-weight:700;font-size:.88rem;">100% Grátis</div><div style="font-size:.72rem;color:#64748b;">Sem taxa</div></div>'
-    + '</div></div>'
-
-    // Quick form right
-    + '<div class="glass glass-pink" style="border-radius:1.5rem;padding:1.75rem;box-shadow:0 0 40px rgba(255,0,110,.15);">'
-    + '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1.25rem;">'
-    + '<span style="font-size:1.3rem;">⚡</span><h3 style="margin:0;font-size:.95rem;">Criador Expresso</h3>'
-    + '<span class="badge b-green" style="margin-left:auto;">LIVE</span></div>'
-    + '<div style="display:flex;flex-direction:column;gap:.75rem;">'
-    + '<div><label class="field-label">Nome do App</label><input class="input-field" id="qName" placeholder="Meu App Incrível"></div>'
-    + '<div><label class="field-label">URL do Site *</label><input class="input-field" id="qUrl" type="url" placeholder="https://meusite.com.br"></div>'
-    + '<div><label class="field-label">Ícone (opcional)</label>'
-    + '<div class="upload-zone" onclick="document.getElementById(\'quickIconFile\').click();" ondragover="event.preventDefault();this.classList.add(\'drag-over\');" ondragleave="this.classList.remove(\'drag-over\');" ondrop="event.preventDefault();this.classList.remove(\'drag-over\');handleQuickImage(event.dataTransfer.files[0]);">'
-    + '<div id="quickIconPreview" style="font-size:.82rem;color:#94a3b8;">📸 Clique ou arraste (JPG/PNG, máx 2MB)</div></div>'
-    + '<input type="file" id="quickIconFile" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none;" onchange="handleQuickImage(this.files[0])"></div>'
-    + '<button class="btn btn-primary" onclick="handleQuickForm()" style="width:100%;justify-content:center;margin-top:.25rem;">Criar e Ver Métodos →</button>'
-    + '</div></div>'
-
-    + '</div></div>'
-
-    // How it works
-    + '<div style="max-width:1100px;margin:0 auto;padding:4rem 1.5rem;">'
-    + '<h2 style="text-align:center;font-size:1.6rem;margin-bottom:.5rem;">3 Formas de Instalar seu App</h2>'
-    + '<p style="text-align:center;color:#64748b;margin-bottom:2.5rem;font-size:.9rem;">Escolha o método que melhor se encaixa na sua situação</p>'
-    + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.25rem;">'
-
-    // Card PWABuilder
-    + '<div class="glass" style="border-radius:1.25rem;padding:1.5rem;border-color:rgba(124,58,237,.3);background:rgba(124,58,237,.05);">'
-    + '<div style="font-family:\'Orbitron\',monospace;font-size:1.5rem;color:#a78bfa;margin-bottom:.75rem;">01</div>'
-    + '<div style="font-size:1.5rem;margin-bottom:.5rem;">⚡</div>'
-    + '<h3 style="font-size:.9rem;margin:.25rem 0 .5rem;">PWABuilder</h3>'
-    + '<p style="font-size:.78rem;color:#64748b;margin-bottom:.75rem;">Cole a URL → gera APK real assinado, AAB para Play Store. Ferramenta oficial Google/Microsoft. 100% gratuito.</p>'
-    + '<button class="btn btn-pwa" onclick="window.open(\'https://www.pwabuilder.com\',\'_blank\')" style="font-size:.78rem;padding:.4rem .85rem;">Abrir PWABuilder ↗</button>'
-    + '</div>'
-
-    // Card Chrome
-    + '<div class="glass" style="border-radius:1.25rem;padding:1.5rem;border-color:rgba(0,217,255,.25);background:rgba(0,217,255,.04);">'
-    + '<div style="font-family:\'Orbitron\',monospace;font-size:1.5rem;color:#00d9ff;margin-bottom:.75rem;">02</div>'
-    + '<div style="font-size:1.5rem;margin-bottom:.5rem;">🌐</div>'
-    + '<h3 style="font-size:.9rem;margin:.25rem 0 .5rem;">Chrome WebAPK</h3>'
-    + '<p style="font-size:.78rem;color:#64748b;margin-bottom:.75rem;">Abra o site no Chrome Android. Menu ⋮ → "Adicionar à tela inicial". Instala como WebAPK nativo sem passar pela Play Store.</p>'
-    + '<span class="badge b-cyan" style="font-size:.7rem;">Mais rápido</span>'
-    + '</div>'
-
-    // Card Geradores APK
-    + '<div class="glass" style="border-radius:1.25rem;padding:1.5rem;border-color:rgba(74,222,128,.25);background:rgba(74,222,128,.04);">'
-    + '<div style="font-family:\'Orbitron\',monospace;font-size:1.5rem;color:#4ade80;margin-bottom:.75rem;">03</div>'
-    + '<div style="font-size:1.5rem;margin-bottom:.5rem;">🤖</div>'
-    + '<h3 style="font-size:.9rem;margin:.25rem 0 .5rem;">Geradores de APK</h3>'
-    + '<p style="font-size:.78rem;color:#64748b;margin-bottom:.75rem;">AppsGeyser, WebSite2APK ou AppYet — cole a URL e receba um APK real assinado, sem código e sem instalar nada.</p>'
-    + '<span class="badge b-green" style="font-size:.7rem;">Sem código</span>'
-    + '</div>'
-
-    + '</div></div>';
-}
-
-function renderDashboard() {
-  return '<div style="max-width:1280px;margin:0 auto;padding:2.5rem 1.5rem;">'
-    + '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:2rem;">'
-    + '<div><h1 style="margin:0;font-size:1.5rem;background:linear-gradient(90deg,#FF006E,#a855f7,#00d9ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Meus Apps</h1>'
-    + '<p style="margin:.2rem 0 0;color:#64748b;font-size:.875rem;">Olá, ' + esc(user ? user.name : 'Dev') + ' — ' + apps.length + ' app' + (apps.length !== 1 ? 's' : '') + ' criado' + (apps.length !== 1 ? 's' : '') + '</p></div>'
-    + '<button class="btn btn-primary" onclick="navigate(\'/create-app\')">+ Novo App</button></div>'
-
-    + (apps.length === 0
-      ? '<div class="glass" style="border-radius:1.5rem;padding:4rem;text-align:center;">'
-        + '<div style="font-size:3rem;margin-bottom:1rem;">📱</div>'
-        + '<h3 style="font-size:1rem;margin-bottom:.5rem;">Nenhum app criado</h3>'
-        + '<p style="color:#64748b;margin-bottom:1.25rem;">Crie seu primeiro app agora!</p>'
-        + '<button class="btn btn-primary" onclick="navigate(\'/create-app\')">+ Criar App</button></div>'
-      : '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:1rem;">'
-        + apps.map(function(app) {
-            return '<div class="glass glass-pink app-card" style="border-radius:1.25rem;padding:1.2rem;" onclick="navigate(\'/app/' + app.id + '\')">'
-              + '<div style="display:flex;gap:.75rem;align-items:center;margin-bottom:.9rem;">'
-              + iconHtml(app.iconUrl, 52)
-              + '<div style="flex:1;min-width:0;">'
-              + '<div style="font-weight:700;font-size:1rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(app.name) + '</div>'
-              + '<div style="font-size:.72rem;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(app.websiteUrl) + '</div>'
-              + '<span class="badge b-pink" style="margin-top:.3rem;">v' + esc(app.version) + '</span></div></div>'
-              + '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(51,65,85,.4);padding-top:.75rem;" onclick="event.stopPropagation();">'
-              + '<span style="font-size:.72rem;color:#64748b;">📅 ' + fmtDate(app.createdAt) + '</span>'
-              + '<div style="display:flex;gap:.4rem;">'
-              + '<button class="btn btn-pwa" style="padding:.3rem .65rem;font-size:.72rem;" onclick="openInstallModal(apps.find(function(a){return a.id===' + app.id + '}))">🚀 Instalar</button>'
-              + '<button class="btn btn-outline" style="padding:.3rem .65rem;font-size:.72rem;" onclick="openEditModal(' + app.id + ')">✏️</button>'
-              + '<button class="btn btn-danger" style="padding:.3rem .65rem;font-size:.72rem;" onclick="if(confirm(\'Deletar ' + esc(app.name.replace(/'/g, "\\'")) + '?\'))deleteApp(' + app.id + ')">🗑️</button>'
-              + '</div></div></div>';
-          }).join('')
-        + '</div>')
-    + '</div>';
-}
-
-function renderCreateApp() {
-  var rPkg = 'com.convertapk.app' + (Math.floor(Math.random() * 9000) + 1000);
-  return '<div style="max-width:860px;margin:0 auto;padding:2.5rem 1.5rem;">'
-    + '<div style="display:flex;align-items:center;gap:1rem;margin-bottom:2rem;">'
-    + '<button class="btn btn-ghost" onclick="navigate(\'/dashboard\')" style="padding:.4rem .9rem;">← Voltar</button>'
-    + '<h1 style="margin:0;font-size:1.3rem;">Criar Novo App</h1></div>'
-    + '<div class="glass glass-pink" style="border-radius:1.5rem;padding:1.75rem;">'
-    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;" class="grid-2">'
-    + '<div style="display:flex;flex-direction:column;gap:1rem;">'
-    + '<div><label class="field-label">Nome do App *</label><input class="input-field" id="caName" placeholder="Meu Super App"></div>'
-    + '<div><label class="field-label">URL do Site *</label><input class="input-field" id="caUrl" type="url" placeholder="https://meusite.com.br"></div>'
-    + '<div><label class="field-label">Descrição</label><textarea class="input-field" id="caDesc" rows="2" placeholder="Descreva seu app..."></textarea></div>'
-    + '<div><label class="field-label">Package Name *</label><input class="input-field" id="caPkg" value="' + rPkg + '"></div>'
-    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">'
-    + '<div><label class="field-label">Versão</label><input class="input-field" id="caVersion" value="1.0.0"></div>'
-    + '<div><label class="field-label">Cor tema</label><input type="color" id="caColor" value="#FF006E" style="width:100%;height:42px;border:1px solid #1e293b;background:rgba(2,6,23,.8);border-radius:.75rem;cursor:pointer;"></div></div>'
-    + '<div><label class="field-label">Orientação</label><select class="input-field" id="caOrientation">'
-    + '<option value="portrait">Portrait</option><option value="landscape">Landscape</option><option value="both">Ambos</option></select></div>'
-    + '<div style="display:flex;flex-direction:column;gap:.5rem;font-size:.88rem;">'
-    + '<label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;"><input type="checkbox" id="caOffline" checked style="accent-color:#FF006E;"> Suporte Offline</label>'
-    + '<label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;"><input type="checkbox" id="caDeep" style="accent-color:#FF006E;"> Deep Linking</label>'
-    + '<label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;"><input type="checkbox" id="caAnalytics" checked style="accent-color:#FF006E;"> Analytics</label>'
-    + '</div></div>'
-    + '<div style="display:flex;flex-direction:column;gap:1rem;">'
-    + '<label class="field-label">Ícone do App</label>'
-    + '<div id="caIconPreview" style="width:120px;height:120px;margin:0 auto;border-radius:1rem;overflow:hidden;background:linear-gradient(135deg,#1e1b4b,#4c1d95);display:flex;align-items:center;justify-content:center;font-size:3rem;border:2px solid rgba(255,0,110,.2);">📱</div>'
-    + '<div class="upload-zone" onclick="document.getElementById(\'caIconFile\').click();" ondragover="event.preventDefault();this.classList.add(\'drag-over\');" ondragleave="this.classList.remove(\'drag-over\');" ondrop="event.preventDefault();this.classList.remove(\'drag-over\');handleCaImage(event.dataTransfer.files[0]);">'
-    + '<div style="font-size:.85rem;color:#94a3b8;">📸 Clique ou arraste<br><span style="font-size:.75rem;">JPG/PNG/WEBP — máx 2MB</span></div></div>'
-    + '<input type="file" id="caIconFile" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none;" onchange="handleCaImage(this.files[0])">'
-    + '<div style="display:flex;align-items:center;gap:.5rem;"><div style="flex:1;height:1px;background:rgba(51,65,85,.5);"></div><span style="font-size:.7rem;color:#475569;font-weight:700;">OU</span><div style="flex:1;height:1px;background:rgba(51,65,85,.5);"></div></div>'
-    + '<input class="input-field" id="caIconUrl" placeholder="Cole URL da imagem..." style="font-size:.85rem;">'
-    + '<button class="btn btn-danger" onclick="clearCaIcon()" style="font-size:.8rem;justify-content:center;">✕ Limpar Ícone</button>'
-    + '<div class="glass glass-cyan" style="border-radius:.75rem;padding:.9rem;font-size:.77rem;color:#94a3b8;margin-top:auto;">'
-    + '<div style="color:#00d9ff;font-weight:700;margin-bottom:.3rem;">💡 O que acontece depois?</div>'
-    + 'Ao criar, você verá 3 opções: <strong style="color:#fff;">PWABuilder</strong> (APK real), <strong style="color:#fff;">Chrome</strong> (instalação direta) ou <strong style="color:#fff;">AppsGeyser/AppYet</strong> (geradores de APK gratuitos).'
-    + '</div></div></div>'
-    + '<div class="divider"></div>'
-    + '<div style="display:flex;gap:.75rem;flex-wrap:wrap;">'
-    + '<button class="btn btn-primary" onclick="submitCreateApp()" style="padding:.75rem 2rem;">⚡ Criar App</button>'
-    + '<button class="btn btn-ghost" onclick="navigate(\'/dashboard\')">Cancelar</button>'
-    + '</div></div></div>';
-}
-
-function renderAppDetails(appId) {
-  var app = apps.find(function(a) { return a.id === appId; });
-  if (!app) return '<div style="text-align:center;padding:4rem;"><p>App não encontrado.</p><button class="btn btn-outline" onclick="navigate(\'/dashboard\')" style="margin-top:1rem;">← Dashboard</button></div>';
-  return '<div style="max-width:1100px;margin:0 auto;padding:2.5rem 1.5rem;">'
-    + '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:2rem;">'
-    + '<button class="btn btn-ghost" onclick="navigate(\'/dashboard\')" style="padding:.4rem .9rem;">← Dashboard</button>'
-    + '<div style="display:flex;gap:.6rem;flex-wrap:wrap;">'
-    + '<button class="btn btn-outline" onclick="openEditModal(' + app.id + ')" style="border-color:rgba(0,217,255,.4);color:#00d9ff;">✏️ Editar</button>'
-    + '<button class="btn btn-ghost" onclick="navigate(\'/build/' + app.id + '\')">⚙️ Analisar</button>'
-    + '<button class="btn btn-pwa" onclick="openInstallModal(apps.find(function(a){return a.id===' + app.id + '}))">🚀 Instalar Este App</button>'
-    + '<button class="btn btn-danger" onclick="if(confirm(\'Excluir?\'))deleteApp(' + app.id + ')">🗑️</button></div></div>'
-
-    + '<div class="glass glass-pink" style="border-radius:1.25rem;padding:1.75rem;margin-bottom:1.25rem;">'
-    + '<div style="display:flex;gap:1.25rem;align-items:center;flex-wrap:wrap;">'
-    + iconHtml(app.iconUrl, 80)
-    + '<div><h2 style="margin:0;font-size:1.4rem;">' + esc(app.name) + '</h2>'
-    + '<a href="' + esc(app.websiteUrl) + '" target="_blank" rel="noopener" style="color:#FF006E;font-size:.875rem;">' + esc(app.websiteUrl) + ' ↗</a>'
-    + '<div style="display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap;">'
-    + '<span class="badge b-pink">v' + esc(app.version) + '</span>'
-    + (app.offlineSupport ? '<span class="badge b-green">Offline</span>' : '')
-    + (app.deepLinking ? '<span class="badge b-cyan">Deep Link</span>' : '')
-    + '</div></div></div>'
-    + (app.description ? '<p style="color:#94a3b8;margin:1rem 0 0;font-size:.875rem;">' + esc(app.description) + '</p>' : '')
-    + '<div class="divider"></div>'
-    + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;font-size:.85rem;">'
-    + '<div><span style="color:#64748b;font-size:.68rem;display:block;text-transform:uppercase;letter-spacing:.06em;">Package</span><span style="font-family:\'JetBrains Mono\',monospace;font-size:.75rem;">' + esc(app.packageName) + '</span></div>'
-    + '<div><span style="color:#64748b;font-size:.68rem;display:block;text-transform:uppercase;letter-spacing:.06em;">Orientação</span>' + esc(app.orientation) + '</div>'
-    + '<div><span style="color:#64748b;font-size:.68rem;display:block;text-transform:uppercase;letter-spacing:.06em;">Criado em</span>' + fmtDate(app.createdAt) + '</div>'
-    + '</div></div>'
-
-    // Install CTA
-    + '<div class="glass glass-cyan" style="border-radius:1.25rem;padding:1.5rem;">'
-    + '<h3 style="font-size:.9rem;color:#00d9ff;margin:0 0 .75rem;">🚀 Instalar este app</h3>'
-    + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.75rem;">'
-    + '<div style="background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.3);border-radius:.85rem;padding:.9rem;">'
-    + '<div style="font-weight:700;font-size:.85rem;color:#a78bfa;margin-bottom:.3rem;">⚡ APK Real (recomendado)</div>'
-    + '<div style="font-size:.75rem;color:#94a3b8;margin-bottom:.6rem;">PWABuilder gera APK assinado para instalar no Android</div>'
-    + '<button class="btn btn-pwa" onclick="openPWABuilder(\'' + esc(app.websiteUrl) + '\')" style="width:100%;justify-content:center;font-size:.78rem;padding:.4rem .75rem;">Abrir PWABuilder ↗</button>'
-    + '</div>'
-    + '<div style="background:rgba(0,217,255,.06);border:1px solid rgba(0,217,255,.2);border-radius:.85rem;padding:.9rem;">'
-    + '<div style="font-weight:700;font-size:.85rem;color:#00d9ff;margin-bottom:.3rem;">🌐 Via Chrome (mais rápido)</div>'
-    + '<div style="font-size:.75rem;color:#94a3b8;margin-bottom:.6rem;">Abra o site no Chrome → menu → "Adicionar à tela inicial"</div>'
-    + '<button class="btn btn-cyan" onclick="openAppTab(\'' + esc(app.websiteUrl) + '\',\'' + esc(app.name) + '\')" style="width:100%;justify-content:center;font-size:.78rem;padding:.4rem .75rem;color:#000;">Abrir Site ↗</button>'
-    + '</div>'
-    + '<div style="background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.2);border-radius:.85rem;padding:.9rem;">'
-    + '<div style="font-weight:700;font-size:.85rem;color:#4ade80;margin-bottom:.3rem;">🤖 Geradores de APK gratuitos</div>'
-    + '<div style="font-size:.75rem;color:#94a3b8;margin-bottom:.6rem;">AppsGeyser, WebSite2APK ou AppYet — cole a URL, baixe o APK</div>'
-    + '<div style="display:flex;gap:.4rem;flex-wrap:wrap;">'
-    + '<button class="btn btn-green" onclick="window.open(\'https://appsgeyser.com/apk-maker/?url=\'+encodeURIComponent(\'' + esc(app.websiteUrl) + '\'),\'_blank\')" style="flex:1;justify-content:center;font-size:.7rem;padding:.32rem .45rem;color:#000;">AppsGeyser</button>'
-    + '<button class="btn btn-cyan" onclick="window.open(\'https://websitetoapk.com/\',\'_blank\')" style="flex:1;justify-content:center;font-size:.7rem;padding:.32rem .45rem;color:#000;">Web2APK</button>'
-    + '<button class="btn btn-pwa" onclick="window.open(\'https://appyet.com/\',\'_blank\')" style="flex:1;justify-content:center;font-size:.7rem;padding:.32rem .45rem;">AppYet</button>'
-    + '</div></div></div></div></div>';
-}
-
-function renderBuildPage(appId) {
-  var app = apps.find(function(a) { return a.id === appId; });
-  if (!app) return '<div style="text-align:center;padding:4rem;">App não encontrado.</div>';
-  return '<div style="max-width:1100px;margin:0 auto;padding:2.5rem 1.5rem;">'
-    + '<div style="display:flex;align-items:center;gap:1rem;margin-bottom:2rem;">'
-    + '<button class="btn btn-ghost" onclick="navigate(\'/app/' + app.id + '\')" style="padding:.4rem .9rem;">← Voltar</button>'
-    + '<div><h1 style="margin:0;font-size:1.2rem;">⚙️ Analisar: ' + esc(app.name) + '</h1>'
-    + '<div style="font-size:.75rem;color:#64748b;">' + esc(app.packageName) + ' · v' + esc(app.version) + '</div></div></div>'
-    + '<div style="display:grid;grid-template-columns:1.6fr 1fr;gap:1.25rem;" class="grid-2">'
-    + '<div class="glass glass-pink" style="border-radius:1.25rem;padding:1.75rem;">'
-    + '<div style="display:flex;gap:1rem;align-items:center;margin-bottom:1.5rem;">'
-    + iconHtml(app.iconUrl, 52)
-    + '<div><div style="font-weight:700;">' + esc(app.name) + '</div><div style="font-size:.78rem;color:#64748b;">' + esc(app.websiteUrl) + '</div></div></div>'
-    + '<div id="buildPreChecks">'
-    + '<div style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:1.25rem;font-size:.875rem;">'
-    + [['URL configurada', !!app.websiteUrl], ['Package name', !!app.packageName], ['Ícone', !!(app.iconUrl && app.iconUrl !== '[base64-image]')], ['Versão', !!app.version]].map(function(x) {
-        return '<div style="display:flex;align-items:center;gap:.5rem;"><span style="color:' + (x[1] ? '#4ade80' : '#f87171') + '">' + (x[1] ? '✔' : '✖') + '</span><span style="color:' + (x[1] ? '#e2e8f0' : '#94a3b8') + '">' + x[0] + '</span></div>';
-      }).join('')
-    + '</div>'
-    + '<button class="btn btn-primary" onclick="startBuild(' + app.id + ')" style="width:100%;justify-content:center;padding:.8rem;">▶ Analisar Compatibilidade</button></div>'
-    + '<div id="buildProgress" style="display:none;">'
-    + '<div style="display:flex;justify-content:space-between;margin-bottom:.4rem;font-size:.875rem;">'
-    + '<span id="buildPhaseLabel" style="font-weight:700;">Iniciando...</span>'
-    + '<span id="buildPct" style="color:#94a3b8;">0%</span></div>'
-    + '<div class="prog-track"><div class="prog-fill" id="buildProgressBar" style="width:0%"></div></div></div>'
-    + '<div id="buildResult" style="display:none;"></div></div>'
-    + '<div class="glass" style="border-radius:1.25rem;padding:1.25rem;">'
-    + '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;">'
-    + '<span style="width:8px;height:8px;background:#64748b;border-radius:50%;display:inline-block;" id="consoleStatusDot"></span>'
-    + '<span style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#64748b;">Console</span></div>'
-    + '<div class="log-box" id="buildLogs"><span class="log-info">[READY] Aguardando início da análise...</span></div>'
-    + '</div></div></div>';
-}
-
-function renderPricing() {
-  return '<div style="max-width:1000px;margin:0 auto;padding:3.5rem 1.5rem;text-align:center;">'
-    + '<h1 style="font-size:2rem;margin-bottom:.5rem;">Planos <span style="color:#FF006E;">ConvertAPK</span></h1>'
-    + '<p style="color:#64748b;margin-bottom:2.5rem;">Escolha o plano ideal</p>'
-    + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;text-align:left;">'
-    + [
-        { name: 'Grátis', price: 'R$ 0', per: '', color: '#94a3b8',
-          features: ['Apps ilimitados', 'PWABuilder (APK real)', 'Instalação via Chrome', 'AppsGeyser / AppYet / Web2APK', 'Ícones personalizados'],
-          missing: ['Notificações push avançadas', 'Whitelabel'], cta: 'Começar Grátis', action: 'handleLogin()', popular: false },
-        { name: 'Premium', price: 'R$ 29', per: '/mês', color: '#FF006E',
-          features: ['Tudo do Grátis', 'Notificações push', 'Whitelabel total', 'Suporte prioritário', 'Analytics avançado'],
-          missing: [], cta: 'Ativar Premium', action: "handleUpgrade('premium')", popular: true }
-      ].map(function(p) {
-        return '<div class="glass" style="border-radius:1.5rem;padding:1.75rem;position:relative;' + (p.popular ? 'border-color:rgba(255,0,110,.45);box-shadow:0 0 28px rgba(255,0,110,.18);' : '') + '">'
-          + (p.popular ? '<div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#FF006E,#9333ea);color:#fff;font-size:.68rem;font-weight:700;letter-spacing:.08em;padding:.3rem 1rem;border-radius:99px;">🔥 POPULAR</div>' : '')
-          + '<div style="font-family:\'Orbitron\',monospace;color:' + p.color + ';font-size:.85rem;margin-bottom:.5rem;">' + p.name + '</div>'
-          + '<div style="display:flex;align-items:baseline;gap:.2rem;margin-bottom:1.25rem;">'
-          + '<span style="font-family:\'Orbitron\',monospace;font-size:2rem;font-weight:900;">' + p.price + '</span>'
-          + '<span style="color:#64748b;font-size:.875rem;">' + p.per + '</span></div>'
-          + '<div style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:1.5rem;font-size:.85rem;">'
-          + p.features.map(function(f) { return '<div style="display:flex;align-items:center;gap:.4rem;"><span style="color:#4ade80;">✓</span>' + f + '</div>'; }).join('')
-          + p.missing.map(function(f) { return '<div style="display:flex;align-items:center;gap:.4rem;color:#475569;"><span>✗</span>' + f + '</div>'; }).join('')
-          + '</div>'
-          + '<button class="btn ' + (p.popular ? 'btn-primary' : 'btn-outline') + '" onclick="' + p.action + '" style="width:100%;justify-content:center;' + (!p.popular ? 'border-color:' + p.color + ';color:' + p.color + ';' : '') + '">' + p.cta + '</button>'
-          + '</div>';
-      }).join('')
-    + '</div></div>';
-}
-
-// ── Main Rerender ─────────────────────────────────────────────────────
-function rerender() {
-  var root = document.getElementById('app-root');
-  if (!root) return;
-  var route = getRoute();
-  var main = '';
-  if (!user && route !== '/' && route !== '/pricing') main = renderLanding();
-  else if (route === '/')            main = renderLanding();
-  else if (route === '/dashboard')   main = renderDashboard();
-  else if (route === '/create-app')  main = renderCreateApp();
-  else if (route === '/pricing')     main = renderPricing();
-  else if (/^\/app\/\d+$/.test(route))   main = renderAppDetails(parseInt(route.split('/')[2]));
-  else if (/^\/build\/\d+$/.test(route)) main = renderBuildPage(parseInt(route.split('/')[2]));
-  else main = renderLanding();
-
-  root.innerHTML = renderNavbar()
-    + '<main style="flex:1;">' + main + '</main>'
-    + renderFooter()
-    + renderToast()
-    + renderEditModal()
-    + renderInstallModal();
-}
-
-window.rerender = rerender;
-window.addEventListener('hashchange', rerender);
-loadStorage();
-rerender();
+// ─── INIT ────────────────────────────────────────────────
+syncPreview();
 </script>
 </body>
 </html>
