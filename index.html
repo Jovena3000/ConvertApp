@@ -445,33 +445,28 @@
       const [route,setRoute]=useState(()=>window.location.hash?window.location.hash.slice(1):'/');
       const [toast,setToast]=useState(null);
       // Download modal state
-      const [dlModal,setDlModal]=useState(null); // {appName, appVersion, filename, buildId}
+      const [dlModal,setDlModal]=useState(null); 
       useEffect(()=>{localStorage.setItem('w2a_u',JSON.stringify(user));},[user]);
       useEffect(()=>{localStorage.setItem('w2a_a',JSON.stringify(apps));},[apps]);
       useEffect(()=>{localStorage.setItem('w2a_b',JSON.stringify(builds));},[builds]);
       useEffect(()=>{const h=()=>{setRoute(window.location.hash.slice(1)||'/');};window.addEventListener('hashchange',h);return()=>window.removeEventListener('hashchange',h);},[]);
       const nav=(r)=>{window.location.hash=r;setRoute(r);};
-      const toast=(m,t='success')=>{setToast({message:m,type:t});setTimeout(()=>setToast(null),3500);};
-      const login=()=>{const u={id:1,name:"Cyber Dev",email:"dev@web2apk.com",role:"user"};setUser(u);toast("Conectado! 🖥️");nav('/dashboard');};
-      const logout=()=>{setUser(null);toast("Desconectado.","info");nav('/');};
-      const createApp=(d)=>{const a={...d,id:Date.now(),userId:user?user.id:1,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};setApps([a,...apps]);toast(`App "${a.name}" criado! ✨`);nav('/dashboard');};
-      const deleteApp=(id)=>{setApps(apps.filter(a=>a.id!==id));setBuilds(builds.filter(b=>b.appId!==id));toast("App removido.");};
-      const updateApp=(id,d)=>{setApps(apps.map(a=>a.id===id?{...a,...d,updatedAt:new Date().toISOString()}:a));toast("App atualizado!");};
+      const toastMessage=(m,t='success')=>{setToast({message:m,type:t});setTimeout(()=>setToast(null),3500);};
+      const login=()=>{const u={id:1,name:"Cyber Dev",email:"dev@web2apk.com",role:"user"};setUser(u);toastMessage("Conectado! 🖥️");nav('/dashboard');};
+      const logout=()=>{setUser(null);toastMessage("Desconectado.","info");nav('/');};
+      const createApp=(d)=>{const a={...d,id:Date.now(),userId:user?user.id:1,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};setApps([a,...apps]);toastMessage(`App "${a.name}" criado! ✨`);nav('/dashboard');};
+      const deleteApp=(id)=>{setApps(apps.filter(a=>a.id!==id));setBuilds(builds.filter(b=>b.appId!==id));toastMessage("App removido.");};
+      const updateApp=(id,d)=>{setApps(apps.map(a=>a.id===id?{...a,...d,updatedAt:new Date().toISOString()}:a));toastMessage("App atualizado!");};
       const addBuild=(nb)=>{setBuilds(prev=>{const i=prev.findIndex(b=>b.id===nb.id);if(i>=0){const u=[...prev];u[i]=nb;return u;}return[nb,...prev];});};
-      const upgrade=(t)=>{if(!user){setUser({id:1,name:"Cyber Dev",email:"dev@web2apk.com",role:t});}else{setUser({...user,role:t});}toast(`Plano ${t} ativado! 🚀`);nav('/dashboard');};
-      // CORRECTED DOWNLOAD - Opens modal first, then actual download
+      const upgrade=(t)=>{if(!user){setUser({id:1,name:"Cyber Dev",email:"dev@web2apk.com",role:t});}else{setUser({...user,role:t});}toastMessage(`Plano ${t} ativado! 🚀`);nav('/dashboard');};
       const downloadMockApk = (appName, version) => {
         const cleanedName = appName.replace(/[^a-zA-Z0-9]/g, '_');
         const filename = `${cleanedName}-v${version}.apk`;
-        
-        // Show the download modal instead of direct download
         setDlModal({ appName, appVersion: version, filename });
       };
-      // Actual download execution (triggered from modal button)
       const executeDownload = () => {
         if (!dlModal) return;
         const { appName, appVersion, filename } = dlModal;
-        
         const content = `Web2APK Cyber Platform Build Result
 ===================================
 App Name: ${appName}
@@ -485,25 +480,21 @@ In a production environment, this would be a real compiled Android application.
         try {
           const blob = new Blob([content], { type: 'application/vnd.android.package-archive' });
           const url = URL.createObjectURL(blob);
-          
           const link = document.createElement('a');
           link.href = url;
           link.download = filename;
           link.style.display = 'none';
-          
           document.body.appendChild(link);
           link.click();
-          
           setTimeout(() => {
             if (link.parentNode) document.body.removeChild(link);
             URL.revokeObjectURL(url);
           }, 2000);
-          
-          toast(`Download de "${appName}" iniciado! 📦`);
+          toastMessage(`Download de "${appName}" iniciado! 📦`);
           setDlModal(null);
         } catch (error) {
           console.error('Download failed:', error);
-          toast('Erro no download. Tente novamente.', 'info');
+          toastMessage('Erro no download. Tente novamente.', 'info');
         }
       };
       const render = () => {
@@ -519,9 +510,7 @@ In a production environment, this would be a real compiled Android application.
       return (<div className="flex flex-col min-h-screen bg-slate-950 text-slate-100 antialiased selection:bg-pink-500 selection:text-slate-950">
         <Navbar user={user} onNavigate={nav} onLogin={login} onLogout={logout}/>
         <main className="flex-1 pb-16 relative">{render()}</main>
-        {/* Toast */}
         {toast&&<div className="fixed bottom-8 right-6 md:right-8 z-[60] bg-slate-900 border border-pink-500 rounded-2xl px-5 py-4 flex items-center justify-between gap-4 shadow-[0_0_25px_rgba(236,72,153,0.3)] select-none fade-in-up"><span className="text-sm font-bold text-slate-100">{toast.message}</span><div className="w-2 h-2 rounded-full bg-pink-500"></div></div>}
-        {/* Download Modal */}
         {dlModal&&<DownloadModal appName={dlModal.appName} appVersion={dlModal.appVersion} filename={dlModal.filename} onDownload={executeDownload} onClose={()=>setDlModal(null)}/>}
         <Footer/>
       </div>);
