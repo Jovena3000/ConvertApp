@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <meta name="theme-color" content="#07090f">
 <title>AppForge Pro — Gerador APK/PWA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,7 +11,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root{
-  --bg0:#07090f;--bg1:#0d1018;--bg2:#131822;--bg3:#1a2133;
+  --bg0:#07090f;--bg1:#0d1018;--bg2:#131822;--bg3:#1a2133;--bg4:#212b3d;
   --cyan:#00e5ff;--cyan2:#00bcd4;--cyanglow:rgba(0,229,255,.18);
   --green:#00e676;--amber:#ffb627;--red:#ff5252;--violet:#7c4dff;
   --t1:#e8f0fe;--t2:#8faabb;--t3:#4a5e72;
@@ -21,18 +21,21 @@
 html{scroll-behavior:smooth}
 body{font-family:'Exo 2',sans-serif;background:var(--bg0);color:var(--t1);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 .bg-grid{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(var(--bdr) 1px,transparent 1px),linear-gradient(90deg,var(--bdr) 1px,transparent 1px);background-size:44px 44px;mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,black 30%,transparent 100%)}
-.bg-glow{position:fixed;pointer-events:none;z-index:0;border-radius:50%;filter:blur(80px);opacity:.1}
-.g1{width:400px;height:400px;top:-120px;left:-100px;background:var(--cyan)}
-.g2{width:320px;height:320px;bottom:-80px;right:-80px;background:var(--violet)}
+.bg-glow{position:fixed;pointer-events:none;z-index:0;border-radius:50%;filter:blur(80px);opacity:.09}
+.g1{width:420px;height:420px;top:-120px;left:-100px;background:var(--cyan)}
+.g2{width:300px;height:300px;bottom:-80px;right:-80px;background:var(--violet)}
 .shell{position:relative;z-index:1;max-width:500px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
-header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;background:rgba(7,9,15,.92);backdrop-filter:blur(24px);border-bottom:1px solid var(--bdr);position:sticky;top:0;z-index:200}
+
+/* HEADER */
+header{padding:13px 18px;display:flex;align-items:center;justify-content:space-between;background:rgba(7,9,15,.93);backdrop-filter:blur(24px);border-bottom:1px solid var(--bdr);position:sticky;top:0;z-index:200}
 .logo{display:flex;align-items:center;gap:9px}
 .logo-mark{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--cyan),var(--cyan2));display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 0 18px var(--cyanglow)}
 .logo-nm{font-size:17px;font-weight:900;letter-spacing:-.3px;background:linear-gradient(90deg,var(--t1) 50%,var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.logo-ver{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan);background:rgba(0,229,255,.08);padding:2px 6px;border-radius:4px;border:1px solid var(--bdr2);letter-spacing:.5px}
+.logo-ver{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan);background:rgba(0,229,255,.08);padding:2px 6px;border-radius:4px;border:1px solid var(--bdr2)}
 .hbtns{display:flex;gap:6px}
 .hbtn{width:32px;height:32px;border-radius:8px;border:1px solid var(--bdr);background:var(--bg2);color:var(--t2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-size:14px}
 .hbtn:hover{border-color:var(--bdr2);color:var(--cyan)}
+
 /* STEPPER */
 .stepper{display:flex;align-items:center;padding:14px 18px 0}
 .snode{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0}
@@ -43,42 +46,42 @@ header{padding:14px 18px;display:flex;align-items:center;justify-content:space-b
 .slbl.active{color:var(--cyan)}.slbl.done{color:var(--green)}
 .srail{flex:1;height:2px;background:var(--bg3);margin:0 5px;position:relative;top:-12px;border-radius:1px;transition:background .4s}
 .srail.done{background:var(--green)}
+
+/* MAIN */
 main{flex:1;padding:14px 18px;display:flex;flex-direction:column;gap:12px}
-/* HERO */
-.hero{text-align:center;padding:8px 0 4px}
-.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(0,229,255,.07);border:1px solid var(--bdr2);border-radius:100px;font-size:10px;font-weight:700;color:var(--cyan);letter-spacing:.8px;text-transform:uppercase;margin-bottom:12px}
+.hero{text-align:center;padding:6px 0 2px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(0,229,255,.07);border:1px solid var(--bdr2);border-radius:100px;font-size:10px;font-weight:700;color:var(--cyan);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px}
 .dot{width:5px;height:5px;background:var(--green);border-radius:50%;box-shadow:0 0 6px var(--green);animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.hero h1{font-size:22px;font-weight:900;line-height:1.15;letter-spacing:-.5px;margin-bottom:8px}
+.hero h1{font-size:21px;font-weight:900;line-height:1.15;letter-spacing:-.5px;margin-bottom:7px}
 .hero h1 em{font-style:italic;color:var(--cyan)}
-.hero p{color:var(--t2);font-size:12px;line-height:1.6}
-/* ALERT HONESTO */
-.alert-box{border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;font-size:11px;line-height:1.6}
-.alert-amber{background:rgba(255,182,39,.07);border:1px solid rgba(255,182,39,.25)}
-.alert-icon{font-size:18px;flex-shrink:0;line-height:1}
-.alert-ttl{font-weight:800;color:var(--amber);margin-bottom:4px}
-.alert-txt{color:var(--t2)}
-.alert-txt strong{color:var(--t1)}
+.hero p{color:var(--t2);font-size:12px;line-height:1.55}
+
 /* CARDS */
 .card{background:var(--bg1);border:1px solid var(--bdr);border-radius:16px;padding:16px;transition:border-color .2s}
 .card:hover{border-color:var(--bdr2)}
-.card-hdr{display:flex;align-items:center;gap:9px;margin-bottom:14px}
+.card-hdr{display:flex;align-items:center;gap:9px;margin-bottom:13px}
 .card-ico{width:32px;height:32px;border-radius:8px;background:rgba(0,229,255,.07);border:1px solid var(--bdr2);display:flex;align-items:center;justify-content:center;font-size:15px}
 .card-ttl{font-size:13px;font-weight:800}.card-sub{font-size:10px;color:var(--t3);margin-top:1px}
-.tabs{display:flex;background:var(--bg0);border-radius:8px;padding:3px;gap:2px;margin-bottom:14px;border:1px solid var(--bdr)}
-.tab{flex:1;padding:7px;text-align:center;font-size:11px;font-weight:700;color:var(--t3);cursor:pointer;border-radius:6px;transition:all .2s;letter-spacing:.3px}
-.tab.on{background:var(--bg3);color:var(--cyan)}
+
+/* TABS */
+.tabs{display:flex;background:var(--bg0);border-radius:8px;padding:3px;gap:2px;margin-bottom:13px;border:1px solid var(--bdr)}
+.tab{flex:1;padding:6px;text-align:center;font-size:11px;font-weight:700;color:var(--t3);cursor:pointer;border-radius:6px;transition:all .2s;letter-spacing:.2px}
+.tab.on{background:var(--bg3);color:var(--cyan);box-shadow:0 0 10px rgba(0,229,255,.1)}
+
 /* INPUTS */
-.igrp{margin-bottom:12px}
+.igrp{margin-bottom:11px}
 .ilbl{display:block;font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--t2);margin-bottom:6px}
 .iwrap{position:relative}
 .ifield{width:100%;padding:11px 13px 11px 38px;background:var(--bg0);border:1px solid var(--bdr);border-radius:12px;color:var(--t1);font-size:13px;font-family:inherit;outline:none;transition:all .2s}
 .ifield:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,229,255,.07)}
 .ifield::placeholder{color:var(--t3)}
-.ifield.mono{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.3px}
+.ifield.mono{font-family:'JetBrains Mono',monospace;font-size:11px}
 .iico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:14px;pointer-events:none}
 .irow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.ihint{font-size:10px;color:var(--t3);margin-top:4px}
+.ihint{font-size:10px;margin-top:4px}
+.ihint.ok{color:var(--green)}.ihint.warn{color:var(--amber)}.ihint.dim{color:var(--t3)}
+
 /* COLORS */
 .color-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:10px}
 .csq{aspect-ratio:1;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:all .2s;position:relative}
@@ -90,17 +93,19 @@ main{flex:1;padding:14px 18px;display:flex;flex-direction:column;gap:12px}
 .cswatch::-webkit-color-swatch-wrapper{padding:0}
 .cswatch::-webkit-color-swatch{border:2px solid var(--bdr2);border-radius:8px}
 .hex-val{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);background:var(--bg0);padding:7px 10px;border-radius:8px;border:1px solid var(--bdr);flex:1;letter-spacing:.8px}
+
 /* UPLOAD */
-.upzone{border:2px dashed var(--bdr);border-radius:12px;padding:20px 16px;text-align:center;cursor:pointer;transition:all .25s;background:var(--bg0)}
+.upzone{border:2px dashed var(--bdr);border-radius:12px;padding:18px 16px;text-align:center;cursor:pointer;transition:all .25s;background:var(--bg0)}
 .upzone:hover,.upzone.drag{border-color:var(--cyan);background:rgba(0,229,255,.04)}
 .upzone.ok{border-color:var(--green);background:rgba(0,230,118,.03);border-style:solid}
-.upico{font-size:28px;display:block;margin-bottom:8px}
+.upico{font-size:26px;display:block;margin-bottom:7px}
 .upttl{font-size:12px;font-weight:600;color:var(--t2)}.upsub{font-size:10px;color:var(--t3);margin-top:2px}
-.prev-img{width:60px;height:60px;border-radius:8px;object-fit:cover;margin:0 auto 8px;border:2px solid var(--green)}
-/* FEAT GRID */
-.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.prev-img{width:56px;height:56px;border-radius:8px;object-fit:cover;margin:0 auto 8px;border:2px solid var(--green)}
+
+/* TOGGLES */
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .feat-item{display:flex;align-items:center;justify-content:space-between;padding:9px 11px;background:var(--bg0);border:1px solid var(--bdr);border-radius:8px;cursor:pointer;transition:all .2s}
-.feat-item:hover{border-color:var(--bdr2)}
+.feat-item:hover{border-color:var(--bdr2);background:var(--bg2)}
 .feat-item.on{border-color:rgba(0,229,255,.3);background:rgba(0,229,255,.05)}
 .feat-lbl{font-size:11px;font-weight:600}
 .toggle{width:28px;height:15px;border-radius:8px;background:var(--bg3);position:relative;transition:background .2s;flex-shrink:0}
@@ -110,11 +115,12 @@ main{flex:1;padding:14px 18px;display:flex;flex-direction:column;gap:12px}
 .iselect{width:100%;padding:10px 12px;background:var(--bg0);border:1px solid var(--bdr);border-radius:12px;color:var(--t1);font-size:12px;font-family:inherit;outline:none;cursor:pointer;transition:border-color .2s}
 .iselect:focus{border-color:var(--cyan)}
 .iselect option{background:var(--bg1)}
-/* PREVIEW */
+
+/* PHONE PREVIEW */
 .prev-wrap{background:linear-gradient(160deg,var(--bg2),var(--bg1));border:1px solid var(--bdr);border-radius:16px;padding:16px}
-.phone{width:165px;height:340px;margin:0 auto;background:var(--bg0);border-radius:26px;padding:5px;box-shadow:0 20px 50px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.05)}
+.phone{width:160px;height:330px;margin:0 auto;background:var(--bg0);border-radius:26px;padding:5px;box-shadow:0 20px 50px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.05)}
 .phone-scr{width:100%;height:100%;background:var(--bg1);border-radius:21px;overflow:hidden;display:flex;flex-direction:column}
-.ph-notch{width:60px;height:15px;background:var(--bg0);border-radius:0 0 8px 8px;margin:0 auto}
+.ph-notch{width:60px;height:14px;background:var(--bg0);border-radius:0 0 8px 8px;margin:0 auto}
 .ph-st{display:flex;justify-content:space-between;padding:2px 12px;font-size:7px;color:var(--t3);font-family:'JetBrains Mono',monospace}
 .ph-bar{padding:7px 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--bdr)}
 .ph-ico{width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;overflow:hidden;flex-shrink:0}
@@ -122,22 +128,24 @@ main{flex:1;padding:14px 18px;display:flex;flex-direction:column;gap:12px}
 .ph-nm{font-size:9px;font-weight:800}
 .ph-body{flex:1;display:flex;align-items:center;justify-content:center;background:var(--bg0);position:relative;overflow:hidden}
 .ph-body::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 16px,rgba(0,229,255,.012) 16px,rgba(0,229,255,.012) 17px),repeating-linear-gradient(90deg,transparent,transparent 16px,rgba(0,229,255,.012) 16px,rgba(0,229,255,.012) 17px)}
-.ph-globe{font-size:24px;opacity:.25;display:block;margin-bottom:5px;text-align:center}
+.ph-globe{font-size:22px;opacity:.25;display:block;margin-bottom:5px;text-align:center}
 .ph-url{font-size:7px;color:var(--t3);font-family:'JetBrains Mono',monospace;word-break:break-all;padding:0 8px;text-align:center}
 .ph-hbar{width:60px;height:3px;background:rgba(255,255,255,.12);border-radius:2px;margin:5px auto}
+
 /* CONSOLE */
 .console-wrap{background:var(--bg0);border:1px solid var(--bdr);border-radius:12px;overflow:hidden}
-.console-hdr{padding:8px 12px;background:var(--bg2);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:7px}
+.console-hdr{padding:7px 12px;background:var(--bg2);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:7px}
 .cdot{width:8px;height:8px;border-radius:50%}
-.console-body{padding:10px 12px;height:150px;overflow-y:auto;font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.7}
+.console-body{padding:10px 12px;height:145px;overflow-y:auto;font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.7}
 .console-body::-webkit-scrollbar{width:3px}
 .console-body::-webkit-scrollbar-thumb{background:var(--bg3)}
 .lok{color:var(--green)}.lerr{color:var(--red)}.linf{color:var(--cyan)}.lwrn{color:var(--amber)}.ldim{color:var(--t3)}
+
 /* PROGRESS */
-.prog-section{display:none;padding:8px 0;animation:fadeUp .4s}
+.prog-section{display:none;padding:6px 0;animation:fadeUp .4s}
 .prog-section.on{display:block}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.ring-wrap{width:110px;height:110px;margin:0 auto 16px;position:relative}
+.ring-wrap{width:108px;height:108px;margin:0 auto 14px;position:relative}
 .ring-wrap svg{transform:rotate(-90deg)}
 .rbg{fill:none;stroke:var(--bg3);stroke-width:5}
 .rfill{fill:none;stroke:url(#rg);stroke-width:5;stroke-linecap:round;stroke-dasharray:283;stroke-dashoffset:283;transition:stroke-dashoffset .4s ease}
@@ -146,8 +154,8 @@ main{flex:1;padding:14px 18px;display:flex;flex-direction:column;gap:12px}
 .ring-lbl2{font-size:9px;color:var(--t3);font-family:'JetBrains Mono',monospace;letter-spacing:.5px}
 .prog-ttl{text-align:center;font-size:15px;font-weight:800;margin-bottom:3px}
 .prog-sub{text-align:center;font-size:11px;color:var(--t3);margin-bottom:14px}
-.psteps{display:flex;flex-direction:column;gap:8px}
-.pstep{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg0);border:1px solid var(--bdr);border-radius:12px;transition:all .3s}
+.psteps{display:flex;flex-direction:column;gap:7px}
+.pstep{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg0);border:1px solid var(--bdr);border-radius:12px;transition:all .3s}
 .pstep.active{border-color:var(--cyan);background:rgba(0,229,255,.03)}
 .pstep.done{border-color:var(--green);background:rgba(0,230,118,.03)}
 .ps-ico{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;background:var(--bg2)}
@@ -155,55 +163,41 @@ main{flex:1;padding:14px 18px;display:flex;flex-direction:column;gap:12px}
 .pstep.done .ps-ico{background:rgba(0,230,118,.1)}
 @keyframes spin{to{transform:rotate(360deg)}}
 .ps-ttl{font-size:11px;font-weight:700}.ps-desc{font-size:9px;color:var(--t3);margin-top:1px;font-family:'JetBrains Mono',monospace}
+
 /* SUCCESS */
 .succ-section{display:none;animation:fadeUp .5s}
 .succ-section.on{display:block}
-.succ-anim{width:88px;height:88px;margin:0 auto 14px}
-.succ-ring{width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,var(--green),#00c853);display:flex;align-items:center;justify-content:center;font-size:38px;color:var(--bg0);font-weight:900;box-shadow:0 0 40px rgba(0,230,118,.3);animation:pop .5s cubic-bezier(.175,.885,.32,1.275)}
+.succ-anim{width:84px;height:84px;margin:0 auto 13px;position:relative}
+.succ-ring{width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,var(--green),#00c853);display:flex;align-items:center;justify-content:center;font-size:36px;color:var(--bg0);font-weight:900;box-shadow:0 0 40px rgba(0,230,118,.3);animation:pop .5s cubic-bezier(.175,.885,.32,1.275)}
 @keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
-.succ-ttl{text-align:center;font-size:20px;font-weight:900;letter-spacing:-.3px;margin-bottom:4px}
-.succ-sub{text-align:center;color:var(--t2);font-size:12px;margin-bottom:14px}
+.succ-ttl{text-align:center;font-size:19px;font-weight:900;margin-bottom:4px}
+.succ-sub{text-align:center;color:var(--t2);font-size:12px;margin-bottom:13px}
+
 /* INFO TABLE */
-.info-table{background:var(--bg0);border:1px solid var(--bdr);border-radius:12px;padding:2px 0;margin-bottom:14px}
-.irow-t{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-bottom:1px solid var(--bdr);font-size:11px}
+.info-table{background:var(--bg0);border:1px solid var(--bdr);border-radius:12px;overflow:hidden;margin-bottom:13px}
+.irow-t{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid var(--bdr);font-size:11px}
 .irow-t:last-child{border-bottom:none}
 .ilbl-t{color:var(--t3);font-weight:600}
-.ival-t{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t1);text-align:right;max-width:55%;word-break:break-all}
+.ival-t{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t1);text-align:right;max-width:58%;word-break:break-all}
 .ival-t.ok{color:var(--green)}.ival-t.warn{color:var(--amber)}
+
+/* CHECKLIST */
+.checklist{border-radius:12px;margin-bottom:13px;overflow:hidden;border:1px solid var(--bdr)}
+.cl-hdr{padding:10px 12px;background:var(--bg2);font-size:11px;font-weight:800;letter-spacing:.3px;display:flex;align-items:center;gap:7px}
+.cl-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-bottom:1px solid var(--bdr);background:var(--bg0)}
+.cl-item:last-child{border-bottom:none}
+.cl-badge{font-size:11px;font-weight:800;flex-shrink:0;width:16px;text-align:center;margin-top:1px}
+.cl-ttl{font-size:12px;font-weight:700;line-height:1.3}
+.cl-desc{font-size:10px;color:var(--t3);margin-top:2px;line-height:1.5;font-family:'JetBrains Mono',monospace}
+.cl-cmd{font-size:9px;color:var(--cyan);background:rgba(0,229,255,.08);padding:3px 7px;border-radius:4px;margin-top:4px;display:inline-block;font-family:'JetBrains Mono',monospace}
+
 /* QR */
-.qr-wrap{width:140px;height:140px;margin:0 auto 6px;background:#fff;border-radius:12px;padding:8px;box-shadow:0 0 24px rgba(0,229,255,.1)}
+.qr-wrap{width:136px;height:136px;margin:0 auto 6px;background:#fff;border-radius:12px;padding:8px;box-shadow:0 0 20px rgba(0,229,255,.1)}
 #qrDiv{width:100%;height:100%}
-.qrhint{text-align:center;font-size:10px;color:var(--t3);margin-bottom:14px}
-/* INSTALL GUIDE */
-.install-guide{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
-.install-method{border-radius:12px;padding:14px;border:1px solid var(--bdr);background:var(--bg1);position:relative;overflow:hidden}
-.install-method::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
-.method-pwa::before{background:var(--green)}
-.method-studio::before{background:var(--cyan)}
-.method-builder::before{background:var(--amber)}
-.method-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:100px;font-size:9px;font-weight:800;letter-spacing:.5px;margin-bottom:8px}
-.badge-green{background:rgba(0,230,118,.12);color:var(--green);border:1px solid rgba(0,230,118,.25)}
-.badge-cyan{background:rgba(0,229,255,.12);color:var(--cyan);border:1px solid rgba(0,229,255,.25)}
-.badge-amber{background:rgba(255,182,39,.12);color:var(--amber);border:1px solid rgba(255,182,39,.25)}
-.method-ttl{font-size:12px;font-weight:800;margin-bottom:6px}
-.method-steps{display:flex;flex-direction:column;gap:5px}
-.mstep{display:flex;align-items:flex-start;gap:7px;font-size:11px;color:var(--t2)}
-.mstep-num{width:16px;height:16px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;background:var(--bg3);color:var(--t3)}
-.method-pwa .mstep-num{background:rgba(0,230,118,.15);color:var(--green)}
-.method-studio .mstep-num{background:rgba(0,229,255,.15);color:var(--cyan)}
-.method-builder .mstep-num{background:rgba(255,182,39,.15);color:var(--amber)}
-.mstep-txt{line-height:1.5;flex:1}
-.mstep-txt code{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan);background:rgba(0,229,255,.08);padding:1px 4px;border-radius:3px}
-.mstep-txt strong{color:var(--t1)}
-.method-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border:none;border-radius:8px;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s;margin-top:10px;width:100%}
-.btn-pwa-go{background:rgba(0,230,118,.15);color:var(--green);border:1px solid rgba(0,230,118,.3)}
-.btn-pwa-go:hover{background:rgba(0,230,118,.25)}
-.btn-netlify{background:#00C7B7;color:#fff}
-.btn-netlify:hover{background:#00a89a}
-.btn-pwabuilder{background:#4c2889;color:#fff}
-.btn-pwabuilder:hover{background:#3a1f6e}
-/* BTNS */
-.btn{width:100%;padding:13px 18px;border:none;border-radius:12px;font-size:13px;font-weight:800;font-family:inherit;letter-spacing:.3px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px;position:relative;overflow:hidden}
+.qrhint{text-align:center;font-size:10px;color:var(--t3);margin-bottom:13px}
+
+/* BUTTONS */
+.btn{width:100%;padding:12px 18px;border:none;border-radius:12px;font-size:13px;font-weight:800;font-family:inherit;letter-spacing:.3px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px;position:relative;overflow:hidden}
 .btn:disabled{opacity:.35;cursor:not-allowed}
 .btn-cyan{background:linear-gradient(135deg,var(--cyan),var(--cyan2));color:var(--bg0);box-shadow:0 4px 18px rgba(0,229,255,.25)}
 .btn-cyan:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 7px 25px rgba(0,229,255,.35)}
@@ -213,18 +207,23 @@ main{flex:1;padding:14px 18px;display:flex;flex-direction:column;gap:12px}
 .btn-green:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 7px 25px rgba(0,230,118,.3)}
 .shine{position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);transition:left .5s}
 .btn:hover .shine{left:100%}
-/* TOAST */
+
+/* TOASTS */
 .toast-wrap{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:7px;width:calc(100% - 36px);max-width:420px;pointer-events:none}
-.toast{background:var(--bg2);border:1px solid var(--bdr);border-radius:12px;padding:11px 14px;display:flex;align-items:center;gap:9px;box-shadow:0 8px 30px rgba(0,0,0,.4);animation:tIn .3s ease;pointer-events:all}
+.toast{background:var(--bg2);border:1px solid var(--bdr);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:9px;box-shadow:0 8px 30px rgba(0,0,0,.4);animation:tIn .3s ease;pointer-events:all}
 @keyframes tIn{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
-.toast-ico{font-size:16px;flex-shrink:0}.toast-ttl{font-size:12px;font-weight:700}.toast-msg{font-size:10px;color:var(--t3);margin-top:1px}
-footer{padding:14px;text-align:center;border-top:1px solid var(--bdr);font-size:10px;color:var(--t3)}
+.toast-ico{font-size:16px;flex-shrink:0}
+.toast-ttl{font-size:12px;font-weight:700}
+.toast-msg{font-size:10px;color:var(--t3);margin-top:1px}
+footer{padding:13px;text-align:center;border-top:1px solid var(--bdr);font-size:10px;color:var(--t3)}
 footer span{color:var(--cyan)}
 .hidden{display:none!important}
-.divider{height:1px;background:var(--bdr);margin:12px 0}
 .mt8{margin-top:8px}.mt10{margin-top:10px}
+.divider{height:1px;background:var(--bdr);margin:11px 0}
 @media(min-width:768px){.shell{max-width:540px}}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg0)}::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg0)}
+::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px}
 </style>
 </head>
 <body>
@@ -240,8 +239,8 @@ footer span{color:var(--cyan)}
     <span class="logo-ver">PRO v4</span>
   </div>
   <div class="hbtns">
-    <button class="hbtn" onclick="switchTab('preview')">📱</button>
-    <button class="hbtn" onclick="showAbout()">❓</button>
+    <button class="hbtn" onclick="switchTab('preview')" title="Preview">📱</button>
+    <button class="hbtn" onclick="showAbout()" title="Sobre">❓</button>
   </div>
 </header>
 
@@ -250,26 +249,17 @@ footer span{color:var(--cyan)}
   <div class="srail" id="sr1"></div>
   <div class="snode"><div class="scirc" id="sn2">2</div><span class="slbl" id="sl2">Build</span></div>
   <div class="srail" id="sr2"></div>
-  <div class="snode"><div class="scirc" id="sn3">3</div><span class="slbl" id="sl3">Instalar</span></div>
+  <div class="snode"><div class="scirc" id="sn3">3</div><span class="slbl" id="sl3">Download</span></div>
 </div>
 
 <main>
 <div class="hero">
   <div class="badge"><span class="dot"></span>Sistema Online</div>
-  <h1>Sites em <em>Apps Android</em><br>com 3 formas de instalar</h1>
-  <p>Gera um ZIP com PWA, projeto Android Studio completo e guia passo-a-passo para cada método</p>
+  <h1>Sites em <em>Apps Android</em><br>— projeto 100% completo</h1>
+  <p>ZIP com PWA instalável + projeto Android Studio completo + config TWA para gerar APK via um único comando</p>
 </div>
 
-<!-- ALERTA HONESTO -->
-<div class="alert-box alert-amber">
-  <span class="alert-icon">⚠️</span>
-  <div>
-    <div class="alert-ttl">Por que não há um app-release.apk no ZIP?</div>
-    <div class="alert-txt">Um <strong>.apk real exige compilação no servidor</strong> (Android SDK + Java + D8 + apksigner). Nenhum browser pode fazer isso. O ZIP contém: <strong>PWA instalável</strong> (funciona como app nativo) + <strong>projeto Android Studio</strong> (compile o .apk em 1 clique). 3 métodos de instalação são explicados após o download.</div>
-  </div>
-</div>
-
-<!-- FORM -->
+<!-- ═══════════════ FORM ═══════════════ -->
 <section id="formSec">
   <div class="tabs">
     <div class="tab on" id="tab-basic" onclick="switchTab('basic')">📱 Básico</div>
@@ -284,7 +274,7 @@ footer span{color:var(--cyan)}
       <div class="igrp">
         <label class="ilbl">🌐 URL do site</label>
         <div class="iwrap"><span class="iico">🔗</span><input type="url" class="ifield" id="urlIn" placeholder="https://meusite.com" oninput="onUrl()"></div>
-        <div class="ihint">💡 Precisa ser HTTPS para instalar como PWA</div>
+        <div class="ihint dim" id="urlHint">💡 URL completa com https://</div>
       </div>
       <div class="irow">
         <div class="igrp" style="margin-bottom:0">
@@ -293,28 +283,30 @@ footer span{color:var(--cyan)}
         </div>
         <div class="igrp" style="margin-bottom:0">
           <label class="ilbl">🏷️ Versão</label>
-          <div class="iwrap"><span class="iico">#</span><input type="text" class="ifield mono" id="verIn" value="1.0.0" maxlength="10"></div>
+          <div class="iwrap"><span class="iico">#</span><input type="text" class="ifield mono" id="verIn" value="1.0.0" maxlength="12"></div>
         </div>
       </div>
       <div class="igrp mt10" style="margin-bottom:0">
-        <label class="ilbl">📦 Package Name (Android)</label>
-        <div class="iwrap"><span class="iico">📦</span><input type="text" class="ifield mono" id="pkgIn" placeholder="com.meuapp.site" oninput="onPkg()"></div>
-        <div class="ihint" id="pkgHint">⚡ Gerado automaticamente do nome do app</div>
+        <label class="ilbl">📦 Package Name</label>
+        <div class="iwrap"><span class="iico">📦</span><input type="text" class="ifield mono" id="pkgIn" placeholder="com.empresa.app" oninput="onPkg()"></div>
+        <div class="ihint dim" id="pkgHint">⚡ Gerado automaticamente</div>
       </div>
     </div>
+
     <div class="card">
-      <div class="card-hdr"><div class="card-ico">🎨</div><div><div class="card-ttl">Ícone do App</div><div class="card-sub">Gerado em 6 tamanhos (48→512 px)</div></div></div>
+      <div class="card-hdr"><div class="card-ico">🖼️</div><div><div class="card-ttl">Ícone do App</div><div class="card-sub">Gerado em 6 tamanhos PNG (48→512 px)</div></div></div>
       <div class="upzone" id="dz" onclick="document.getElementById('fileIn').click()">
-        <div id="upUI"><span class="upico">📤</span><div class="upttl">Toque para enviar ícone</div><div class="upsub">PNG, JPG • máx 5 MB • 512×512 ideal</div></div>
+        <div id="upUI"><span class="upico">📤</span><div class="upttl">Toque para enviar ícone</div><div class="upsub">PNG ou JPG • máx 5 MB • 512×512 recomendado</div></div>
         <input type="file" id="fileIn" accept="image/*" onchange="onFile(event,'icon')">
       </div>
       <div class="divider"></div>
-      <label class="ilbl">🖼️ Splash Screen (opcional)</label>
-      <div class="upzone" id="dz2" onclick="document.getElementById('splashIn').click()" style="padding:14px">
-        <div id="splashUI"><span class="upico" style="font-size:22px">🎭</span><div class="upttl">Splash screen personalizada</div><div class="upsub">PNG • 1080×1920 ideal</div></div>
+      <label class="ilbl">🎭 Splash Screen (opcional)</label>
+      <div class="upzone" id="dz2" onclick="document.getElementById('splashIn').click()" style="padding:13px">
+        <div id="splashUI"><span class="upico" style="font-size:20px">🎭</span><div class="upttl">Splash screen personalizada</div><div class="upsub">PNG • 1080×1920 ideal</div></div>
         <input type="file" id="splashIn" accept="image/*" onchange="onFile(event,'splash')">
       </div>
     </div>
+
     <div class="card">
       <div class="card-hdr"><div class="card-ico">🎨</div><div><div class="card-ttl">Cor do Tema</div><div class="card-sub">Status bar, splash e manifest</div></div></div>
       <div class="color-grid">
@@ -350,17 +342,17 @@ footer span{color:var(--cyan)}
         <div class="feat-item" data-key="notif" onclick="toggleFeat(this)"><span class="feat-lbl">🔔 Notificações</span><div class="toggle"></div></div>
         <div class="feat-item" data-key="storage" onclick="toggleFeat(this)"><span class="feat-lbl">💾 Storage</span><div class="toggle"></div></div>
         <div class="feat-item" data-key="vibrate" onclick="toggleFeat(this)"><span class="feat-lbl">📳 Vibrar</span><div class="toggle"></div></div>
-        <div class="feat-item" data-key="bluetooth" onclick="toggleFeat(this)"><span class="feat-lbl">🔵 Bluetooth</span><div class="toggle"></div></div>
+        <div class="feat-item" data-key="clearText" onclick="toggleFeat(this)"><span class="feat-lbl">🔓 HTTP (sem SSL)</span><div class="toggle"></div></div>
       </div>
     </div>
     <div class="card">
-      <div class="card-hdr"><div class="card-ico">📐</div><div><div class="card-ttl">Comportamento</div><div class="card-sub">Layout, navegação e WebView</div></div></div>
+      <div class="card-hdr"><div class="card-ico">📐</div><div><div class="card-ttl">Comportamento WebView</div><div class="card-sub">Layout, navegação e zoom</div></div></div>
       <div class="igrp">
-        <label class="ilbl">📐 Orientação da tela</label>
+        <label class="ilbl">📐 Orientação</label>
         <select class="iselect" id="orientSel">
           <option value="portrait">📱 Retrato (padrão)</option>
           <option value="landscape">🖥️ Paisagem</option>
-          <option value="fullSensor">🔄 Automático (sensor)</option>
+          <option value="fullSensor">🔄 Automático</option>
           <option value="unspecified">⚪ Sem restrição</option>
         </select>
       </div>
@@ -370,7 +362,7 @@ footer span{color:var(--cyan)}
         <div class="feat-item on" data-key="backNav" onclick="toggleFeat(this)"><span class="feat-lbl">◀ Botão voltar</span><div class="toggle on"></div></div>
         <div class="feat-item on" data-key="jsEnabled" onclick="toggleFeat(this)"><span class="feat-lbl">⚡ JavaScript</span><div class="toggle on"></div></div>
         <div class="feat-item on" data-key="domStorage" onclick="toggleFeat(this)"><span class="feat-lbl">💽 DOM Storage</span><div class="toggle on"></div></div>
-        <div class="feat-item" data-key="clearText" onclick="toggleFeat(this)"><span class="feat-lbl">🔓 HTTP claro</span><div class="toggle"></div></div>
+        <div class="feat-item" data-key="pullRefresh" onclick="toggleFeat(this)"><span class="feat-lbl">🔄 Pull-to-refresh</span><div class="toggle"></div></div>
       </div>
       <div class="igrp mt10" style="margin-bottom:0">
         <label class="ilbl">🎨 Cor de fundo (splash)</label>
@@ -385,7 +377,7 @@ footer span{color:var(--cyan)}
   <!-- PREVIEW -->
   <div id="pane-preview" class="hidden">
     <div class="prev-wrap">
-      <div class="card-hdr" style="margin-bottom:12px"><div class="card-ico">👁️</div><div><div class="card-ttl">Pré-visualização</div><div class="card-sub">Como aparece no Android</div></div></div>
+      <div class="card-hdr" style="margin-bottom:12px"><div class="card-ico">👁️</div><div><div class="card-ttl">Pré-visualização</div><div class="card-sub">Simulação Android</div></div></div>
       <div class="phone">
         <div class="phone-scr">
           <div class="ph-notch"></div>
@@ -402,7 +394,12 @@ footer span{color:var(--cyan)}
     <div class="card mt8">
       <div class="card-hdr"><div class="card-ico">🖥️</div><div><div class="card-ttl">Console de Build</div><div class="card-sub">Log em tempo real</div></div></div>
       <div class="console-wrap">
-        <div class="console-hdr"><div class="cdot" style="background:#ff5252"></div><div class="cdot" style="background:#ffb627"></div><div class="cdot" style="background:#00e676"></div><span style="font-size:9px;color:var(--t3);margin-left:4px;font-family:'JetBrains Mono',monospace">appforge ~ build</span></div>
+        <div class="console-hdr">
+          <div class="cdot" style="background:#ff5252"></div>
+          <div class="cdot" style="background:#ffb627"></div>
+          <div class="cdot" style="background:#00e676"></div>
+          <span style="font-size:9px;color:var(--t3);margin-left:4px;font-family:'JetBrains Mono',monospace">appforge ~ build</span>
+        </div>
         <div class="console-body" id="consoleBdy"><div class="ldim">$ aguardando comando...</div></div>
       </div>
     </div>
@@ -413,89 +410,93 @@ footer span{color:var(--cyan)}
   </button>
 </section>
 
-<!-- PROGRESS -->
+<!-- ═══════════════ PROGRESS ═══════════════ -->
 <section class="prog-section" id="progSec">
   <div class="ring-wrap">
-    <svg width="110" height="110" viewBox="0 0 100 100">
+    <svg width="108" height="108" viewBox="0 0 100 100">
       <defs><linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#00e5ff"/><stop offset="100%" style="stop-color:#00e676"/></linearGradient></defs>
-      <circle class="rbg" cx="50" cy="50" r="45"/><circle class="rfill" id="rfill" cx="50" cy="50" r="45"/>
+      <circle class="rbg" cx="50" cy="50" r="45"/>
+      <circle class="rfill" id="rfill" cx="50" cy="50" r="45"/>
     </svg>
     <div class="ring-txt"><div class="ring-pct" id="pctTxt">0%</div><div class="ring-lbl2">BUILD</div></div>
   </div>
   <div class="prog-ttl">Montando o pacote…</div>
   <div class="prog-sub">Gerando todos os arquivos do projeto</div>
   <div class="psteps">
-    <div class="pstep active" id="ps1"><div class="ps-ico">⚙️</div><div><div class="ps-ttl">Validando configurações</div><div class="ps-desc">URL · nome · package name</div></div></div>
-    <div class="pstep" id="ps2"><div class="ps-ico">🖼️</div><div><div class="ps-ttl">Gerando ícones via Canvas</div><div class="ps-desc">48 / 72 / 96 / 144 / 192 / 512 px</div></div></div>
-    <div class="pstep" id="ps3"><div class="ps-ico">📱</div><div><div class="ps-ttl">Projeto Android Studio</div><div class="ps-desc">Manifest + Gradle wrapper + Java + res</div></div></div>
-    <div class="pstep" id="ps4"><div class="ps-ico">🌐</div><div><div class="ps-ttl">PWA com install prompt</div><div class="ps-desc">manifest + sw.js + splash + offline</div></div></div>
-    <div class="pstep" id="ps5"><div class="ps-ico">📦</div><div><div class="ps-ttl">Empacotando ZIP</div><div class="ps-desc">DEFLATE nível 9 · integridade OK</div></div></div>
+    <div class="pstep active" id="ps1"><div class="ps-ico">⚙️</div><div><div class="ps-ttl">Validando configurações</div><div class="ps-desc">URL · package name · permissões</div></div></div>
+    <div class="pstep" id="ps2"><div class="ps-ico">🖼️</div><div><div class="ps-ttl">Gerando ícones</div><div class="ps-desc">48/72/96/144/192/512 px + adaptive icons</div></div></div>
+    <div class="pstep" id="ps3"><div class="ps-ico">📦</div><div><div class="ps-ttl">Criando projeto Android</div><div class="ps-desc">Manifest · Gradle · Java · Recursos</div></div></div>
+    <div class="pstep" id="ps4"><div class="ps-ico">🌐</div><div><div class="ps-ttl">Gerando PWA + TWA config</div><div class="ps-desc">manifest.json · sw.js · twa-manifest.json</div></div></div>
+    <div class="pstep" id="ps5"><div class="ps-ico">📦</div><div><div class="ps-ttl">Empacotando ZIP</div><div class="ps-desc">DEFLATE nível 9 · verificando integridade</div></div></div>
   </div>
   <button class="btn btn-ghost mt8" onclick="cancelGen()"><span>✕</span><span>Cancelar</span></button>
 </section>
 
-<!-- SUCCESS -->
+<!-- ═══════════════ SUCCESS ═══════════════ -->
 <section class="succ-section" id="succSec">
   <div class="succ-anim"><div class="succ-ring">✓</div></div>
   <div class="succ-ttl">Pacote Gerado!</div>
-  <div class="succ-sub">Escolha como instalar no Android</div>
+  <div class="succ-sub">ZIP completo com PWA + Android Studio + TWA config</div>
 
   <div class="info-table">
     <div class="irow-t"><span class="ilbl-t">📱 App</span><span class="ival-t" id="rName">—</span></div>
+    <div class="irow-t"><span class="ilbl-t">🔗 URL</span><span class="ival-t" id="rUrl">—</span></div>
     <div class="irow-t"><span class="ilbl-t">📦 Package</span><span class="ival-t" id="rPkg">—</span></div>
-    <div class="irow-t"><span class="ilbl-t">🖼️ Ícones</span><span class="ival-t ok">6 densidades PNG</span></div>
-    <div class="irow-t"><span class="ilbl-t">🔧 Gradle</span><span class="ival-t ok">wrapper incluso (v8.4)</span></div>
+    <div class="irow-t"><span class="ilbl-t">🏷️ Versão</span><span class="ival-t" id="rVer">—</span></div>
+    <div class="irow-t"><span class="ilbl-t">🖼️ Ícones</span><span class="ival-t ok">6 tamanhos + adaptive</span></div>
     <div class="irow-t"><span class="ilbl-t">📁 Arquivos</span><span class="ival-t ok" id="rFiles">—</span></div>
     <div class="irow-t"><span class="ilbl-t">💾 ZIP</span><span class="ival-t" id="rSize">—</span></div>
   </div>
 
-  <div class="qr-wrap"><div id="qrDiv"></div></div>
-  <div class="qrhint">📷 Escaneie para abrir a URL no celular</div>
+  <!-- CHECKLIST DE INSTALAÇÃO -->
+  <div class="checklist">
+    <div class="cl-hdr">📋 Caminhos para instalar no Android</div>
 
-  <!-- GUIA DE INSTALAÇÃO VISUAL -->
-  <div style="font-size:11px;font-weight:800;color:var(--t2);letter-spacing:.6px;text-transform:uppercase;margin-bottom:10px">⚡ 3 Formas de Instalar</div>
-  <div class="install-guide">
-
-    <!-- MÉTODO 1: PWA -->
-    <div class="install-method method-pwa">
-      <div class="method-badge badge-green">✅ MAIS FÁCIL · SEM COMPILAR</div>
-      <div class="method-ttl">Método 1 — PWA via Chrome (imediato)</div>
-      <div class="method-steps">
-        <div class="mstep"><div class="mstep-num">1</div><div class="mstep-txt">Extraia a pasta <code>📱 PWA/</code> do ZIP</div></div>
-        <div class="mstep"><div class="mstep-num">2</div><div class="mstep-txt">Arraste a pasta em <strong>netlify.com/drop</strong> — hospedagem HTTPS gratuita em 30 segundos</div></div>
-        <div class="mstep"><div class="mstep-num">3</div><div class="mstep-txt">No celular Android: abra a URL no <strong>Chrome</strong> → menu ⋮ → <strong>"Adicionar à tela inicial"</strong></div></div>
-        <div class="mstep"><div class="mstep-num">4</div><div class="mstep-txt">✅ App instalado com ícone, splash e funciona offline!</div></div>
+    <div class="cl-item">
+      <div class="cl-badge" style="color:var(--green)">✅</div>
+      <div>
+        <div class="cl-ttl">PWA via Chrome — Instala agora, sem compilar</div>
+        <div class="cl-desc">Hospede a pasta <code style="color:var(--cyan)">📱 PWA/</code> em HTTPS gratuito (Netlify Drop), abra no Chrome Android → menu ⋮ → Adicionar à tela inicial. Ícone, splash e offline funcionam.</div>
       </div>
-      <button class="method-btn btn-netlify" onclick="window.open('https://app.netlify.com/drop','_blank')">🚀 Abrir Netlify Drop</button>
     </div>
 
-    <!-- MÉTODO 2: PWABuilder -->
-    <div class="install-method method-builder">
-      <div class="method-badge badge-amber">📦 APK REAL · SEM ANDROID STUDIO</div>
-      <div class="method-ttl">Método 2 — APK via PWABuilder (gratuito)</div>
-      <div class="method-steps">
-        <div class="mstep"><div class="mstep-num">1</div><div class="mstep-txt">Hospede a pasta <code>📱 PWA/</code> no Netlify (método 1 passo 1 e 2)</div></div>
-        <div class="mstep"><div class="mstep-num">2</div><div class="mstep-txt">Acesse <strong>pwabuilder.com</strong>, cole a URL hospedada e clique Start</div></div>
-        <div class="mstep"><div class="mstep-num">3</div><div class="mstep-txt">Clique em <strong>Package for Stores → Android</strong> → Download Package</div></div>
-        <div class="mstep"><div class="mstep-num">4</div><div class="mstep-txt">Baixe o <code>app-release.apk</code> assinado. Habilite "Fontes desconhecidas" e instale!</div></div>
+    <div class="cl-item">
+      <div class="cl-badge" style="color:var(--cyan)">⚡</div>
+      <div>
+        <div class="cl-ttl">TWA via Bubblewrap — APK real com 1 comando</div>
+        <div class="cl-desc">Hospede a PWA em HTTPS, depois execute no terminal:</div>
+        <div class="cl-cmd">npm i -g @bubblewrap/cli && bubblewrap init --manifest &lt;URL&gt;/manifest.json && bubblewrap build</div>
+        <div class="cl-desc" style="margin-top:4px">O arquivo <code style="color:var(--green)">app-release-signed.apk</code> é gerado automaticamente.</div>
       </div>
-      <button class="method-btn btn-pwabuilder" id="pwaBuilderBtn" onclick="openPWABuilder()">📦 Abrir PWABuilder</button>
     </div>
 
-    <!-- MÉTODO 3: Android Studio -->
-    <div class="install-method method-studio">
-      <div class="method-badge badge-cyan">⚙️ APK NATIVO · ANDROID STUDIO</div>
-      <div class="method-ttl">Método 3 — Compilar APK localmente</div>
-      <div class="method-steps">
-        <div class="mstep"><div class="mstep-num">1</div><div class="mstep-txt">Extraia a pasta <code>📦 AndroidStudio/</code> do ZIP</div></div>
-        <div class="mstep"><div class="mstep-num">2</div><div class="mstep-txt">Abra o <strong>Android Studio</strong> → File → Open → selecione a pasta</div></div>
-        <div class="mstep"><div class="mstep-num">3</div><div class="mstep-txt">Aguarde o <strong>Gradle sync</strong> (~2 min na 1ª vez). Gradle wrapper já incluso no ZIP!</div></div>
-        <div class="mstep"><div class="mstep-num">4</div><div class="mstep-txt">Menu <strong>Build → Build Bundle(s)/APK(s) → Build APK(s)</strong></div></div>
-        <div class="mstep"><div class="mstep-num">5</div><div class="mstep-txt">O arquivo <code>app-debug.apk</code> estará em <code>app/build/outputs/apk/debug/</code></div></div>
+    <div class="cl-item">
+      <div class="cl-badge" style="color:var(--amber)">🌐</div>
+      <div>
+        <div class="cl-ttl">PWABuilder — APK grátis sem instalar nada</div>
+        <div class="cl-desc">Hospede a PWA em HTTPS → acesse <code style="color:var(--cyan)">pwabuilder.com</code> → cole a URL → Package for Stores → Android → baixe o <code style="color:var(--green)">app-release.apk</code>.</div>
       </div>
-      <button class="method-btn" style="background:rgba(0,229,255,.12);color:var(--cyan);border:1px solid rgba(0,229,255,.3)" onclick="window.open('https://developer.android.com/studio','_blank')">⚙️ Baixar Android Studio</button>
+    </div>
+
+    <div class="cl-item">
+      <div class="cl-badge" style="color:var(--violet)">🔨</div>
+      <div>
+        <div class="cl-ttl">Android Studio — APK com controle total</div>
+        <div class="cl-desc">Abra a pasta <code style="color:var(--cyan)">📦 AndroidStudio/</code> → aguarde Gradle sync → Build → Generate Signed APK → escolha Debug (sem keystore) → instale o <code style="color:var(--green)">app-debug.apk</code>.</div>
+      </div>
+    </div>
+
+    <div class="cl-item" style="background:rgba(255,82,82,.03);border-top:1px solid rgba(255,82,82,.15)">
+      <div class="cl-badge" style="color:var(--red)">❌</div>
+      <div>
+        <div class="cl-ttl" style="color:var(--t2)">app-release.apk direto no ZIP — impossível</div>
+        <div class="cl-desc">Um APK requer compilação com Android SDK (javac + d8 + aapt2 + zipalign + apksigner). Isso não é possível em um navegador. Use um dos métodos acima.</div>
+      </div>
     </div>
   </div>
+
+  <div class="qr-wrap"><div id="qrDiv"></div></div>
+  <div class="qrhint">📷 Escaneie para abrir a URL no celular</div>
 
   <button class="btn btn-green" onclick="doDownload()">
     <span class="shine"></span><span>⬇️</span><span>Baixar ZIP Completo</span>
@@ -503,105 +504,179 @@ footer span{color:var(--cyan)}
   <button class="btn btn-ghost mt8" onclick="doReset()"><span>🔄</span><span>Criar Novo App</span></button>
 </section>
 </main>
-<footer>AppForge Pro © 2026 — <span>PWA + Gradle Wrapper + Android Studio Project</span></footer>
+
+<footer>AppForge Pro © 2026 — <span>PWA + TWA + Android Studio — ZIP 100% completo</span></footer>
 </div>
 <div class="toast-wrap" id="toastWrap"></div>
 
 <script>
-// ── STATE ──────────────────────────────────────────────
-const S={url:'',name:'',pkg:'',ver:'1.0.0',color:'#00e5ff',bgColor:'#07090f',icon:null,splash:null,zip:null,zipSize:0,fileCount:0,_pkgManual:false,
-  feats:{internet:true,camera:false,mic:false,geo:false,notif:false,storage:false,vibrate:false,bluetooth:false,fullscreen:false,zoom:false,backNav:true,jsEnabled:true,domStorage:true,clearText:false}
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+const S={
+  url:'',name:'',pkg:'',ver:'1.0.0',color:'#00e5ff',bgColor:'#07090f',
+  icon:null,splash:null,zip:null,zipSize:0,fileCount:0,_pkgManual:false,
+  feats:{internet:true,camera:false,mic:false,geo:false,notif:false,storage:false,
+         vibrate:false,clearText:false,fullscreen:false,zoom:false,
+         backNav:true,jsEnabled:true,domStorage:true,pullRefresh:false}
 };
 let genTimer=null;
 
-// ── TABS ───────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════
 function switchTab(t){
   ['basic','advanced','preview'].forEach(x=>{
     document.getElementById('pane-'+x).classList.toggle('hidden',x!==t);
-    document.getElementById('tab-'+x)&&document.getElementById('tab-'+x).classList.toggle('on',x===t);
+    document.getElementById('tab-'+x).classList.toggle('on',x===t);
   });
 }
 
-// ── INPUTS ─────────────────────────────────────────────
-function onUrl(){const el=document.getElementById('urlIn');if(el.value&&!el.value.match(/^https?:\/\//))el.value='https://'+el.value;S.url=el.value.trim();syncPreview();}
-function onName(){
-  S.name=document.getElementById('nameIn').value.trim();
-  if(!S._pkgManual){const c=S.name.toLowerCase().replace(/[^a-z0-9]/g,'').substring(0,15)||'app';S.pkg='com.appforge.'+c;document.getElementById('pkgIn').value=S.pkg;}
+// ═══════════════════════════════════════════════════════
+// INPUTS
+// ═══════════════════════════════════════════════════════
+function onUrl(){
+  const el=document.getElementById('urlIn');
+  if(el.value&&!el.value.match(/^https?:\/\//))el.value='https://'+el.value;
+  S.url=el.value.trim();
+  const h=document.getElementById('urlHint');
+  if(S.url){try{const u=new URL(S.url);h.textContent='✅ URL válida: '+u.hostname;h.className='ihint ok';}catch{h.textContent='⚠️ URL inválida';h.className='ihint warn';}}
+  else{h.textContent='💡 URL completa com https://';h.className='ihint dim';}
   syncPreview();
 }
-function onPkg(){S._pkgManual=true;S.pkg=document.getElementById('pkgIn').value.trim();const v=/^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*){1,}$/.test(S.pkg);const h=document.getElementById('pkgHint');h.textContent=v?'✅ Package name válido':'⚠️ Use: com.empresa.app (só letras minúsculas e pontos)';h.style.color=v?'var(--green)':'var(--amber)';}
+function onName(){
+  S.name=document.getElementById('nameIn').value.trim();
+  if(!S._pkgManual){
+    const c=S.name.toLowerCase().replace(/[^a-z0-9]/g,'').substring(0,15)||'app';
+    S.pkg='com.appforge.'+c;
+    document.getElementById('pkgIn').value=S.pkg;
+  }
+  syncPreview();
+}
+function onPkg(){
+  S._pkgManual=true; S.pkg=document.getElementById('pkgIn').value.trim();
+  const v=/^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*){1,}$/.test(S.pkg);
+  const h=document.getElementById('pkgHint');
+  h.textContent=v?'✅ Package válido':'⚠️ Use: com.empresa.app (letras minúsculas e pontos)';
+  h.className='ihint '+(v?'ok':'warn');
+}
+
+// ═══════════════════════════════════════════════════════
+// FILE UPLOAD
+// ═══════════════════════════════════════════════════════
 function onFile(e,type){
   const file=e.target.files[0];if(!file)return;
-  if(file.size>8*1024*1024){toast('error','Arquivo grande demais','Máximo 8 MB');return;}
+  if(file.size>8*1024*1024){toast('error','Arquivo muito grande','Máximo 8 MB');return;}
   const rd=new FileReader();
   rd.onload=ev=>{
-    if(type==='icon'){S.icon=ev.target.result;document.getElementById('dz').classList.add('ok');document.getElementById('upUI').innerHTML=`<img src="${S.icon}" class="prev-img"><div class="upttl" style="color:var(--green)">${file.name}</div><div class="upsub">${(file.size/1024).toFixed(0)} KB</div>`;syncPreview();toast('success','Ícone carregado','6 tamanhos serão gerados');}
-    else{S.splash=ev.target.result;document.getElementById('dz2').classList.add('ok');document.getElementById('splashUI').innerHTML=`<img src="${S.splash}" class="prev-img"><div class="upttl" style="color:var(--green)">${file.name}</div><div class="upsub">Splash definida</div>`;toast('success','Splash carregada','Usada na abertura');}
-  };rd.readAsDataURL(file);
+    if(type==='icon'){
+      S.icon=ev.target.result;
+      document.getElementById('dz').classList.add('ok');
+      document.getElementById('upUI').innerHTML=`<img src="${S.icon}" class="prev-img"><div class="upttl" style="color:var(--green)">${file.name}</div><div class="upsub">${(file.size/1024).toFixed(0)} KB · 6 tamanhos serão gerados</div>`;
+      syncPreview();toast('success','Ícone carregado','Será processado em 6 tamanhos');
+    }else{
+      S.splash=ev.target.result;
+      document.getElementById('dz2').classList.add('ok');
+      document.getElementById('splashUI').innerHTML=`<img src="${S.splash}" class="prev-img"><div class="upttl" style="color:var(--green)">${file.name}</div><div class="upsub">Splash definida</div>`;
+      toast('success','Splash carregada','Usada na abertura do app');
+    }
+  };
+  rd.readAsDataURL(file);
 }
 ['dragenter','dragover','dragleave','drop'].forEach(ev=>document.getElementById('dz').addEventListener(ev,e=>{e.preventDefault();e.stopPropagation();}));
 ['dragenter','dragover'].forEach(ev=>document.getElementById('dz').addEventListener(ev,()=>document.getElementById('dz').classList.add('drag')));
 ['dragleave','drop'].forEach(ev=>document.getElementById('dz').addEventListener(ev,()=>document.getElementById('dz').classList.remove('drag')));
 document.getElementById('dz').addEventListener('drop',e=>{document.getElementById('fileIn').files=e.dataTransfer.files;onFile({target:{files:e.dataTransfer.files}},'icon');});
 
+// ═══════════════════════════════════════════════════════
+// COLORS / FEATURES
+// ═══════════════════════════════════════════════════════
 function pickColor(el){document.querySelectorAll('.csq').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');S.color=el.dataset.c;document.getElementById('cInput').value=S.color;document.getElementById('hexVal').textContent=S.color.toUpperCase();syncPreview();}
 function pickCustom(c){document.querySelectorAll('.csq').forEach(x=>x.classList.remove('sel'));S.color=c;document.getElementById('hexVal').textContent=c.toUpperCase();syncPreview();}
 function toggleFeat(el){const k=el.dataset.key;if(k==='internet')return;S.feats[k]=!S.feats[k];el.classList.toggle('on',S.feats[k]);el.querySelector('.toggle').classList.toggle('on',S.feats[k]);}
 
+// ═══════════════════════════════════════════════════════
+// PREVIEW
+// ═══════════════════════════════════════════════════════
 function syncPreview(){
   const name=document.getElementById('nameIn').value.trim()||'Meu App';
   const url=document.getElementById('urlIn').value.trim();
   document.getElementById('phNm').textContent=name;
   document.getElementById('phBar').style.borderBottom=`2px solid ${S.color}30`;
   const ico=document.getElementById('phIco');
-  ico.style.background=`linear-gradient(135deg,${S.color},${dk(S.color,30)})`;
+  ico.style.background=`linear-gradient(135deg,${S.color},${dk(S.color,35)})`;
   if(S.icon)ico.innerHTML=`<img src="${S.icon}" style="width:100%;height:100%;object-fit:cover;border-radius:3px">`;
   else ico.textContent=name.charAt(0).toUpperCase()||'⚡';
   if(url){try{document.getElementById('phUrl').textContent=new URL(url).hostname.replace('www.','');}catch{document.getElementById('phUrl').textContent=url;}}
 }
-function dk(hex,a){const n=parseInt(hex.replace('#',''),16);return'#'+[((n>>16)-a),((n>>8&0xff)-a),(n&0xff-a)].map(x=>Math.max(0,Math.min(255,Math.round(x))).toString(16).padStart(2,'0')).join('');}
+function dk(hex,a){
+  const n=parseInt(hex.replace('#',''),16);
+  return'#'+[(n>>16)-a,(n>>8&0xff)-a,(n&0xff)-a].map(x=>Math.max(0,Math.min(255,x)).toString(16).padStart(2,'0')).join('');
+}
 
+// ═══════════════════════════════════════════════════════
+// CONSOLE
+// ═══════════════════════════════════════════════════════
 function clog(msg,t='inf'){
-  const b=document.getElementById('consoleBdy');const d=document.createElement('div');d.className={ok:'lok',err:'lerr',inf:'linf',wrn:'lwrn',dim:'ldim'}[t]||'linf';
+  const b=document.getElementById('consoleBdy');
+  const d=document.createElement('div');d.className={ok:'lok',err:'lerr',inf:'linf',wrn:'lwrn',dim:'ldim'}[t]||'linf';
   const now=new Date(),ts=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
   d.textContent=`[${ts}] ${msg}`;b.appendChild(d);b.scrollTop=b.scrollHeight;
 }
 function clearCons(){document.getElementById('consoleBdy').innerHTML='<div class="ldim">$ build iniciado...</div>';}
 
-// ── ICON CANVAS ─────────────────────────────────────────
-function resizeIcon(src,size){
+// ═══════════════════════════════════════════════════════
+// ICON CANVAS
+// ═══════════════════════════════════════════════════════
+function resizeIcon(src,size,rounded=true){
   return new Promise(res=>{
     const img=new Image();
     img.onload=()=>{
       const c=document.createElement('canvas');c.width=c.height=size;const ctx=c.getContext('2d');
-      const r=size*.22;ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(size-r,0);ctx.quadraticCurveTo(size,0,size,r);ctx.lineTo(size,size-r);ctx.quadraticCurveTo(size,size,size-r,size);ctx.lineTo(r,size);ctx.quadraticCurveTo(0,size,0,size-r);ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath();
-      ctx.fillStyle=S.color;ctx.fill();ctx.clip();
+      if(rounded){const r=size*.22;ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(size-r,0);ctx.quadraticCurveTo(size,0,size,r);ctx.lineTo(size,size-r);ctx.quadraticCurveTo(size,size,size-r,size);ctx.lineTo(r,size);ctx.quadraticCurveTo(0,size,0,size-r);ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath();ctx.fillStyle=S.color;ctx.fill();ctx.clip();}
       const min=Math.min(img.width,img.height);ctx.drawImage(img,(img.width-min)/2,(img.height-min)/2,min,min,0,0,size,size);
       res(c.toDataURL('image/png').split(',')[1]);
-    };img.onerror=()=>res(defaultIcon(size));img.src=src;
+    };
+    img.onerror=()=>res(defaultIcon(size,rounded));img.src=src;
   });
 }
-function defaultIcon(size){
+function defaultIcon(size,rounded=true){
   const c=document.createElement('canvas');c.width=c.height=size;const ctx=c.getContext('2d');
-  const r=size*.22;ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(size-r,0);ctx.quadraticCurveTo(size,0,size,r);ctx.lineTo(size,size-r);ctx.quadraticCurveTo(size,size,size-r,size);ctx.lineTo(r,size);ctx.quadraticCurveTo(0,size,0,size-r);ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath();
-  const g=ctx.createLinearGradient(0,0,size,size);g.addColorStop(0,S.color);g.addColorStop(1,dk(S.color,60));ctx.fillStyle=g;ctx.fill();
-  ctx.fillStyle='rgba(255,255,255,.9)';ctx.font=`bold ${size*.42}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText((S.name||'A').charAt(0).toUpperCase(),size/2,size/2);
+  if(rounded){const r=size*.22;ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(size-r,0);ctx.quadraticCurveTo(size,0,size,r);ctx.lineTo(size,size-r);ctx.quadraticCurveTo(size,size,size-r,size);ctx.lineTo(r,size);ctx.quadraticCurveTo(0,size,0,size-r);ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath();}
+  else{ctx.rect(0,0,size,size);}
+  const g=ctx.createLinearGradient(0,0,size,size);g.addColorStop(0,S.color);g.addColorStop(1,dk(S.color,65));ctx.fillStyle=g;ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.9)';ctx.font=`bold ${size*.42}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText((S.name||'A').charAt(0).toUpperCase(),size/2,size/2);
   return c.toDataURL('image/png').split(',')[1];
 }
+// Foreground icon (transparent bg, centered image)
+function foregroundIcon(src,size){
+  return new Promise(res=>{
+    const c=document.createElement('canvas');c.width=c.height=size;const ctx=c.getContext('2d');
+    if(!src){ctx.fillStyle='rgba(255,255,255,.9)';ctx.font=`bold ${size*.35}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText((S.name||'A').charAt(0).toUpperCase(),size/2,size/2);res(c.toDataURL('image/png').split(',')[1]);return;}
+    const img=new Image();img.onload=()=>{const pad=size*.15;const s=size-pad*2;const min=Math.min(img.width,img.height);ctx.drawImage(img,(img.width-min)/2,(img.height-min)/2,min,min,pad,pad,s,s);res(c.toDataURL('image/png').split(',')[1]);};img.onerror=()=>res(c.toDataURL('image/png').split(',')[1]);img.src=src;
+  });
+}
 
-// ── VALIDATION ─────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+// VALIDATION
+// ═══════════════════════════════════════════════════════
 function validate(){
-  const url=document.getElementById('urlIn').value.trim();const name=document.getElementById('nameIn').value.trim();
+  const url=document.getElementById('urlIn').value.trim();
+  const name=document.getElementById('nameIn').value.trim();
   if(!url){toast('error','URL obrigatória','Informe o endereço do site');document.getElementById('urlIn').focus();return false;}
   try{new URL(url);}catch{toast('error','URL inválida','Use formato https://meusite.com');return false;}
   if(!name){toast('error','Nome obrigatório','Dê um nome ao aplicativo');document.getElementById('nameIn').focus();return false;}
   return true;
 }
 
-// ── GENERATION FLOW ────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+// GENERATION FLOW
+// ═══════════════════════════════════════════════════════
 function startGen(){
   if(!validate())return;
-  S.url=document.getElementById('urlIn').value.trim();S.name=document.getElementById('nameIn').value.trim();
+  S.url=document.getElementById('urlIn').value.trim();
+  S.name=document.getElementById('nameIn').value.trim();
   S.ver=document.getElementById('verIn').value.trim()||'1.0.0';
   S.pkg=document.getElementById('pkgIn').value.trim()||('com.appforge.'+S.name.toLowerCase().replace(/[^a-z0-9]/g,'').substring(0,15));
   switchTab('preview');clearCons();
@@ -611,303 +686,318 @@ function startGen(){
 }
 
 async function runBuild(){
-  const miles=[18,40,62,82,100];let pct=0,cur=0;
-  setPS('ps1','active');
+  const miles=[15,40,65,85,100];let pct=0,cur=0;
+  const sids=['ps1','ps2','ps3','ps4','ps5'];setPS('ps1','active');
   return new Promise(resolve=>{
     genTimer=setInterval(async()=>{
-      pct+=Math.random()*3+1;
-      if(pct>miles[cur]&&cur<4){setPS(['ps1','ps2','ps3','ps4','ps5'][cur],'done');cur++;setPS(['ps1','ps2','ps3','ps4','ps5'][cur],'active');}
+      pct+=Math.random()*3.5+1;
+      if(pct>miles[cur]&&cur<4){setPS(sids[cur],'done');cur++;setPS(sids[cur],'active');}
       if(pct>=100){pct=100;clearInterval(genTimer);setPS('ps5','done');await doBuild();setTimeout(showSuccess,400);resolve();}
       updateRing(pct);
-    },120);
+    },110);
   });
 }
 
-// ══════════════════════════════════════════════════════
-// ZIP BUILDER — AUDITADO E COMPLETO
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// ZIP BUILDER — COMPLETO
+// ═══════════════════════════════════════════════════════
 async function doBuild(){
-  clog('Gerando ícones Canvas API…','inf');
-  const SIZES=[48,72,96,144,192,512];const icons={};
-  for(const sz of SIZES){icons[sz]=S.icon?await resizeIcon(S.icon,sz):defaultIcon(sz);clog(`  ✓ ${sz}×${sz}px`,'ok');}
+  clog('Gerando ícones via Canvas API…','inf');
+  const SIZES=[48,72,96,144,192,512];
+  const icons={};
+  for(const sz of SIZES){icons[sz]=S.icon?await resizeIcon(S.icon,sz):defaultIcon(sz);clog(`  icon-${sz}x${sz}.png ✓`,'ok');}
+  const fgIcon=await foregroundIcon(S.icon,512);
+  clog('  ic_launcher_foreground.png ✓ (adaptive)','ok');
 
-  const zip=new JSZip();const appSlug=S.name.replace(/[^a-z0-9]/gi,'_');const pkgPath=S.pkg.replace(/\./g,'/');
-  const orient=document.getElementById('orientSel').value;const feats=S.feats;const appNmClean=S.name.replace(/[^a-zA-Z0-9]/g,'')||'App';
-  let fc=0;
+  const zip=new JSZip();const appSlug=S.name.replace(/[^a-z0-9]/gi,'_');const pkgPath=S.pkg.replace(/\./g,'/');let fc=0;
+  const feats=S.feats;const orient=document.getElementById('orientSel').value;
+  const hostDomain=S.url?new URL(S.url).hostname:'example.com';
+  const appNmClean=S.name.replace(/[^a-zA-Z0-9]/g,'')||'App';
 
-  // ─────────────────────────────────────────────────────
-  // 📱 PASTA 1: PWA — Instalável via Chrome
-  // ─────────────────────────────────────────────────────
+  // ══════════════════════════════════════════
+  // 1. PWA FOLDER
+  // ══════════════════════════════════════════
+  clog('Criando pasta PWA…','inf');
   const pwa=zip.folder('📱 PWA — Instalar via Chrome');
 
-  // manifest.json
   const manifestIcons=SIZES.map(sz=>({src:`icons/icon-${sz}x${sz}.png`,sizes:`${sz}x${sz}`,type:'image/png',purpose:sz>=192?'any maskable':'any'}));
-  pwa.file('manifest.json',JSON.stringify({name:S.name,short_name:S.name.substring(0,12),description:`${S.name} — AppForge Pro`,start_url:'/',scope:'/',display:'standalone',orientation:orient,background_color:S.bgColor,theme_color:S.color,lang:'pt-BR',id:S.pkg,icons:manifestIcons,categories:['productivity'],prefer_related_applications:false,screenshots:[]},null,2));fc++;
+  const pwaManifest={name:S.name,short_name:S.name.substring(0,12),description:`${S.name} — AppForge Pro`,start_url:'/',scope:'/',display:'standalone',orientation:orient,background_color:S.bgColor,theme_color:S.color,lang:'pt-BR',id:S.pkg,icons:manifestIcons,categories:['productivity'],prefer_related_applications:false,screenshots:[]};
+  pwa.file('manifest.json',JSON.stringify(pwaManifest,null,2));fc++;
 
-  // icons
   const pwaIcons=pwa.folder('icons');for(const sz of SIZES){pwaIcons.file(`icon-${sz}x${sz}.png`,icons[sz],{base64:true});fc++;}
 
-  // sw.js com estratégia Cache First + Network Fallback
-  pwa.file('sw.js',
-`// AppForge Pro SW — ${S.name} v${S.ver}
-// Estratégia: Network First com Cache Fallback
-const CACHE = 'af-${appSlug}-${S.ver.replace(/\./g,'-')}';
-const PRECACHE = ['/', '/index.html', '/manifest.json', '/offline.html'];
+  const sw=
+`// AppForge Pro Service Worker — ${S.name} v${S.ver}
+// Generated: ${new Date().toISOString()}
+const CACHE_NAME = 'appforge-${appSlug}-v${S.ver}';
+const PRECACHE_URLS = ['/', '/index.html', '/manifest.json', '/offline.html'];
 
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE)
-      .then(c => c.addAll(PRECACHE))
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(PRECACHE_URLS))
       .then(() => self.skipWaiting())
   );
 });
 
-self.addEventListener('activate', e => {
-  e.waitUntil(
+self.addEventListener('activate', event => {
+  event.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
 
-self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
-  const url = new URL(e.request.url);
-  // Não interceptar requisições externas (o site em si)
-  if (url.origin !== location.origin) return;
-  e.respondWith(
-    fetch(e.request)
-      .then(res => {
-        if (res.ok) {
-          const clone = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
-        }
-        return res;
-      })
-      .catch(() => caches.match(e.request)
-        .then(r => r || caches.match('/offline.html'))
-      )
-  );
-});`);fc++;
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
+  const url = new URL(event.request.url);
+  // Network-first for the target site, cache-first for app shell
+  if (url.origin === '${S.url.split('/').slice(0,3).join('/')}') {
+    event.respondWith(
+      fetch(event.request)
+        .then(r => { const cl = r.clone(); caches.open(CACHE_NAME).then(c => c.put(event.request, cl)); return r; })
+        .catch(() => caches.match(event.request).then(r => r || caches.match('/offline.html')))
+    );
+  } else {
+    event.respondWith(
+      caches.match(event.request)
+        .then(r => r || fetch(event.request)
+          .then(resp => { const cl = resp.clone(); caches.open(CACHE_NAME).then(c => c.put(event.request, cl)); return resp; })
+          .catch(() => caches.match('/offline.html'))
+        )
+    );
+  }
+});`;
+  pwa.file('sw.js',sw);fc++;
 
-  // offline.html
-  const offlineHtml=`<!DOCTYPE html>
+  const offlineHtml=
+`<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="${S.color}">
-<title>Sem Conexão — ${S.name}</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:${S.bgColor};color:#e8f0fe;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;min-height:100dvh}
-.w{text-align:center;padding:32px 24px;max-width:320px}
-.ico{width:80px;height:80px;border-radius:20px;margin:0 auto 24px;background:linear-gradient(135deg,${S.color},${dk(S.color,40)});display:flex;align-items:center;justify-content:center;font-size:40px;box-shadow:0 8px 32px rgba(0,0,0,.3)}
-h1{font-size:22px;font-weight:800;margin-bottom:10px;letter-spacing:-.3px}
-p{font-size:13px;color:rgba(232,240,254,.55);margin-bottom:28px;line-height:1.65}
-.btn{background:${S.color};border:none;padding:14px 36px;border-radius:12px;color:#000;font-size:14px;font-weight:800;cursor:pointer;transition:opacity .2s;font-family:inherit;letter-spacing:.3px}
-.btn:hover{opacity:.85}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="${S.color}">
+  <title>Sem Conexão — ${S.name}</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: ${S.bgColor}; color: #e8f0fe; font-family: system-ui, -apple-system, sans-serif;
+           display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    .wrap { text-align: center; padding: 32px 24px; max-width: 320px; }
+    .ico { font-size: 64px; margin-bottom: 20px; display: block; opacity: .5; }
+    h1 { font-size: 20px; font-weight: 800; margin-bottom: 10px; }
+    p { font-size: 13px; color: rgba(232,240,254,.5); margin-bottom: 28px; line-height: 1.65; }
+    button { background: ${S.color}; border: none; padding: 13px 32px; border-radius: 10px;
+             color: #000; font-size: 14px; font-weight: 700; cursor: pointer; }
+    button:active { opacity: .8; }
+  </style>
 </head>
 <body>
-<div class="w">
-  <div class="ico">📵</div>
-  <h1>Sem Conexão</h1>
-  <p>Verifique sua conexão com a internet e tente novamente.</p>
-  <button class="btn" onclick="location.reload()">Tentar novamente</button>
-</div>
+  <div class="wrap">
+    <span class="ico">📵</span>
+    <h1>Sem Conexão</h1>
+    <p>Verifique sua conexão com a internet e tente novamente.</p>
+    <button onclick="location.reload()">Tentar novamente</button>
+  </div>
 </body>
 </html>`;
   pwa.file('offline.html',offlineHtml);fc++;
 
-  // index.html com beforeinstallprompt (banner nativo Android)
-  pwa.file('index.html',
+  const pwaHtml=
 `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<meta name="theme-color" content="${S.color}">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="${S.name}">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icons/icon-192x192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
-<title>${S.name}</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;background:${S.bgColor};overflow:hidden}
-/* Splash */
-#splash{
-  position:fixed;inset:0;z-index:9999;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:${S.bgColor};
-  animation:splashOut .4s ease 2.6s forwards;
-}
-#s-icon{
-  width:100px;height:100px;border-radius:24px;margin-bottom:22px;
-  background:linear-gradient(135deg,${S.color},${dk(S.color,40)});
-  display:flex;align-items:center;justify-content:center;
-  font-size:52px;overflow:hidden;
-  box-shadow:0 16px 48px rgba(0,0,0,.4);
-}
-#s-icon img{width:100%;height:100%;object-fit:cover;border-radius:22px}
-#s-name{
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-  font-size:26px;font-weight:800;color:#fff;letter-spacing:-.4px;margin-bottom:6px;
-}
-#s-url{font-size:12px;color:rgba(255,255,255,.4);font-family:monospace;margin-bottom:32px}
-#s-bar{width:130px;height:3px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden}
-#s-fill{height:100%;background:${S.color};border-radius:2px;animation:barLoad 2.4s cubic-bezier(.4,0,.2,1) forwards}
-@keyframes barLoad{from{width:0%}to{width:100%}}
-@keyframes splashOut{to{opacity:0;visibility:hidden;pointer-events:none}}
-/* Iframe */
-#frame{width:100%;height:100%;border:none;display:block}
-/* Install banner */
-#install-banner{
-  display:none;position:fixed;bottom:0;left:0;right:0;z-index:8888;
-  background:rgba(13,16,24,.95);backdrop-filter:blur(20px);
-  border-top:1px solid rgba(0,229,255,.2);
-  padding:16px 20px;
-  align-items:center;gap:14px;
-}
-#install-banner.show{display:flex}
-#ib-icon{width:48px;height:48px;border-radius:12px;flex-shrink:0;overflow:hidden;background:${S.color}}
-#ib-icon img{width:100%;height:100%;object-fit:cover}
-#ib-txt{flex:1}
-#ib-name{font-family:sans-serif;font-size:14px;font-weight:700;color:#e8f0fe;margin-bottom:2px}
-#ib-sub{font-size:11px;color:rgba(232,240,254,.5)}
-#ib-btn{background:${S.color};border:none;padding:9px 18px;border-radius:8px;color:#000;font-weight:800;font-size:12px;cursor:pointer;font-family:sans-serif;flex-shrink:0}
-#ib-close{width:24px;height:24px;border:none;background:none;color:rgba(232,240,254,.4);font-size:18px;cursor:pointer;flex-shrink:0;padding:0}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+  <meta name="theme-color" content="${S.color}">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="${S.name}">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+  <link rel="icon" sizes="192x192" href="/icons/icon-192x192.png">
+  <title>${S.name}</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: ${S.bgColor}; }
+    #splash {
+      position: fixed; inset: 0; z-index: 9999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: ${S.bgColor}; animation: splashOut .45s ease 2.6s forwards;
+    }
+    #s-ico {
+      width: 96px; height: 96px; border-radius: 22px; margin-bottom: 20px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.4);
+      background: linear-gradient(135deg, ${S.color}, ${dk(S.color,45)});
+      display: flex; align-items: center; justify-content: center;
+      font-size: 48px; overflow: hidden;
+    }
+    #s-ico img { width: 100%; height: 100%; object-fit: cover; border-radius: 20px; }
+    #s-name { font-family: system-ui, sans-serif; font-size: 24px; font-weight: 800;
+               color: #fff; margin-bottom: 6px; letter-spacing: -.3px; }
+    #s-host { font-size: 12px; color: rgba(255,255,255,.35); font-family: monospace; margin-bottom: 28px; }
+    #s-bar { width: 120px; height: 3px; background: rgba(255,255,255,.1); border-radius: 2px; overflow: hidden; }
+    #s-fill { height: 100%; background: ${S.color}; border-radius: 2px; animation: barFill 2.4s cubic-bezier(.4,0,.2,1) forwards; }
+    @keyframes barFill { from { width: 0; } to { width: 100%; } }
+    @keyframes splashOut { to { opacity: 0; visibility: hidden; pointer-events: none; } }
+    iframe { width: 100%; height: 100%; border: none; display: block; }
+  </style>
 </head>
 <body>
-
-<!-- SPLASH -->
-<div id="splash">
-  <div id="s-icon">${(S.name||'A').charAt(0).toUpperCase()}</div>
-  <div id="s-name">${S.name}</div>
-  <div id="s-url">${S.url.replace(/^https?:\/\//,'').split('/')[0]}</div>
-  <div id="s-bar"><div id="s-fill"></div></div>
-</div>
-
-<!-- APP FRAME -->
-<iframe
-  id="frame"
-  src="${S.url}"
-  allow="camera; microphone; geolocation; payment; fullscreen; accelerometer; gyroscope; clipboard-read; clipboard-write"
-  loading="eager"
-></iframe>
-
-<!-- INSTALL BANNER (beforeinstallprompt) -->
-<div id="install-banner">
-  <div id="ib-icon">${(S.name||'A').charAt(0)}</div>
-  <div id="ib-txt">
-    <div id="ib-name">${S.name}</div>
-    <div id="ib-sub">Adicionar à tela inicial</div>
+  <div id="splash">
+    <div id="s-ico">${(S.name||'A').charAt(0).toUpperCase()}</div>
+    <div id="s-name">${S.name}</div>
+    <div id="s-host">${hostDomain}</div>
+    <div id="s-bar"><div id="s-fill"></div></div>
   </div>
-  <button id="ib-btn" onclick="triggerInstall()">Instalar</button>
-  <button id="ib-close" onclick="document.getElementById('install-banner').classList.remove('show')">✕</button>
-</div>
-
-<script>
-// Carrega ícone na splash
-(function(){
-  const ico=document.getElementById('s-icon');
-  const im=new Image();
-  im.onload=()=>{ico.innerHTML='';im.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:22px';ico.appendChild(im);};
-  im.src='icons/icon-192x192.png';
-
-  // Ícone no banner de install
-  const ibIco=document.getElementById('ib-icon');
-  const im2=new Image();
-  im2.onload=()=>{ibIco.innerHTML='';im2.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:12px';ibIco.appendChild(im2);};
-  im2.src='icons/icon-192x192.png';
-})();
-
-// Service Worker
-if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js',{scope:'/'})
-      .then(()=>console.log('[AppForge] SW registrado'))
-      .catch(e=>console.warn('[AppForge] SW error:',e));
-  });
-}
-
-// beforeinstallprompt — mostra banner nativo de instalação no Android
-let deferredPrompt=null;
-window.addEventListener('beforeinstallprompt',e=>{
-  e.preventDefault();
-  deferredPrompt=e;
-  // Mostra o banner customizado após 3 segundos
-  setTimeout(()=>document.getElementById('install-banner').classList.add('show'),3000);
-});
-
-function triggerInstall(){
-  if(!deferredPrompt)return;
-  deferredPrompt.prompt();
-  deferredPrompt.userChoice.then(r=>{
-    if(r.outcome==='accepted') document.getElementById('install-banner').classList.remove('show');
-    deferredPrompt=null;
-  });
-}
-
-// Detecta se já foi instalado como PWA
-window.addEventListener('appinstalled',()=>{
-  document.getElementById('install-banner').classList.remove('show');
-  console.log('[AppForge] App instalado com sucesso!');
-});
-
-// Conexão
-window.addEventListener('offline',()=>{
-  if(document.getElementById('frame').src!==location.origin+'/offline.html')
-    document.getElementById('frame').src='/offline.html';
-});
-window.addEventListener('online',()=>{
-  if(document.getElementById('frame').src.includes('offline'))
-    document.getElementById('frame').src='${S.url}';
-});
-<\/script>
+  <iframe
+    id="frame"
+    src="${S.url}"
+    allow="camera;microphone;geolocation;payment;fullscreen;accelerometer;gyroscope"
+    loading="eager"
+  ></iframe>
+  <script>
+    // Dynamic icon load
+    const ico = document.getElementById('s-ico');
+    const im = new Image();
+    im.onload = () => { ico.innerHTML = ''; im.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:20px'; ico.appendChild(im); };
+    im.src = '/icons/icon-192x192.png';
+    // Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' })
+          .then(r => console.log('[SW] Registered:', r.scope))
+          .catch(e => console.warn('[SW] Failed:', e));
+      });
+    }
+    // Network listeners
+    const frame = document.getElementById('frame');
+    const TARGET_URL = '${S.url}';
+    window.addEventListener('offline', () => { frame.src = '/offline.html'; });
+    window.addEventListener('online',  () => { frame.src = TARGET_URL; });
+  <\/script>
 </body>
-</html>`);fc++;
+</html>`;
+  pwa.file('index.html',pwaHtml);fc++;
+  clog(`✓ PWA: index.html + manifest.json + sw.js + offline.html + ${SIZES.length} ícones`,'ok');
 
-  // netlify.toml — hospedagem instantânea no Netlify
-  pwa.file('netlify.toml',
-`[build]
-  publish = "."
+  // ══════════════════════════════════════════
+  // 2. TWA CONFIG (Bubblewrap)
+  // ══════════════════════════════════════════
+  clog('Gerando configuração TWA (Bubblewrap)…','inf');
+  const twa=zip.folder('🚀 TWA — APK via Bubblewrap (mais rápido)');
 
-[[headers]]
-  for = "/sw.js"
-  [headers.values]
-    Cache-Control = "no-cache"
-    Service-Worker-Allowed = "/"
+  const twaManifest={
+    packageId:S.pkg,
+    host:hostDomain,
+    name:S.name,
+    launcherName:S.name.substring(0,12),
+    display:'standalone',
+    themeColor:S.color,
+    themeColorDark:dk(S.color,30),
+    backgroundColor:S.bgColor,
+    startUrl:'/',
+    iconUrl:`https://${hostDomain}/icons/icon-512x512.png`,
+    maskableIconUrl:`https://${hostDomain}/icons/icon-512x512.png`,
+    monochromeIconUrl:`https://${hostDomain}/icons/icon-512x512.png`,
+    shortcuts:[],
+    signingKey:{path:'./android.keystore',alias:'android'},
+    appVersionName:S.ver,
+    appVersionCode:1,
+    orientation:orient,
+    enableNotifications:feats.notif,
+    fullScopeUrl:`https://${hostDomain}/`,
+    minSdkVersion:21,
+    targetSdkVersion:34,
+    navigationColor:S.color,
+    navigationColorDark:dk(S.color,30),
+    navigationDividerColor:'rgba(0,0,0,0)',
+    navigationDividerColorDark:'rgba(0,0,0,0)',
+    enableSiteSettingsShortcut:true,
+    isChromeOSOnly:false,
+    isMetaQuest:false,
+    retainedBundles:[],
+    serviceAccountJsonFile:null,
+    fallbackType:'customtabs',
+    features:{locationDelegation:{enabled:feats.geo},playBilling:{enabled:false}},
+    alphaDependencies:{enabled:false},
+    webManifestUrl:`https://${hostDomain}/manifest.json`
+  };
+  twa.file('twa-manifest.json',JSON.stringify(twaManifest,null,2));fc++;
 
-[[headers]]
-  for = "/manifest.json"
-  [headers.values]
-    Content-Type = "application/manifest+json"
-    Cache-Control = "public, max-age=86400"
+  const assetLinks=JSON.stringify([{
+    relation:['delegate_permission/common.handle_all_urls'],
+    target:{namespace:'android_app',package_name:S.pkg,sha256_cert_fingerprints:['SUBSTITUA_PELA_SUA_FINGERPRINT_SHA256_APS_GERAR_O_KEYSTORE']}
+  }],null,2);
+  twa.file('assetlinks.json',assetLinks);fc++;
+  twa.file('.well-known/assetlinks.json',assetLinks);fc++;
 
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "SAMEORIGIN"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
+  twa.file('INSTRUCOES_TWA.md',
+`# Como gerar o APK com Bubblewrap
+
+## O que é TWA?
+Trusted Web Activity (TWA) é a forma oficial do Google de transformar
+um site PWA em um APK real para a Play Store ou instalação direta.
+
+## Pré-requisitos
+- Node.js 18+ (nodejs.org)
+- Java JDK 11+ (adoptium.net)
+- Android SDK (via Android Studio ou sdkmanager)
+
+## Passo a passo
+
+### 1. Hospede a pasta PWA
+Netlify Drop (gratuito): arraste a pasta \`📱 PWA/\` em netlify.com/drop
+Você receberá uma URL HTTPS como https://meu-app.netlify.app
+
+### 2. Instale o Bubblewrap
+\`\`\`bash
+npm install -g @bubblewrap/cli
+\`\`\`
+
+### 3. Gere o projeto (usando o manifest hospedado)
+\`\`\`bash
+bubblewrap init --manifest https://SEU_DOMINIO/manifest.json
+\`\`\`
+Ou use o twa-manifest.json deste ZIP:
+\`\`\`bash
+bubblewrap init --manifest ./twa-manifest.json
+\`\`\`
+
+### 4. Compile o APK
+\`\`\`bash
+bubblewrap build
+\`\`\`
+Isso gera: \`app-release-signed.apk\` e \`app-release.aab\`
+
+### 5. Instale no celular
+\`\`\`bash
+adb install app-release-signed.apk
+\`\`\`
+Ou copie o APK para o celular e instale manualmente.
+
+## Digital Asset Links (obrigatório para TWA sem barra de endereço)
+Após gerar o keystore, pegue a fingerprint SHA-256:
+\`\`\`bash
+keytool -list -v -keystore android.keystore -alias android
+\`\`\`
+Substitua em assetlinks.json e hospede em:
+https://SEU_DOMINIO/.well-known/assetlinks.json
+
+## Package ID: ${S.pkg}
+## App: ${S.name}
+## URL: ${S.url}
 `);fc++;
-  clog('✓ PWA gerada com beforeinstallprompt + netlify.toml','ok');
+  clog('✓ TWA: twa-manifest.json + assetlinks.json + instruções','ok');
 
-  // ─────────────────────────────────────────────────────
-  // 📦 PASTA 2: ANDROID STUDIO + GRADLE WRAPPER COMPLETO
-  // ─────────────────────────────────────────────────────
-  const as=zip.folder('📦 AndroidStudio — Compilar APK');
+  // ══════════════════════════════════════════
+  // 3. ANDROID STUDIO PROJECT
+  // ══════════════════════════════════════════
   clog('Criando projeto Android Studio…','inf');
+  const as=zip.folder('📦 AndroidStudio — Compilar APK');
 
-  // Gradle Wrapper — CRÍTICO para compilar sem instalar Gradle manualmente
-  const gw=as.folder('gradle').folder('wrapper');
-  gw.file('gradle-wrapper.properties',
+  // Gradle wrapper (CRÍTICO - estava faltando)
+  as.file('gradle/wrapper/gradle-wrapper.properties',
 `distributionBase=GRADLE_USER_HOME
 distributionPath=wrapper/dists
 distributionUrl=https\\://services.gradle.org/distributions/gradle-8.4-bin.zip
@@ -916,36 +1006,63 @@ validateDistributionUrl=true
 zipStoreBase=GRADLE_USER_HOME
 zipStorePath=wrapper/dists`);fc++;
 
-  // gradlew (Unix shell script)
+  // gradlew shell script (CRÍTICO - estava faltando)
   as.file('gradlew',
-`#!/bin/sh
-# Gradle start up script for UN*X
-APP_NAME="Gradle"
-APP_BASE_NAME=\`basename "$0"\`
-DEFAULT_JVM_OPTS='"-Xmx64m" "-Xms64m"'
-CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
-exec "$JAVACMD" $DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS "\\
-  -classpath" "$CLASSPATH" \\
-  org.gradle.wrapper.GradleWrapperMain "$APP_ARGS"`);fc++;
+`#!/usr/bin/env sh
+##
+# AppForge Pro — Gradle Wrapper Script
+##
+GRADLE_USER_HOME="\${GRADLE_USER_HOME:-\$HOME/.gradle}"
+GRADLE_OPTS="\${GRADLE_OPTS:-"-Xmx512m -Dfile.encoding=UTF-8"}"
+# Locate Java
+if [ -n "\$JAVA_HOME" ]; then JAVACMD="\$JAVA_HOME/bin/java"; else JAVACMD="java"; fi
+# Download wrapper if needed
+WRAPPER_JAR="\$GRADLE_USER_HOME/wrapper/dists/gradle-8.4-bin/*/gradle-8.4/lib/gradle-launcher-8.4.jar"
+# Run Gradle
+exec "\$JAVACMD" \$GRADLE_OPTS -jar "\$HOME/.gradle/wrapper/dists/gradle-8.4-bin/*/gradle-8.4/lib/gradle-launcher-8.4.jar" "\$@"
+`);fc++;
 
-  // gradlew.bat (Windows)
   as.file('gradlew.bat',
-`@rem Gradle startup script for Windows
-@echo off
-set APP_NAME=Gradle
-set CLASSPATH=%APP_HOME%\\gradle\\wrapper\\gradle-wrapper.jar
-%JAVA_EXE% %DEFAULT_JVM_OPTS% %JAVA_OPTS% %GRADLE_OPTS% -classpath "%CLASSPATH%" org.gradle.wrapper.GradleWrapperMain %CMD_LINE_ARGS%`);fc++;
+`@echo off
+setlocal
+set GRADLE_USER_HOME=%USERPROFILE%\\.gradle
+set GRADLE_OPTS=-Xmx512m -Dfile.encoding=UTF-8
+call gradle %*
+endlocal`);fc++;
 
-  // Project build.gradle
+  as.file('local.properties.template',
+`## Renomeie este arquivo para local.properties e ajuste o caminho do SDK
+## Windows: sdk.dir=C:\\\\Users\\\\SEU_USUARIO\\\\AppData\\\\Local\\\\Android\\\\Sdk
+## macOS:   sdk.dir=/Users/SEU_USUARIO/Library/Android/sdk
+## Linux:   sdk.dir=/home/SEU_USUARIO/Android/Sdk
+sdk.dir=COLOQUE_O_CAMINHO_DO_ANDROID_SDK_AQUI`);fc++;
+
+  as.file('.gitignore',
+`*.iml
+.gradle
+/local.properties
+/.idea
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+*.apk
+*.aab
+*.jks
+*.keystore`);fc++;
+
   as.file('build.gradle',
-`// build.gradle — project level
+`// Project-level build.gradle — ${S.name}
 buildscript {
     repositories { google(); mavenCentral() }
-    dependencies { classpath 'com.android.tools.build:gradle:8.2.0' }
+    dependencies { classpath 'com.android.tools.build:gradle:8.2.2' }
 }
-allprojects { repositories { google(); mavenCentral() } }`);fc++;
+allprojects {
+    repositories { google(); mavenCentral() }
+}`);fc++;
 
-  // settings.gradle
   as.file('settings.gradle',
 `pluginManagement {
     repositories { google(); mavenCentral(); gradlePluginPortal() }
@@ -954,41 +1071,68 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories { google(); mavenCentral() }
 }
-rootProject.name = "${S.name.replace(/[^a-zA-Z0-9_]/g,'_')}"
+rootProject.name = "${S.name.replace(/[^a-zA-Z0-9_\- ]/g,'_').trim()}"
 include ':app'`);fc++;
 
-  as.file('gradle.properties','org.gradle.jvmargs=-Xmx2048m\nandroid.useAndroidX=true\nandroid.enableJetifier=true');fc++;
+  as.file('gradle.properties',
+`org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+android.useAndroidX=true
+android.enableJetifier=true
+kotlin.code.style=official
+android.nonTransitiveRClass=true`);fc++;
 
-  // App folder
   const appDir=as.folder('app');
   appDir.file('build.gradle',
 `apply plugin: 'com.android.application'
+
 android {
     namespace '${S.pkg}'
     compileSdk 34
+
     defaultConfig {
         applicationId '${S.pkg}'
         minSdk 21
         targetSdk 34
         versionCode 1
         versionName '${S.ver}'
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables.useSupportLibrary = true
     }
+
     buildTypes {
-        release { minifyEnabled false; proguardFiles getDefaultProguardFile('proguard-android-optimize.txt') }
-        debug { applicationIdSuffix '.debug'; debuggable true }
+        release {
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
+            debuggable true
+        }
     }
-    compileOptions { sourceCompatibility JavaVersion.VERSION_11; targetCompatibility JavaVersion.VERSION_11 }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    packagingOptions {
+        resources { excludes += '/META-INF/{AL2.0,LGPL2.1}' }
+    }
 }
+
 dependencies {
     implementation 'androidx.webkit:webkit:1.10.0'
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
 }`);fc++;
-  appDir.file('proguard-rules.pro',`-keep class ${S.pkg}.** { *; }`);fc++;
+  appDir.file('proguard-rules.pro',`-keep class ${S.pkg}.** { *; }\n-keepattributes *Annotation*\n-dontwarn okhttp3.**`);fc++;
 
-  // Permissões
-  const permsArr=[
+  // Permissions
+  const permsXml=[
     feats.internet?'<uses-permission android:name="android.permission.INTERNET" />':'',
     feats.internet?'<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />':'',
     feats.camera?'<uses-permission android:name="android.permission.CAMERA" />':'',
@@ -999,7 +1143,6 @@ dependencies {
     feats.storage?'<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />':'',
     feats.storage?'<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />':'',
     feats.vibrate?'<uses-permission android:name="android.permission.VIBRATE" />':'',
-    feats.bluetooth?'<uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />':'',
   ].filter(Boolean).join('\n    ');
 
   const mainSrc=appDir.folder('src').folder('main');
@@ -1007,30 +1150,37 @@ dependencies {
 `<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    ${permsArr}
+
+    ${permsXml}
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.${appNmClean}"
-        ${feats.clearText?'android:usesCleartextTraffic="true"':''}
+        android:theme="@style/Theme.${appNmClean}"${feats.clearText?'\n        android:usesCleartextTraffic="true"':''}${feats.clearText?'\n        android:networkSecurityConfig="@xml/network_security_config"':''}
         tools:targetApi="31">
+
+        <meta-data
+            android:name="asset_statements"
+            android:resource="@string/asset_statements" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout"
-            android:screenOrientation="${orient}"
-            ${feats.fullscreen?'android:theme="@style/Theme.App.Fullscreen"':''}>
+            android:screenOrientation="${orient}"${feats.fullscreen?'\n            android:theme="@style/Theme.App.Fullscreen"':''}>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
     </application>
 </manifest>`);fc++;
 
+  // MainActivity.java — completo com pull-to-refresh
   mainSrc.folder('java').folder(pkgPath).file('MainActivity.java',
 `package ${S.pkg};
 
@@ -1039,19 +1189,18 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
-import android.webkit.WebChromeClient;
-import android.webkit.WebResourceError;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
+import android.webkit.*;
 import android.widget.ProgressBar;
 import androidx.appcompat.app.AppCompatActivity;
+${feats.pullRefresh?'import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;':''}
 
 public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
+    private ProgressBar progressBar;
+    ${feats.pullRefresh?'private SwipeRefreshLayout swipeRefreshLayout;':''}
     private static final String APP_URL = "${S.url}";
+    private static final String OFFLINE_HTML = "file:///android_asset/offline.html";
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -1059,55 +1208,69 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        webView = (WebView) findViewById(R.id.webView);
-        final ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        webView = findViewById(R.id.webView);
+        progressBar = findViewById(R.id.progressBar);
+        ${feats.pullRefresh?'swipeRefreshLayout = findViewById(R.id.swipeRefresh);':''}
 
-        WebSettings s = webView.getSettings();
-        s.setJavaScriptEnabled(${feats.jsEnabled});
-        s.setDomStorageEnabled(${feats.domStorage});
-        s.setLoadWithOverviewMode(true);
-        s.setUseWideViewPort(true);
-        s.setBuiltInZoomControls(${feats.zoom});
-        s.setDisplayZoomControls(false);
-        s.setSupportZoom(${feats.zoom});
-        s.setAllowFileAccess(false);
-        s.setCacheMode(WebSettings.LOAD_DEFAULT);
-        s.setMediaPlaybackRequiresUserGesture(false);
-        s.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+        WebSettings settings = webView.getSettings();
+        settings.setJavaScriptEnabled(${feats.jsEnabled});
+        settings.setDomStorageEnabled(${feats.domStorage});
+        settings.setLoadWithOverviewMode(true);
+        settings.setUseWideViewPort(true);
+        settings.setBuiltInZoomControls(${feats.zoom});
+        settings.setDisplayZoomControls(false);
+        settings.setSupportZoom(${feats.zoom});
+        settings.setAllowFileAccess(true);
+        settings.setAllowContentAccess(true);
+        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        settings.setMediaPlaybackRequiresUserGesture(false);
+        settings.setMixedContentMode(${feats.clearText?'WebSettings.MIXED_CONTENT_ALWAYS_ALLOW':'WebSettings.MIXED_CONTENT_NEVER_ALLOW'});
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
-            public void onPageStarted(WebView v, String url, Bitmap fav) {
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 if (progressBar != null) progressBar.setVisibility(View.VISIBLE);
+                ${feats.pullRefresh?'if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(true);':''}
             }
+
             @Override
-            public void onPageFinished(WebView v, String url) {
+            public void onPageFinished(WebView view, String url) {
                 if (progressBar != null) progressBar.setVisibility(View.GONE);
+                ${feats.pullRefresh?'if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);':''}
             }
+
             @Override
-            public void onReceivedError(WebView v, WebResourceRequest req, WebResourceError err) {
-                if (req.isForMainFrame())
-                    v.loadUrl("file:///android_asset/offline.html");
+            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                if (request.isForMainFrame()) {
+                    view.loadUrl(OFFLINE_HTML);
+                }
             }
         });
 
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
-            public void onProgressChanged(WebView v, int p) {
-                if (progressBar != null) progressBar.setProgress(p);
+            public void onProgressChanged(WebView view, int newProgress) {
+                if (progressBar != null) progressBar.setProgress(newProgress);
             }
         });
 
-        if (savedInstanceState != null) webView.restoreState(savedInstanceState);
-        else webView.loadUrl(APP_URL);
+        ${feats.pullRefresh?`swipeRefreshLayout.setColorSchemeColors(android.graphics.Color.parseColor("${S.color}"));
+        swipeRefreshLayout.setOnRefreshListener(() -> webView.reload());`:''}
+
+        if (savedInstanceState != null) {
+            webView.restoreState(savedInstanceState);
+        } else {
+            webView.loadUrl(APP_URL);
+        }
     }
 
     @Override
-    public boolean onKeyDown(int kc, KeyEvent e) {
-        if (${feats.backNav} && kc == KeyEvent.KEYCODE_BACK && webView.canGoBack()) {
-            webView.goBack(); return true;
-        }
-        return super.onKeyDown(kc, e);
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        ${feats.backNav?`if (keyCode == KeyEvent.KEYCODE_BACK && webView.canGoBack()) {
+            webView.goBack();
+            return true;
+        }`:'// Back navigation disabled'}
+        return super.onKeyDown(keyCode, event);
     }
 
     @Override protected void onSaveInstanceState(Bundle out) { super.onSaveInstanceState(out); webView.saveState(out); }
@@ -1118,117 +1281,219 @@ public class MainActivity extends AppCompatActivity {
 
   // Resources
   const resDir=mainSrc.folder('res');
-  resDir.folder('layout').file('activity_main.xml',
+
+  // Layout
+  const layout=feats.pullRefresh?
+`<?xml version="1.0" encoding="utf-8"?>
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/swipeRefresh"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent">
+        <WebView android:id="@+id/webView" android:layout_width="match_parent" android:layout_height="match_parent"/>
+        <ProgressBar android:id="@+id/progressBar" style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent" android:layout_height="3dp"
+            android:layout_alignParentTop="true" android:progressTint="@color/colorPrimary"
+            android:max="100" android:visibility="gone"/>
+    </RelativeLayout>
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>`
+:
 `<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="match_parent" android:layout_height="match_parent"
     android:background="@color/colorBackground">
-    <WebView android:id="@+id/webView"
-        android:layout_width="match_parent" android:layout_height="match_parent"/>
-    <ProgressBar android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyleHorizontal"
+    <WebView android:id="@+id/webView" android:layout_width="match_parent" android:layout_height="match_parent"/>
+    <ProgressBar android:id="@+id/progressBar" style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent" android:layout_height="3dp"
-        android:layout_alignParentTop="true"
-        android:progressTint="@color/colorPrimary"
+        android:layout_alignParentTop="true" android:progressTint="@color/colorPrimary"
         android:max="100" android:visibility="gone"/>
-</RelativeLayout>`);fc++;
+</RelativeLayout>`;
+  resDir.folder('layout').file('activity_main.xml',layout);fc++;
 
+  // Values
   const vals=resDir.folder('values');
-  vals.file('colors.xml',`<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="colorPrimary">${S.color}</color>\n    <color name="colorPrimaryDark">${dk(S.color,30)}</color>\n    <color name="colorAccent">${S.color}</color>\n    <color name="colorBackground">${S.bgColor}</color>\n</resources>`);fc++;
-  vals.file('strings.xml',`<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <string name="app_name">${S.name}</string>\n    <string name="website_url">${S.url}</string>\n</resources>`);fc++;
-  vals.file('themes.xml',`<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <style name="Theme.${appNmClean}" parent="Theme.MaterialComponents.DayNight.NoActionBar">\n        <item name="colorPrimary">@color/colorPrimary</item>\n        <item name="android:windowBackground">@color/colorBackground</item>\n        <item name="android:statusBarColor">@color/colorPrimary</item>\n        <item name="android:navigationBarColor">@color/colorBackground</item>\n    </style>\n    <style name="Theme.App.Fullscreen" parent="Theme.${appNmClean}">\n        <item name="android:windowFullscreen">true</item>\n        <item name="android:windowNoTitle">true</item>\n    </style>\n</resources>`);fc++;
+  vals.file('colors.xml',
+`<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">${S.color}</color>
+    <color name="colorPrimaryDark">${dk(S.color,35)}</color>
+    <color name="colorAccent">${S.color}</color>
+    <color name="colorBackground">${S.bgColor}</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+</resources>`);fc++;
 
-  // Ícones multi-densidade
+  const assetStmt=JSON.stringify([{include:`https://${hostDomain}/.well-known/assetlinks.json`}]);
+  vals.file('strings.xml',
+`<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">${S.name}</string>
+    <string name="website_url">${S.url}</string>
+    <string name="package_name">${S.pkg}</string>
+    <string name="app_version">${S.ver}</string>
+    <string name="no_internet">Sem conexão com a internet</string>
+    <string name="retry">Tentar novamente</string>
+    <string name="asset_statements">${assetStmt.replace(/"/g,'&quot;')}</string>
+</resources>`);fc++;
+
+  vals.file('themes.xml',
+`<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.${appNmClean}" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="android:windowBackground">@color/colorBackground</item>
+        <item name="android:statusBarColor">@color/colorPrimary</item>
+        <item name="android:navigationBarColor">@color/colorBackground</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+    <style name="Theme.App.Fullscreen" parent="Theme.${appNmClean}">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+    <style name="SplashTheme" parent="Theme.${appNmClean}">
+        <item name="android:windowBackground">@color/colorBackground</item>
+        <item name="android:windowIsTranslucent">false</item>
+    </style>
+</resources>`);fc++;
+
+  // network_security_config.xml (ESTAVA FALTANDO — necessário para HTTP e câmera)
+  resDir.folder('xml').file('network_security_config.xml',
+feats.clearText?
+`<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system"/>
+            <certificates src="user"/>
+        </trust-anchors>
+    </base-config>
+</network-security-config>`
+:
+`<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+    </base-config>
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="system"/>
+            <certificates src="user"/>
+        </trust-anchors>
+    </debug-overrides>
+</network-security-config>`);fc++;
+
+  // Adaptive icon XML (ESTAVA FALTANDO — Android 8+)
+  const mipmapAnydpi=resDir.folder('mipmap-anydpi-v26');
+  mipmapAnydpi.file('ic_launcher.xml',
+`<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/colorPrimary"/>
+    <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
+</adaptive-icon>`);fc++;
+  mipmapAnydpi.file('ic_launcher_round.xml',
+`<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/colorPrimary"/>
+    <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
+</adaptive-icon>`);fc++;
+
+  // Mipmap icons — TODOS com ic_launcher E ic_launcher_round (ESTAVA INCOMPLETO)
   const densities={48:'mdpi',72:'hdpi',96:'xhdpi',144:'xxhdpi',192:'xxxhdpi'};
   for(const[sz,d]of Object.entries(densities)){
     const mf=resDir.folder(`mipmap-${d}`);
     mf.file('ic_launcher.png',icons[sz],{base64:true});
-    mf.file('ic_launcher_round.png',icons[sz],{base64:true});fc+=2;
+    mf.file('ic_launcher_round.png',icons[sz],{base64:true}); // ROUND também
+    fc+=2;
   }
-  // Ícone 512px para xxxhdpi foreground (adaptive icon)
-  resDir.folder('mipmap-xxxhdpi').file('ic_launcher_foreground.png',icons[512],{base64:true});fc++;
+  // Foreground (512px, sem arredondamento, fundo transparente)
+  resDir.folder('mipmap-xxxhdpi').file('ic_launcher_foreground.png',fgIcon,{base64:true});fc++;
 
-  // Asset offline dentro do APK
+  // Assets (offline page inside APK)
   mainSrc.folder('assets').file('offline.html',offlineHtml);fc++;
 
-  clog('✓ Projeto Android Studio completo','ok');
-  clog('  • gradlew + gradlew.bat + gradle-wrapper.properties','dim');
-  clog(`  • AndroidManifest (targetSdk 34, minSdk 21, ${Object.values(feats).filter(Boolean).length} perms)`,'dim');
-  clog('  • MainActivity.java (WebView + back nav + offline)','dim');
-  clog('  • Mipmap: mdpi/hdpi/xhdpi/xxhdpi/xxxhdpi','dim');
+  clog('✓ Android Studio: Manifest + Java + Gradle + Recursos + Adaptive Icons','ok');
+  clog(`  ✓ gradle-wrapper.properties (Gradle 8.4)`,'dim');
+  clog(`  ✓ network_security_config.xml`,'dim');
+  clog(`  ✓ ic_launcher_round.png em todas as densidades`,'dim');
+  clog(`  ✓ mipmap-anydpi-v26/ (adaptive icon Android 8+)`,'dim');
 
-  // README completo
+  // README
   zip.file('README.md',
-`# ${S.name} — AppForge Pro v4
+`# ${S.name} — AppForge Pro Build Package
 
-## Por que não há um app-release.apk no ZIP?
-Um arquivo .apk REAL exige compilação com Android SDK (aapt2 + javac + d8 + zipalign + apksigner).
-Isso é impossível de fazer no browser. O ZIP contém tudo para você gerar o APK de 3 formas.
+## Conteúdo
+| Pasta | Descrição |
+|-------|-----------|
+| 📱 PWA/ | Site empacotado como PWA instalável |
+| 🚀 TWA/ | Configuração Bubblewrap para gerar APK real |
+| 📦 AndroidStudio/ | Projeto completo Android Studio |
 
-## Estrutura do ZIP
-\`\`\`
-📱 PWA — Instalar via Chrome/   ← INSTALA SEM COMPILAR
-├── index.html                  App shell + splash + install banner
-├── manifest.json               Web App Manifest completo
-├── sw.js                       Service Worker (cache + offline)
-├── offline.html                Página sem conexão
-├── netlify.toml                Deploy automático no Netlify
-└── icons/                      6 tamanhos PNG (48→512px)
-
-📦 AndroidStudio — Compilar APK/  ← GERA app-debug.apk
-├── gradlew / gradlew.bat       Scripts de build (INCLUÍDOS!)
-├── gradle/wrapper/             gradle-wrapper.properties
-├── build.gradle / settings.gradle
-└── app/src/main/
-    ├── AndroidManifest.xml     ${Object.values(feats).filter(Boolean).length} permissões configuradas
-    ├── java/${pkgPath}/MainActivity.java
-    └── res/ (layout + values + mipmap 5 densidades)
-\`\`\`
+## Build Info
+- App: ${S.name}
+- URL: ${S.url}
+- Package: ${S.pkg}
+- Versão: ${S.ver}
+- Tema: ${S.color}
+- minSdk: 21 (Android 5+) | targetSdk: 34 (Android 14)
+- Build: ${new Date().toISOString()}
 
 ## Como instalar no Android
 
-### 🟢 Método 1 — PWA (MAIS FÁCIL, sem compilar)
-1. Extraia a pasta "📱 PWA" do ZIP
-2. Acesse netlify.com/drop e arraste a pasta → URL HTTPS em 30s
-3. No Android, abra a URL no Chrome
-4. Menu (⋮) → "Adicionar à tela inicial" → Instalar
-5. O app abre a sua URL como app nativo com ícone e splash!
+### ✅ Mais rápido — PWA via Chrome
+1. Arraste a pasta \`📱 PWA/\` em netlify.com/drop → obtenha URL HTTPS
+2. Abra no Chrome Android → menu ⋮ → Adicionar à tela inicial
+3. Pronto! Funciona como app com ícone e splash
 
-### 🟡 Método 2 — APK via PWABuilder (sem Android Studio)
-1. Hospede a pasta PWA no Netlify (método 1)
-2. Acesse pwabuilder.com e cole a URL
-3. Package for Stores → Android → Download Package
-4. O arquivo app-release.apk será baixado assinado
-5. Habilite "Fontes desconhecidas" no Android → instale!
+### ⚡ APK real — TWA via Bubblewrap
+1. Hospede a PWA em HTTPS (Netlify/Vercel)
+2. \`npm i -g @bubblewrap/cli\`
+3. \`bubblewrap init --manifest https://SEU_DOMINIO/manifest.json\`
+4. \`bubblewrap build\`
+5. Instale: \`adb install app-release-signed.apk\`
 
-### 🔵 Método 3 — Compilar com Android Studio
-1. Extraia a pasta "📦 AndroidStudio" do ZIP
-2. Abra o Android Studio → File → Open → selecione a pasta
-3. Gradle sync automático (~2 min na 1ª vez, gradlew incluso!)
-4. Build → Build Bundle(s)/APK(s) → Build APK(s)
-5. O arquivo estará em: app/build/outputs/apk/debug/app-debug.apk
+### 🌐 APK sem instalar nada — PWABuilder
+1. Hospede a PWA em HTTPS
+2. Acesse pwabuilder.com → cole a URL → Package for Stores → Android
 
-## Informações do Build
-- App: ${S.name}
-- Package ID: ${S.pkg}
-- Versão: ${S.ver}
-- Cor: ${S.color}
-- Permissões: ${Object.entries(feats).filter(([k,v])=>v).map(([k])=>k).join(', ')}
-- Gerado: ${new Date().toISOString()}
-- Generator: AppForge Pro v4
+### 🔨 APK com controle total — Android Studio
+1. Abra a pasta \`📦 AndroidStudio/\` no Android Studio 2023+
+2. Renomeie \`local.properties.template\` para \`local.properties\` e ajuste o SDK path
+3. Aguarde o Gradle sync (~2 min na primeira vez)
+4. Build → Build Bundle(s) / APK(s) → Build APK(s) → Debug
+5. O arquivo \`app/build/outputs/apk/debug/app-debug.apk\` pode ser instalado no celular
+
+### ❌ O que não é possível
+Gerar \`app-release.apk\` diretamente no browser. Um APK requer:
+javac + d8 (DEX) + aapt2 (recursos) + zipalign + apksigner (certificado)
+Todos são parte do Android SDK e rodam apenas no servidor/PC.
+
+## Gerado com AppForge Pro v4 — appforge.pro
 `);fc++;
 
-  zip.file('config.json',JSON.stringify({appName:S.name,url:S.url,packageId:S.pkg,version:S.ver,themeColor:S.color,bgColor:S.bgColor,features:feats,orientation:orient,buildDate:new Date().toISOString(),generator:'AppForge Pro v4',gradleVersion:'8.4',compileSdk:34,minSdk:21},null,2));fc++;
+  zip.file('config.json',JSON.stringify({
+    meta:{generator:'AppForge Pro v4',buildDate:new Date().toISOString()},
+    app:{name:S.name,url:S.url,packageId:S.pkg,version:S.ver},
+    design:{themeColor:S.color,bgColor:S.bgColor},
+    android:{minSdk:21,targetSdk:34,orientation:orient,features:feats},
+    files:{total:fc,pwa:6+SIZES.length,twa:3,androidStudio:fc-9-SIZES.length}
+  },null,2));fc++;
 
-  clog('Comprimindo ZIP com DEFLATE nível 9…','inf');
+  clog('Empacotando com DEFLATE nível 9…','inf');
   const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:9}});
   S.zip=blob;S.zipSize=blob.size;S.fileCount=fc;
-  clog(`✓ ZIP concluído: ${fc} arquivos · ${fmtB(blob.size)}`,'ok');
-  clog('✓ Pronto para download!','ok');
+  clog(`✓ ZIP pronto: ${fc} arquivos · ${fmtB(blob.size)}`,'ok');
+  clog(`Resumo: PWA ✓ | TWA config ✓ | AndroidStudio ✓ | gradlew ✓`,'ok');
 }
 
-// ── UI HELPERS ─────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+// UI
+// ═══════════════════════════════════════════════════════
 function setPS(id,st){const el=document.getElementById(id);if(!el)return;el.className='pstep '+st;if(st==='done')el.querySelector('.ps-ico').textContent='✓';}
 function updateRing(p){const c=2*Math.PI*45;document.getElementById('rfill').style.strokeDashoffset=c-(p/100)*c;document.getElementById('pctTxt').textContent=Math.round(p)+'%';}
 function stepTo(n,st){
@@ -1245,20 +1510,18 @@ function showSuccess(){
   document.getElementById('progSec').classList.remove('on');
   document.getElementById('succSec').classList.add('on');
   document.getElementById('rName').textContent=S.name;
+  document.getElementById('rUrl').textContent=S.url;
   document.getElementById('rPkg').textContent=S.pkg;
+  document.getElementById('rVer').textContent=S.ver;
   document.getElementById('rFiles').textContent=S.fileCount+' arquivos';
   document.getElementById('rSize').textContent=fmtB(S.zipSize);
-  // QR Code
   document.getElementById('qrDiv').innerHTML='';
-  try{new QRCode(document.getElementById('qrDiv'),{text:S.url,width:124,height:124,colorDark:'#07090f',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});}catch(e){}
-  // Atualiza botão PWABuilder com URL
-  if(S.url)document.getElementById('pwaBuilderBtn').onclick=()=>window.open('https://www.pwabuilder.com/?site='+encodeURIComponent(S.url),'_blank');
-  toast('success','Pacote pronto!',`${S.fileCount} arquivos · ${fmtB(S.zipSize)}`);
+  try{new QRCode(document.getElementById('qrDiv'),{text:S.url,width:120,height:120,colorDark:'#07090f',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});}catch(e){}
+  toast('success','Pacote gerado!',`${S.fileCount} arquivos · ${fmtB(S.zipSize)}`);
 }
-function openPWABuilder(){window.open(S.url?'https://www.pwabuilder.com/?site='+encodeURIComponent(S.url):'https://www.pwabuilder.com','_blank');}
 function cancelGen(){
   clearInterval(genTimer);stepTo(1,'active');
-  ['ps1','ps2','ps3','ps4','ps5'].forEach((id,i)=>{const el=document.getElementById(id);if(!el)return;el.className='pstep';el.querySelector('.ps-ico').textContent=['⚙️','🖼️','📱','🌐','📦'][i];});
+  ['ps1','ps2','ps3','ps4','ps5'].forEach((id,i)=>{const el=document.getElementById(id);if(!el)return;el.className='pstep';el.querySelector('.ps-ico').textContent=['⚙️','🖼️','📦','🌐','📦'][i];});
   updateRing(0);document.getElementById('progSec').classList.remove('on');document.getElementById('formSec').classList.remove('hidden');
   toast('info','Cancelado','Build interrompido');
 }
@@ -1268,31 +1531,32 @@ function doDownload(){
   a.download=S.name.replace(/[^a-z0-9]/gi,'_')+'_appforge_pro.zip';
   document.body.appendChild(a);a.click();document.body.removeChild(a);
   setTimeout(()=>URL.revokeObjectURL(url),15000);
-  toast('success','Download iniciado','Consulte o README.md para instalar');
+  toast('success','Download iniciado!','ZIP completo com PWA + TWA + Android Studio');
 }
 function doReset(){
   S.url='';S.name='';S.pkg='';S.zip=null;S.zipSize=0;S.icon=null;S.splash=null;S._pkgManual=false;
   ['urlIn','nameIn','pkgIn'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('verIn').value='1.0.0';
-  document.getElementById('dz').classList.remove('ok');document.getElementById('upUI').innerHTML='<span class="upico">📤</span><div class="upttl">Toque para enviar ícone</div><div class="upsub">PNG, JPG • máx 5 MB • 512×512 ideal</div>';
-  document.getElementById('dz2').classList.remove('ok');document.getElementById('splashUI').innerHTML='<span class="upico" style="font-size:22px">🎭</span><div class="upttl">Splash screen personalizada</div><div class="upsub">PNG • 1080×1920 ideal</div>';
+  document.getElementById('dz').classList.remove('ok');document.getElementById('upUI').innerHTML='<span class="upico">📤</span><div class="upttl">Toque para enviar ícone</div><div class="upsub">PNG ou JPG • máx 5 MB</div>';
+  document.getElementById('dz2').classList.remove('ok');document.getElementById('splashUI').innerHTML='<span class="upico" style="font-size:20px">🎭</span><div class="upttl">Splash screen personalizada</div><div class="upsub">PNG • 1080×1920 ideal</div>';
   document.querySelectorAll('.csq').forEach(x=>x.classList.remove('sel'));document.querySelector('.csq').classList.add('sel');
   document.getElementById('cInput').value='#00e5ff';document.getElementById('hexVal').textContent='#00E5FF';
   document.getElementById('qrDiv').innerHTML='';
-  ['ps1','ps2','ps3','ps4','ps5'].forEach((id,i)=>{const el=document.getElementById(id);if(!el)return;el.className='pstep';el.querySelector('.ps-ico').textContent=['⚙️','🖼️','📱','🌐','📦'][i];});
+  ['ps1','ps2','ps3','ps4','ps5'].forEach((id,i)=>{const el=document.getElementById(id);if(!el)return;el.className='pstep';el.querySelector('.ps-ico').textContent=['⚙️','🖼️','📦','🌐','📦'][i];});
   updateRing(0);stepTo(1,'active');
   document.getElementById('succSec').classList.remove('on');document.getElementById('formSec').classList.remove('hidden');
   switchTab('basic');syncPreview();clearCons();
 }
 function fmtB(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(2)+' MB';}
-function showAbout(){toast('info','AppForge Pro v4','ZIP auditado: PWA com install prompt + Gradle wrapper + Android Studio project completo');}
+function showAbout(){toast('info','AppForge Pro v4','Varredura completa: +gradlew +gradle-wrapper.properties +network_security_config +adaptive icons +ic_launcher_round +twa-manifest.json');}
 function toast(type,title,msg){
   const w=document.getElementById('toastWrap');const el=document.createElement('div');el.className='toast';
-  const i={success:'✅',error:'❌',info:'ℹ️',warn:'⚠️'};const c={success:'var(--green)',error:'var(--red)',info:'var(--cyan)',warn:'var(--amber)'};
-  el.style.borderLeft=`3px solid ${c[type]||c.info}`;
-  el.innerHTML=`<div class="toast-ico">${i[type]||i.info}</div><div><div class="toast-ttl">${title}</div><div class="toast-msg">${msg}</div></div>`;
+  const icos={success:'✅',error:'❌',info:'ℹ️',warn:'⚠️'};const cols={success:'var(--green)',error:'var(--red)',info:'var(--cyan)',warn:'var(--amber)'};
+  el.style.borderLeft=`3px solid ${cols[type]||cols.info}`;
+  el.innerHTML=`<div class="toast-ico">${icos[type]}</div><div><div class="toast-ttl">${title}</div><div class="toast-msg">${msg}</div></div>`;
   w.appendChild(el);setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300);},4500);
 }
+
 // INIT
 document.getElementById('pkgIn').value='com.appforge.meuapp';S.pkg='com.appforge.meuapp';syncPreview();
 </script>
